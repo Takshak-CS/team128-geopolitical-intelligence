@@ -1,0 +1,49 @@
+# One command for the whole system:  docker compose up --build
+# Briefing UI: http://localhost:8000
+#
+# Data is mounted from the host, not baked into images (see docs/DATA.md):
+#   services/trade_intelligence/cache        BACI parquet cache (scripts/build_cache.py)
+#   services/policy_stance/data              UN GA voting + UCDP datasets
+#   services/event_summarization/data        GDELT daily cache + GGE scores
+
+services:
+  soft_power:
+    build: { context: ./services/soft_power, dockerfile: ../../deploy/soft_power.Dockerfile }
+    ports: ["8101:8000"]
+
+  policy_stance:
+    build: { context: ./services/policy_stance, dockerfile: ../../deploy/policy_stance.Dockerfile }
+    ports: ["8102:8000"]
+    volumes:
+      - ./services/policy_stance/data:/app/data:ro
+      - policy_outputs:/app/outputs
+
+  trade_intelligence:
+    build: { context: ./services/trade_intelligence }
+    environment:
+      TRADE_CACHE_DIR: /app/cache
+    ports: ["8103:8000"]
+    volumes:
+      - ./services/trade_intelligence/cache:/app/cache:ro
+
+  event_summarization:
+    build: { context: ./services/event_summarization, dockerfile: ../../deploy/event_summarization.Dockerfile }
+    environment:
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+    ports: ["8104:8000"]
+    volumes:
+      - ./services/event_summarization/data:/app/data
+
+  orchestrator:
+    build: { context: ./orchestrator, dockerfile: ../deploy/orchestrator.Dockerfile }
+    environment:
+      SOFT_POWER_URL: http://soft_power:8000
+      POLICY_STANCE_URL: http://policy_stance:8000
+      TRADE_URL: http://trade_intelligence:8000
+      EVENTS_URL: http://event_summarization:8000
+      ORCHESTRATOR_CORS_ORIGINS: http://localhost:8000
+    ports: ["8000:8000"]
+    depends_on: [soft_power, policy_stance, trade_intelligence, event_summarization]
+
+volumes:
+  policy_outputs:

@@ -1,0 +1,25 @@
+# Environments and tooling
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.run/
+/.env
+node_modules/
+dist/
+
+# Data (see docs/DATA.md) - never committed
+services/trade_intelligence/cache/
+services/trade_intelligence/dataset/
+services/policy_stance/data/
+services/policy_stance/outputs/
+services/event_summarization/data/*
+!services/event_summarization/data/.cache_index.json
+services/event_summarization/media/briefings/*
+
+# Captured fixtures are small and committed; anything else under tests stays local
+orchestrator/tests/fixtures/*.tmp
+
+# Machine-specific editor/preview config
+.claude/

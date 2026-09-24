@@ -1,0 +1,32 @@
+{
+  "XGBoost": {
+    "mae_mean": 1.8366,
+    "mae_std": 0.3263,
+    "r2_mean": 0.9663,
+    "r2_std": 0.0098,
+    "ci_coverage": 0.6848,
+    "n_folds": 4
+  },
+  "RandomForest": {
+    "mae_mean": 1.9958,
+    "mae_std": 0.3397,
+    "r2_mean": 0.9628,
+    "r2_std": 0.0096,
+    "ci_coverage": 0.6855,
+    "n_folds": 4
+  },
+  "LightGBM": {
+    "mae_mean": 1.9751,
+    "mae_std": 0.3521,
+    "r2_mean": 0.9628,
+    "r2_std": 0.0105,
+    "ci_coverage": 0.6427,
+    "n_folds": 4
+  },
+  "best_model": "XGBoost",
+  "ensemble_weights": {
+    "XGBoost": 0.5,
+    "RandomForest": 0.25,
+    "LightGBM": 0.25
+  }
+}

@@ -1,0 +1,51 @@
+# Dataset files (too large for GitHub)
+*.zip
+*.xlsx
+*.csv
+*.pdf
+
+# Extracted dataset folders
+2025_7_23_ga_voting/
+ged251-csv/
+organizedviolencecy-251-csv/
+ucdp-actor-251-csv/
+ucdp-brd-dyadic-251-csv/
+ucdp-dyadic-251-csv/
+ucdp-nonstate-251-csv/
+ucdp-onesided-251-csv/
+ucdp-prio-acd-251-csv/
+
+# SSH key - NEVER commit this
+*.pem
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+venv/
+.venv/
+env/
+*.egg-info/
+
+# Node
+node_modules/
+frontend/dist/
+
+# Outputs / cache
+outputs/
+models/
+*.pkl
+*.pt
+*.npy
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Claude internal
+.claude/
+{folder}')

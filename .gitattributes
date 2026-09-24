@@ -1,0 +1,7 @@
+* text=auto eol=lf
+*.ps1 text eol=crlf
+*.pkl binary
+*.npy binary
+*.parquet binary
+*.bin binary
+*.xlsx binary

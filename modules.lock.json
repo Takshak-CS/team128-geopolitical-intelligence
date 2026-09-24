@@ -1,0 +1,31 @@
+{
+  "_comment": "Upstream source of each vendored module. scripts/sync_modules.py reads this; patches/<name>.patch holds the integration changes on top of 'commit'.",
+  "soft_power": {
+    "owner": "Anushree",
+    "repo": "https://github.com/AnushreeSanjeev30/cap.git",
+    "ref": "main",
+    "commit": "ab4d55d5ffc3b8f5d7f7705f2507839eaa5edd4b",
+    "exclude": ["archive/__pycache__"]
+  },
+  "policy_stance": {
+    "owner": "Santhosh",
+    "repo": "https://github.com/SanthoshRam18/geopolitical-intelligence-system.git",
+    "ref": "main",
+    "commit": "6f9b5160fdbc6012b18318e1526e995e7a7ad1c5",
+    "exclude": ["backend/uvicorn.err.log", "backend/uvicorn.out.log"]
+  },
+  "trade_intelligence": {
+    "owner": "Takshak",
+    "repo": "https://github.com/Takshak-CS/trade-intelligence-module.git",
+    "ref": "main",
+    "commit": "917fd05ecc1bb85ab614afc94c453b4ae4624084",
+    "exclude": []
+  },
+  "event_summarization": {
+    "owner": "Shreyas",
+    "repo": "https://github.com/ShreyasV-cyber/GDELT_Event_Summarization.git",
+    "ref": "main",
+    "commit": "3e6579ed9f980090b1f885cd6538c7e3e7be3890",
+    "exclude": []
+  }
+}

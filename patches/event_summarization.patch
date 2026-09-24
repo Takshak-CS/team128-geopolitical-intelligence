@@ -1,0 +1,65 @@
+--- a/requirements.txt
++++ b/requirements.txt
+@@ -1,10 +1,28 @@
+-streamlit>=1.32.0
+-pandas>=2.0.0
+-plotly>=5.18.0
+-requests>=2.31.0
+-# ML layers
+-spacy>=3.7.0
+-transformers>=4.38.0
+-torch>=2.0.0
+-scikit-learn>=1.4.0
+-numpy>=1.26.0
++# Runtime dependencies of the FastAPI backend (src/api.py).
++# The original list described the Streamlit prototype (app.py); it omitted
++# fastapi/uvicorn and the packages src/api.py imports at startup (gTTS, Pillow,
++# python-dotenv), so a fresh install could not start the API.
++fastapi>=0.110
++uvicorn[standard]>=0.27
++pydantic>=2.6
++pandas>=2.0,<3
++numpy>=1.26
++requests>=2.31
++scikit-learn>=1.4
++spacy>=3.7
++python-dotenv>=1.0
++gTTS>=2.5
++Pillow>=10.0
++beautifulsoup4>=4.12
++google-genai>=0.3
++
++# Optional: DistilBERT sentiment cross-check. Without these the pipeline runs
++# and reports sentiment as N/A.
++# transformers>=4.38
++# torch>=2.0
++
++# Streamlit prototype (app.py) only:
++# streamlit>=1.32.0
++# plotly>=5.18.0
++
++# After install: python -m spacy download en_core_web_sm
+--- a/src/api.py
++++ b/src/api.py
+@@ -135,6 +135,9 @@
+     work = pd.DataFrame({"partner": partner_code, "goldstein": df["GoldsteinScale"]})
+     work = work.dropna(subset=["partner"])
+     work = work[work["partner"].str.match(r"^[A-Z]{3}$", na=False)]
++    # preprocess() upper-cases missing codes to the string "NAN"; those are
++    # events with no coded counterpart, not a country called NAN.
++    work = work[~work["partner"].isin(["NAN", "NONE"])]
+     work = work[work["partner"] != cc.upper()]
+ 
+     if work.empty:
+--- a/src/preprocess.py
++++ b/src/preprocess.py
+@@ -1073,7 +1073,8 @@
+         df[df["CountryRole"] == "Recipient"]["Actor1CountryCode"],
+         df[df["CountryRole"] == "Both"]["Actor2CountryCode"],
+     ]).dropna()
+-    partner_series = partner_series[partner_series.str.len() == 3]
++    # Missing codes arrive as the string "NAN" after upper-casing; drop them.
++    partner_series = partner_series[(partner_series.str.len() == 3) & ~partner_series.isin(["NAN", "NONE"])]
+     top_partners   = partner_series.value_counts().head(4).index.tolist()
+     partners_str   = ", ".join([get_country_name(c) for c in top_partners]) or "various nations"
+ 

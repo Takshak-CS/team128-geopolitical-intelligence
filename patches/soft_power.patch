@@ -1,0 +1,15 @@
+--- a/dash/backend/app/main.py
++++ b/dash/backend/app/main.py
+@@ -32,9 +32,11 @@
+     allow_headers=["*"],
+ )
+ 
++# files mode never touches Postgres, so it must not need a Postgres driver:
++# creating the engine imports psycopg2 even though no connection is opened.
+ engine = (
+     create_engine(DATABASE_URL, pool_pre_ping=True, pool_size=5, max_overflow=5)
+-    if create_engine
++    if create_engine and DATA_SOURCE != "files"
+     else None
+ )
+ 

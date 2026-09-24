@@ -1,0 +1,20 @@
+fastapi==0.116.1
+uvicorn[standard]==0.35.0
+pandas==2.3.2
+numpy==2.2.6
+scikit-learn==1.7.1
+networkx==3.5
+pdfplumber==0.11.7
+PyMuPDF==1.26.3
+python-multipart==0.0.20
+openpyxl==3.1.5
+xlrd==2.0.1
+pycountry==24.6.1
+torch==2.8.0
+torch-geometric==2.6.1
+# Imported by backend/ml_analysis.py and backend/graph_builder.py but missing
+# from the original list (added during Team 128 integration).
+matplotlib>=3.8
+seaborn>=0.13
+scipy>=1.11
+python-louvain>=0.16

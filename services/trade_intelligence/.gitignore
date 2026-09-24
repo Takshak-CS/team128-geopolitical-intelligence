@@ -1,0 +1,30 @@
+# Dataset - too large for GitHub (8GB). See README for download instructions.
+dataset/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# IDE and local tooling
+.vscode/
+.idea/
+.claude/
+
+# Parquet cache - regenerate with: python scripts/build_cache.py
+# Small enough (~25 MB) to commit if you prefer shipping it to teammates.
+cache/
+
+# Test artifacts
+.pytest_cache/

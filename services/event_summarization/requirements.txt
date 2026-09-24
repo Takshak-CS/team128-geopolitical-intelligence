@@ -1,0 +1,28 @@
+# Runtime dependencies of the FastAPI backend (src/api.py).
+# The original list described the Streamlit prototype (app.py); it omitted
+# fastapi/uvicorn and the packages src/api.py imports at startup (gTTS, Pillow,
+# python-dotenv), so a fresh install could not start the API.
+fastapi>=0.110
+uvicorn[standard]>=0.27
+pydantic>=2.6
+pandas>=2.0,<3
+numpy>=1.26
+requests>=2.31
+scikit-learn>=1.4
+spacy>=3.7
+python-dotenv>=1.0
+gTTS>=2.5
+Pillow>=10.0
+beautifulsoup4>=4.12
+google-genai>=0.3
+
+# Optional: DistilBERT sentiment cross-check. Without these the pipeline runs
+# and reports sentiment as N/A.
+# transformers>=4.38
+# torch>=2.0
+
+# Streamlit prototype (app.py) only:
+# streamlit>=1.32.0
+# plotly>=5.18.0
+
+# After install: python -m spacy download en_core_web_sm

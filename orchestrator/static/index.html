@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Geopolitical Briefing</title>
+<style>
+  :root {
+    --bg: #f6f7f9; --panel: #ffffff; --ink: #16181d; --muted: #5d6470; --line: #e1e4ea;
+    --accent: #2f5bea; --accent-soft: #e8eefe;
+    --diverge: #b4541a; --diverge-soft: #fdf0e7;
+    --agree: #1f7a4d; --agree-soft: #e7f5ee;
+    --cross: #5b45c9; --cross-soft: #efecfc;
+    --bad: #b42318; --warn: #a15c07;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0f1115; --panel: #171a21; --ink: #e8eaef; --muted: #9aa3b2; --line: #2a2f3a;
+      --accent: #7b9bff; --accent-soft: #1d2640;
+      --diverge: #f0a36b; --diverge-soft: #33241a;
+      --agree: #6fd3a0; --agree-soft: #16291f;
+      --cross: #b3a6ff; --cross-soft: #231f3b;
+      --bad: #ff8a80; --warn: #ffc56b;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  header { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; padding: 16px 24px; border-bottom: 1px solid var(--line); background: var(--panel); }
+  header h1 { font-size: 17px; margin: 0; letter-spacing: .01em; }
+  header h1 span { color: var(--muted); font-weight: 400; }
+  .pills { display: flex; flex-wrap: wrap; gap: 6px; }
+  .pill { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border: 1px solid var(--line); border-radius: 999px; font-size: 12.5px; color: var(--muted); background: var(--panel); text-decoration: none; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
+  .dot.ok { background: var(--agree); } .dot.bad { background: var(--bad); } .dot.warn { background: var(--warn); }
+  main { max-width: 1180px; margin: 0 auto; padding: 24px 16px 64px; }
+  .ask { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px; }
+  .ask form { display: flex; gap: 8px; }
+  .ask input[type=text] { flex: 1; min-width: 0; font: inherit; padding: 11px 14px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--ink); }
+  button { font: inherit; padding: 10px 18px; border-radius: 8px; border: 1px solid var(--accent); background: var(--accent); color: #fff; cursor: pointer; }
+  button:disabled { opacity: .55; cursor: progress; }
+  button.ghost { background: transparent; color: var(--accent); }
+  .examples { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  .examples button { padding: 4px 10px; font-size: 13px; background: var(--accent-soft); color: var(--accent); border-color: transparent; }
+  details.opts { margin-top: 10px; color: var(--muted); font-size: 13.5px; }
+  details.opts .row { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 8px; align-items: center; }
+  details.opts select, details.opts input { font: inherit; padding: 4px 6px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--ink); }
+  .status { margin: 14px 2px; color: var(--muted); font-size: 14px; min-height: 1.5em; }
+  .status.err { color: var(--bad); }
+  .brief { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 20px 22px; margin-top: 8px; }
+  .brief h2 { margin: 0 0 10px; font-size: 22px; line-height: 1.3; }
+  .brief ul { margin: 0; padding-left: 20px; }
+  .brief li { margin: 6px 0; }
+  .meta { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; font-size: 13px; color: var(--muted); }
+  .chip { padding: 2px 9px; border-radius: 999px; background: var(--bg); border: 1px solid var(--line); }
+  h3.sec { font-size: 13px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin: 28px 2px 10px; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 12px; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; }
+  .card.divergence { background: var(--diverge-soft); border-color: transparent; }
+  .card.corroboration { background: var(--agree-soft); border-color: transparent; }
+  .card.cross_agent { background: var(--cross-soft); border-color: transparent; }
+  .kind { font-size: 11.5px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
+  .divergence .kind { color: var(--diverge); } .corroboration .kind { color: var(--agree); } .cross_agent .kind { color: var(--cross); }
+  .card h4 { margin: 4px 0 6px; font-size: 15.5px; }
+  .card p { margin: 0; }
+  .conf { display: flex; align-items: center; gap: 8px; margin-top: 10px; font-size: 12.5px; color: var(--muted); }
+  .bar { flex: 0 0 90px; height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; }
+  .bar i { display: block; height: 100%; background: var(--accent); }
+  .badges { display: flex; gap: 4px; flex-wrap: wrap; }
+  .badge { font-size: 11.5px; padding: 1px 7px; border-radius: 5px; background: var(--panel); border: 1px solid var(--line); color: var(--ink); }
+  .caveat { margin-top: 8px; font-size: 13px; color: var(--warn); }
+  details.support { margin-top: 8px; font-size: 13px; color: var(--muted); }
+  details.support li { margin: 4px 0; }
+  .agents { display: grid; grid-template-columns: repeat(auto-fill, minmax(520px, 1fr)); gap: 12px; }
+  @media (max-width: 600px) { .agents { grid-template-columns: 1fr; } .ask form { flex-direction: column; } }
+  .agent-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+  .agent-head h4 { margin: 0; font-size: 16px; }
+  .agent-head a { font-size: 13px; color: var(--accent); }
+  .agent ol { padding-left: 18px; margin: 10px 0 0; }
+  .agent li { margin: 8px 0; }
+  .agent li small { display: block; color: var(--muted); }
+  .muted { color: var(--muted); font-size: 13px; }
+  pre { font-family: var(--mono); font-size: 12px; white-space: pre-wrap; word-break: break-word; background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 12px; max-height: 480px; overflow: auto; }
+  table.calls { width: 100%; border-collapse: collapse; font-size: 12.5px; margin-top: 6px; }
+  table.calls td { padding: 3px 6px; border-top: 1px solid var(--line); font-family: var(--mono); }
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Team 128 <span>· Geopolitical Intelligence · orchestrated briefing</span></h1>
+  <div class="pills" id="agentPills"><span class="pill">checking agents…</span></div>
+</header>
+<main>
+  <section class="ask">
+    <form id="askForm">
+      <input type="text" id="question" autocomplete="off" placeholder="Ask about a country, a pair of countries, a disruption, or a trend…" value="How exposed is India right now?">
+      <button type="submit" id="askBtn">Ask</button>
+    </form>
+    <div class="examples" id="examples"></div>
+    <details class="opts">
+      <summary>Options</summary>
+      <div class="row">
+        <span>Agents:</span>
+        <label><input type="checkbox" name="agent" value="soft_power" checked> Soft Power</label>
+        <label><input type="checkbox" name="agent" value="policy_stance" checked> Policy Stance</label>
+        <label><input type="checkbox" name="agent" value="trade_intelligence" checked> Trade</label>
+        <label><input type="checkbox" name="agent" value="event_summarization" checked> Events</label>
+      </div>
+      <div class="row">
+        <label>Year <input type="number" id="year" min="1989" max="2030" placeholder="latest" style="width:90px"></label>
+        <label>Sector <select id="sector"><option value="">auto</option><option>all</option><option>energy</option><option>agriculture</option><option>electronics</option></select></label>
+        <span class="muted">Options left blank are read from the question.</span>
+      </div>
+    </details>
+  </section>
+
+  <div class="status" id="status"></div>
+
+  <div id="result" class="hidden">
+    <section class="brief">
+      <h2 id="headline"></h2>
+      <ul id="summary"></ul>
+      <div class="meta" id="meta"></div>
+    </section>
+
+    <div id="findingSections"></div>
+
+    <h3 class="sec">Agent responses</h3>
+    <div class="agents" id="agents"></div>
+
+    <h3 class="sec">How the question was handled</h3>
+    <div class="card" id="plan"></div>
+
+    <h3 class="sec">Raw response</h3>
+    <details class="card"><summary>Show JSON</summary><pre id="raw"></pre></details>
+  </div>
+</main>
+
+<script>
+const LABELS = { soft_power: "Soft Power", policy_stance: "Policy Stance", trade_intelligence: "Trade", event_summarization: "Events" };
+const KIND_LABEL = { divergence: "Divergence", corroboration: "Corroboration", cross_agent: "Cross-agent" };
+const EXAMPLES = [
+  "How exposed is India right now?",
+  "India and China relations",
+  "What if China stops exporting electronics?",
+  "Which countries are most dependent on trade?",
+  "Forecast Brazil exports to 2030",
+  "What happened in Iran yesterday?",
+  "Which bloc is Vietnam in?",
+];
+
+const $ = (id) => document.getElementById(id);
+function el(tag, attrs = {}, ...children) {
+  const node = document.createElement(tag);
+  for (const [key, value] of Object.entries(attrs)) {
+    if (key === "class") node.className = value;
+    else if (key === "text") node.textContent = value;
+    else node.setAttribute(key, value);
+  }
+  for (const child of children.flat()) if (child != null) node.append(child instanceof Node ? child : document.createTextNode(String(child)));
+  return node;
+}
+// Agent text can carry light markdown (**bold**); render it as plain text.
+const plain = (text) => String(text ?? "").replace(/\*\*/g, "");
+
+function confidence(value) {
+  const pct = Math.round((value || 0) * 100);
+  const bar = el("span", { class: "bar" }, el("i", { style: `width:${pct}%` }));
+  return el("div", { class: "conf" }, bar, `confidence ${(value || 0).toFixed(2)}`);
+}
+
+function badges(labels) {
+  return el("div", { class: "badges" }, (labels || []).map((label) => el("span", { class: "badge", text: label })));
+}
+
+function findingCard(finding) {
+  const card = el("article", { class: `card ${finding.kind}` },
+    el("div", { class: "kind", text: KIND_LABEL[finding.kind] || finding.kind }),
+    el("h4", { text: plain(finding.title) }),
+    el("p", { text: plain(finding.claim) }),
+  );
+  const row = confidence(finding.confidence);
+  row.append(badges(finding.agent_labels));
+  card.append(row);
+  if (finding.caveat) card.append(el("div", { class: "caveat", text: `Caveat: ${finding.caveat}` }));
+  if (finding.supporting?.length) {
+    const list = el("ul", {}, finding.supporting.map((s) =>
+      el("li", {}, el("strong", { text: `${s.agent_label}: ` }), plain(s.claim), el("br"), el("span", { text: `conf ${s.confidence} · ${s.reason || ""}` }))));
+    card.append(el("details", { class: "support" }, el("summary", { text: "What each agent said" }), list));
+  }
+  return card;
+}
+
+function renderAgents(agents, order) {
+  const box = $("agents");
+  box.replaceChildren();
+  for (const name of order) {
+    const result = agents[name];
+    if (!result) continue;
+    const ok = result.status === "ok" || result.status === "partial";
+    const head = el("div", { class: "agent-head" },
+      el("h4", { text: LABELS[name] || name }),
+      el("span", { class: "muted", text: `${result.status} · ${Math.round(result.latency_ms)} ms · ${result.insight_count} insights` }),
+    );
+    if (result.dashboard_url) head.append(el("a", { href: result.dashboard_url, target: "_blank", rel: "noopener", text: "Open module dashboard ↗" }));
+    const card = el("article", { class: "card agent" }, head);
+    if (result.error) card.append(el("p", { class: "caveat", text: result.error }));
+    for (const note of result.notes || []) card.append(el("p", { class: "muted", text: note }));
+    const insights = result.envelope?.insights || [];
+    if (ok && insights.length) {
+      card.append(el("ol", {}, insights.map((item) => {
+        const row = el("li", {}, plain(item.claim));
+        const url = item.evidence?.url;
+        if (typeof url === "string" && /^https?:\/\//.test(url)) row.append(" ", el("a", { href: url, target: "_blank", rel: "noopener noreferrer", text: "source ↗" }));
+        row.append(el("small", { text: `${item.facet || ""} · conf ${Number(item.confidence).toFixed(2)} · ${item.reason || ""}` }));
+        return row;
+      })));
+    }
+    const meta = result.envelope?.metadata;
+    const calls = el("table", { class: "calls" }, (result.calls || []).map((c) =>
+      el("tr", {}, el("td", { text: c.method }), el("td", { text: c.path }), el("td", { text: c.status ?? "—" }), el("td", { text: `${c.ms} ms` }))));
+    card.append(el("details", { class: "support" }, el("summary", { text: `Calls and metadata (${(result.calls || []).length} calls)` }),
+      calls, meta ? el("pre", { text: JSON.stringify(meta, null, 2) }) : null));
+    box.append(card);
+  }
+}
+
+function renderPlan(data) {
+  const plan = data.plan;
+  const box = $("plan");
+  box.replaceChildren(
+    el("p", {}, el("strong", { text: "Intent: " }), plan.intent,
+      el("strong", { text: "  ·  Countries: " }), plan.entities.length ? plan.entities.map((e) => `${e.name} (${e.iso3}, from "${e.matched}")`).join(", ") : "none",
+      el("strong", { text: "  ·  Time: " }), plan.time.mode === "year" ? plan.time.year : plan.time.mode === "date" ? plan.time.date : `latest (aligned ${data.time_alignment.aligned_year ?? "n/a"})`,
+      el("strong", { text: "  ·  Sector: " }), plan.sector),
+    el("ul", {}, plan.agents.map((agent) => el("li", {}, el("strong", { text: `${LABELS[agent]}: ` }), plan.agent_reasons[agent]))),
+    ...(plan.notes || []).map((note) => el("p", { class: "muted", text: note })),
+    ...(data.time_alignment.warnings || []).map((note) => el("p", { class: "muted", text: note })),
+  );
+}
+
+function render(data) {
+  const brief = data.briefing;
+  $("headline").textContent = plain(brief.headline);
+  $("summary").replaceChildren(...brief.summary.map((line) => el("li", { text: plain(line) })));
+  const stats = data.fused.stats;
+  $("meta").replaceChildren(
+    el("span", { class: "chip", text: brief.coverage }),
+    el("span", { class: "chip", text: `${stats.insights_after_dedupe} insights (${stats.duplicates_removed} duplicates removed)` }),
+    el("span", { class: "chip", text: `${stats.divergences} divergences · ${stats.corroborations} corroborations` }),
+    el("span", { class: "chip", text: `${Math.round(data.latency_ms)} ms end to end` }),
+  );
+
+  const holder = $("findingSections");
+  holder.replaceChildren();
+  for (const section of brief.sections.filter((s) => s.kind !== "agent")) {
+    holder.append(el("h3", { class: "sec", text: section.title }), el("div", { class: "cards" }, section.findings.map(findingCard)));
+  }
+  if (brief.caveats?.length) {
+    holder.append(el("h3", { class: "sec", text: "Caveats" }), el("div", { class: "card" }, el("ul", {}, brief.caveats.map((c) => el("li", { text: c })))));
+  }
+  renderAgents(data.agents, data.plan.agents);
+  renderPlan(data);
+  $("raw").textContent = JSON.stringify(data, null, 2);
+  $("result").classList.remove("hidden");
+}
+
+async function ask(question) {
+  const agents = [...document.querySelectorAll("input[name=agent]:checked")].map((box) => box.value);
+  const body = { question };
+  if (agents.length && agents.length < 4) body.agents = agents;
+  if ($("year").value) body.year = Number($("year").value);
+  if ($("sector").value) body.sector = $("sector").value;
+
+  $("askBtn").disabled = true;
+  const status = $("status");
+  status.className = "status";
+  status.textContent = "Fanning out to the agents… (Events may take up to a minute the first time it sees a date)";
+  const started = performance.now();
+  try {
+    const response = await fetch("/ask", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+    const data = await response.json();
+    if (!response.ok) throw new Error(typeof data.detail === "string" ? data.detail : JSON.stringify(data.detail));
+    render(data);
+    status.textContent = `Answered in ${((performance.now() - started) / 1000).toFixed(1)} s.`;
+  } catch (error) {
+    status.className = "status err";
+    status.textContent = `Request failed: ${error.message}`;
+  } finally {
+    $("askBtn").disabled = false;
+  }
+}
+
+async function refreshAgents() {
+  const pills = $("agentPills");
+  try {
+    const data = await (await fetch("/agents")).json();
+    pills.replaceChildren(...Object.entries(data).map(([name, info]) => {
+      const cls = info.status === "ok" ? "ok" : info.status === "not_ready" ? "warn" : "bad";
+      const pill = el(info.dashboard_url ? "a" : "span", { class: "pill", title: `${info.base_url || ""} · ${info.status}` }, el("span", { class: `dot ${cls}` }), LABELS[name] || name);
+      if (info.dashboard_url) { pill.href = info.dashboard_url; pill.target = "_blank"; pill.rel = "noopener"; }
+      return pill;
+    }));
+  } catch {
+    pills.replaceChildren(el("span", { class: "pill" }, el("span", { class: "dot bad" }), "orchestrator unreachable"));
+  }
+}
+
+$("examples").replaceChildren(...EXAMPLES.map((text) => {
+  const button = el("button", { type: "button", text });
+  button.addEventListener("click", () => { $("question").value = text; ask(text); });
+  return button;
+}));
+$("askForm").addEventListener("submit", (event) => {
+  event.preventDefault();
+  const question = $("question").value.trim();
+  if (question.length >= 2) ask(question);
+});
+refreshAgents();
+setInterval(refreshAgents, 30000);
+</script>
+</body>
+</html>

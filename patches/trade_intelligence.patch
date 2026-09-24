@@ -1,0 +1,28 @@
+--- a/agent/trade_agent.py
++++ b/agent/trade_agent.py
+@@ -670,8 +670,9 @@
+     values_text = ", ".join(
+         f"{item['year']}: {item['predicted_value']:.2f}" for item in forecast_values
+     )
++    article = "an" if trend_direction[:1].lower() in "aeiou" else "a"
+     summary = (
+-        f"{sector_label} forecast indicates an {trend_direction} trend for {resolved_country} {metric} across "
++        f"{sector_label} forecast indicates {article} {trend_direction} trend for {resolved_country} {metric} across "
+         f"horizon {horizon_text}. The latest observed {metric} is {latest_actual:.2f}, and the projected values "
+         f"are {values_text}. Forecast method: {forecast_result['method']}. {confidence['reason']}"
+     )
+--- a/frontend/index.html
++++ b/frontend/index.html
+@@ -908,6 +908,12 @@
+     <script>
+         const form = document.getElementById("query-form");
+         const apiUrlInput = document.getElementById("api-url");
++        // ?api=http://host:port points the dashboard at a non-default API, e.g.
++        // when the orchestrator owns :8000 and this agent runs on :8103.
++        const apiOverride = new URLSearchParams(window.location.search).get("api");
++        if (apiOverride && /^https?:\/\/[^/]+\/?$/.test(apiOverride)) {
++            apiUrlInput.value = `${apiOverride.replace(/\/$/, "")}/query`;
++        }
+         const queryTypeInput = document.getElementById("query-type");
+         const countryInput = document.getElementById("country");
+         const sectorInput = document.getElementById("sector");

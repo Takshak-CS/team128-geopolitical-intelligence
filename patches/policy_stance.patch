@@ -1,0 +1,94 @@
+--- a/backend/codebook_parser.py
++++ b/backend/codebook_parser.py
+@@ -78,6 +78,28 @@
+     "986": "Palau", "987": "Micronesia", "990": "Nauru",
+ }
+ 
++# --- Team 128 integration fix (see docs/MODULE_NOTES.md in the platform repo) ---
++# Several entries above do not match the Gleditsch-Ward codes UCDP actually uses,
++# so conflict records were labelled with the wrong country: 490 is DR Congo (not
++# Uganda), 501 Kenya (not Burundi), 510 Tanzania, 530 Ethiopia (not Somalia),
++# 701-703 are Turkmenistan/Tajikistan/Kyrgyzstan, 711/712 Tibet/Mongolia, and
++# 340-349 the post-Yugoslav states. Two codes sharing one display name also made
++# one country's profile overwrite the other's (country profiles are keyed by name).
++# Germany is 260 in GW; 255 is pre-1945 Germany.
++GW_COUNTRY_CODES.update({
++    "223": "Liechtenstein", "255": "Germany (pre-1945)", "260": "Germany",
++    "340": "Serbia", "341": "Montenegro", "343": "North Macedonia", "344": "Croatia",
++    "345": "Yugoslavia", "346": "Bosnia", "347": "Kosovo", "349": "Slovenia", "359": "Moldova",
++    "483": "Chad", "484": "Congo", "490": "DRC", "500": "Uganda", "501": "Kenya",
++    "510": "Tanzania", "516": "Burundi", "517": "Rwanda", "520": "Somalia",
++    "522": "Djibouti", "530": "Ethiopia", "531": "Eritrea", "591": "Seychelles",
++    "701": "Turkmenistan", "702": "Tajikistan", "703": "Kyrgyzstan",
++    "711": "Tibet", "712": "Mongolia", "781": "Maldives",
++    "946": "Kiribati", "947": "Tuvalu", "970": "Nauru", "990": "Samoa",
++})
++for _not_a_gw_code in ("269", "348", "672", "772"):
++    GW_COUNTRY_CODES.pop(_not_a_gw_code, None)
++
+ COMMON_CODEBOOKS = {
+     "global": {
+         "incompatibility": {"1": "territory", "2": "government"},
+--- a/backend/data_loader.py
++++ b/backend/data_loader.py
+@@ -28,6 +28,34 @@
+     "THA": 800, "KHM": 811, "LAO": 812, "VNM": 816, "MYS": 820, "SGP": 830, "PHL": 840, "IDN": 850,
+     "AUS": 900, "NZL": 920,
+ }
++
++# --- Team 128 integration fix (see docs/MODULE_NOTES.md in the platform repo) ---
++# UN voting rows identify members by ISO3 (ms_code). The table above covers ~85
++# countries; every other member fell through to a synthetic code, which drops it
++# from country profiles and alliance blocs (profiles only cover GW 2-920). This
++# completes the mapping for UN members, plus the legacy codes the 1989-1992 votes
++# use. DEU is 260 in Gleditsch-Ward, matching the UCDP conflict data.
++ISO3_TO_GW.update({
++    "BHS": 31, "HTI": 41, "DOM": 42, "JAM": 51, "TTO": 52, "BRB": 53, "DMA": 54, "GRD": 55,
++    "LCA": 56, "VCT": 57, "ATG": 58, "KNA": 60, "BLZ": 80, "GTM": 90, "HND": 91, "SLV": 92,
++    "NIC": 93, "CRI": 94, "PAN": 95, "VEN": 101, "GUY": 110, "SUR": 115, "ECU": 130,
++    "BOL": 145, "PRY": 150, "ARG": 160, "URY": 165, "IRL": 205, "MCO": 221, "LIE": 223,
++    "AND": 232, "DEU": 260, "CZE": 316, "SMR": 331, "SRB": 340, "MKD": 343, "HRV": 344,
++    "SVN": 349, "MDA": 359, "CPV": 402, "STP": 403, "GNB": 404, "GNQ": 411, "GMB": 420,
++    "MLI": 432, "SEN": 433, "BEN": 434, "MRT": 435, "NER": 436, "CIV": 437, "GIN": 438,
++    "BFA": 439, "LBR": 450, "SLE": 451, "GHA": 452, "TGO": 461, "CMR": 471, "NGA": 475,
++    "GAB": 481, "CAF": 482, "TCD": 483, "COG": 484, "COD": 490, "UGA": 500, "KEN": 501,
++    "TZA": 510, "BDI": 516, "RWA": 517, "SOM": 520, "DJI": 522, "ETH": 530, "ERI": 531,
++    "AGO": 540, "MOZ": 541, "ZMB": 551, "ZWE": 552, "MWI": 553, "ZAF": 560, "NAM": 565,
++    "LSO": 570, "BWA": 571, "SWZ": 572, "MDG": 580, "COM": 581, "MUS": 590, "SYC": 591,
++    "SSD": 626, "YEM": 678, "BHR": 692, "OMN": 698, "TKM": 701, "TJK": 702, "KGZ": 703,
++    "UZB": 704, "KAZ": 705, "MNG": 712, "BGD": 771, "MMR": 775, "MDV": 781, "BRN": 835,
++    "TLS": 860, "PNG": 910, "VUT": 935, "SLB": 940, "KIR": 946, "TUV": 947, "FJI": 950,
++    "TON": 955, "NRU": 970, "MHL": 983, "PLW": 986, "FSM": 987, "WSM": 990,
++    # Legacy UN member codes still present in 1989-1992 votes.
++    "SUN": 365, "YUG": 345, "CSK": 315, "DDR": 265, "ZAR": 490, "YMD": 680, "YAR": 678, "BUR": 775,
++    "GER": 260, "SCG": 345,
++})
+ 
+ COUNTRY_NAME_ALIASES = {
+     "united states": 2,
+@@ -279,7 +307,12 @@
+ 
+                 if header_by_ref is None:
+                     header_by_ref = row_values
+-                    wanted_refs = {ref: name for ref, name in header_by_ref.items() if name in payload}
++                    # The UN Digital Library export names the vote column "ms_vote"
++                    # (the CSV path below already handles that); without this alias
++                    # the vote list stays empty, the frame cannot be built, and the
++                    # whole voting file is silently skipped. (Team 128 integration fix)
++                    header_alias = {'ms_vote': 'vote'}
++                    wanted_refs = {ref: header_alias.get(name, name) for ref, name in header_by_ref.items() if header_alias.get(name, name) in payload}
+                 elif wanted_refs:
+                     for ref, name in wanted_refs.items():
+                         payload[name].append(row_values.get(ref, ''))
+--- a/requirements.txt
++++ b/requirements.txt
+@@ -12,3 +12,9 @@
+ pycountry==24.6.1
+ torch==2.8.0
+ torch-geometric==2.6.1
++# Imported by backend/ml_analysis.py and backend/graph_builder.py but missing
++# from the original list (added during Team 128 integration).
++matplotlib>=3.8
++seaborn>=0.13
++scipy>=1.11
++python-louvain>=0.16
