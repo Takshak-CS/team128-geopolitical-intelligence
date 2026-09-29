@@ -3,10 +3,12 @@ $ErrorActionPreference = "Stop"
 $Root = Split-Path -Parent $PSScriptRoot
 Set-Location $Root
 
-if (-not (Test-Path ".venv")) { py -3.12 -m venv .venv }
+if (-not (Test-Path ".venv")) { python -m venv .venv }
 .\.venv\Scripts\python.exe -m pip install --upgrade pip
 .\.venv\Scripts\python.exe -m pip install -r requirements-local.txt
 .\.venv\Scripts\python.exe -m spacy download en_core_web_sm
 
-Write-Host "`nSetup done. Data each service needs is listed in docs\DATA.md."
-Write-Host "Then run: scripts\run_all.ps1"
+Write-Host "`nDownloading Policy Stance datasets..."
+& "$PSScriptRoot\download_policy_data.ps1"
+
+Write-Host "`nSetup done. Run: scripts\run_all.ps1"
