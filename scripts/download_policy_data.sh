@@ -9,6 +9,9 @@ CACHE="$ROOT/services/policy_stance/outputs"
 BASE="https://github.com/Takshak-CS/team128-geopolitical-intelligence/releases/download/policy-data-v1"
 mkdir -p "$DATA" "$CACHE"
 
+# Clear stale cache so the module rebuilds from freshly downloaded data
+rm -f "$CACHE"/*.pkl "$CACHE/runtime_manifest.json" 2>/dev/null || true
+
 get() {
     local name="$1" dest="$2" label="$3"
     if [ -e "$dest" ]; then echo "  [skip] $label"; return; fi
@@ -49,18 +52,5 @@ for f in par.csv ucdp-candidate-csv.csv ucdp_issues_dataset_dyadyear_232.csv CAC
     get "$f" "$DATA/$f" "$f"
 done
 
-# Pre-built cache (skips the 8-minute first-run build)
 echo ""
-echo "Policy Stance cache -> $CACHE"
-for entry in "cache_master_df.zip|master_df.pkl" "cache_runtime.zip|runtime_cache.pkl"; do
-    zip="${entry%%|*}"
-    pkl="${entry##*|}"
-    if [ -f "$CACHE/$pkl" ]; then echo "  [skip] $pkl"; continue; fi
-    get "$zip" "$CACHE/$zip" "$zip"
-    echo "  [unzip] $pkl ..."
-    unzip -q "$CACHE/$zip" -d "$CACHE"
-    rm -f "$CACHE/$zip"
-done
-
-echo ""
-echo "All datasets ready. Policy Stance starts instantly (cache preloaded)."
+echo "All datasets ready. Policy Stance builds its cache on first start (~8 min)."
