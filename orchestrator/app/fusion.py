@@ -42,7 +42,7 @@ PRIMARY_BOOST = 1.3
 # Which facets matter most for each intent; others still appear, lower down.
 PRIMARY_FACETS = {
     "country_profile": {"influence", "diplomatic_alignment", "trade_exposure", "trade_alignment", "trade_dependence", "event_activity", "conflict_exposure"},
-    "bilateral": {"bilateral_trade_bloc", "bilateral_trade_dependence", "bilateral_diplomacy", "bilateral_events", "bilateral_influence", "relationship_baseline"},
+    "bilateral": {"bilateral_trade_bloc", "bilateral_trade_dependence", "bilateral_diplomacy", "bilateral_events", "bilateral_headlines", "event_headline", "bilateral_influence", "relationship_baseline"},
     "shock": {"shock_impact"},
     "forecast": {"trade_outlook", "influence_outlook", "conflict_outlook"},
     "blocs": {"trade_alignment", "diplomatic_alignment", "diplomatic_blocs"},

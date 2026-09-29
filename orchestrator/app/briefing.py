@@ -17,10 +17,19 @@ from .intent import QueryPlan
 # (day, partners, themes, domestic split, three headlines, three baselines).
 SECTION_LIMIT = 10
 
-# The claim that leads an agent's summary line for a kind of question, when
-# confidence alone would pick another. "What happened" is answered by the day's
-# activity, not by the (more confident) 1990-2024 baseline beside it.
-LEAD_FACET = {"events": {"event_summarization": "event_activity"}}
+# The claims that lead an agent's summary line and its section for a kind of
+# question, in this order, when confidence alone would pick others. "What
+# happened" is answered by the day's activity, not by the (more confident)
+# 1990-2024 baseline beside it; a bilateral question by the pair, not by the
+# first country's whole day, which follows as context.
+LEAD_FACETS = {
+    "events": {"event_summarization": ("event_activity",)},
+    "bilateral": {"event_summarization": ("bilateral_events", "event_headline", "bilateral_headlines", "relationship_baseline")},
+}
+
+
+def _lead_order(finding: dict, facets: tuple[str, ...]) -> int:
+    return next((i for i, facet in enumerate(facets) if facet in finding["facets"]), len(facets))
 
 
 def _cite(finding: dict) -> str:
@@ -83,10 +92,10 @@ def compose(plan: QueryPlan, fused: dict, results: dict[str, AgentResult], align
     best_per_agent: dict[str, dict] = {}
     for finding in singles:
         best_per_agent.setdefault(finding["agents"][0], finding)
-    for agent, facet in LEAD_FACET.get(plan.intent, {}).items():
-        lead = next((f for f in singles if f["agents"][0] == agent and facet in f["facets"]), None)
-        if lead:
-            best_per_agent[agent] = lead
+    for agent, facets in LEAD_FACETS.get(plan.intent, {}).items():
+        leads = sorted((f for f in singles if f["agents"][0] == agent and _lead_order(f, facets) < len(facets)), key=lambda f: _lead_order(f, facets))
+        if leads:
+            best_per_agent[agent] = leads[0]
     ordered = [a for a in plan.agents if a in plan.focus_agents] + [a for a in plan.agents if a not in plan.focus_agents]
     for agent in ordered:
         if len(summary) >= 5:
@@ -106,6 +115,9 @@ def compose(plan: QueryPlan, fused: dict, results: dict[str, AgentResult], align
     by_agent: dict[str, list[dict]] = {}
     for finding in singles:
         by_agent.setdefault(finding["agents"][0], []).append(finding)
+    for agent, facets in LEAD_FACETS.get(plan.intent, {}).items():
+        # Stable sort: the lead claims in their order, then the rest by rank.
+        by_agent.get(agent, []).sort(key=lambda f: _lead_order(f, facets))
     for agent in plan.agents:
         if by_agent.get(agent):
             sections.append({"title": AGENT_LABELS.get(agent, agent), "kind": "agent", "agent": agent, "findings": by_agent[agent][:SECTION_LIMIT]})

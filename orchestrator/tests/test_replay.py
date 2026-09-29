@@ -38,6 +38,7 @@ def statuses(result):
     [
         ("How exposed is India right now?", {"date": DAY}),
         ("India and China relations", {"date": DAY}),
+        ("India and China relations", {"date": "20260928"}),
         ("What if China stops exporting electronics?", {"date": DAY}),
         ("Which countries are most dependent on trade?", {}),
         ("Forecast Brazil exports to 2030", {}),

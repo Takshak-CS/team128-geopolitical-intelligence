@@ -168,11 +168,19 @@ def _compute_partners(df: pd.DataFrame, cc: str, limit: int = 8) -> list:
 # pipeline only ever runs once per (date, country), regardless of which
 # endpoint asks for it first.
 # ---------------------------------------------------------------------------
+def _with_table_limit(payload: dict, limit: int) -> dict:
+    # Team 128 integration fix: the cache key is (date, country), so the cached
+    # payload keeps every table row and each request is cut to its own limit.
+    # Before, the first caller's limit applied to everyone after it.
+    table = payload["table"][:max(0, limit)]
+    return {**payload, "table": table, "table_rows_shown": len(table)}
+
+
 def _build_or_get_analysis(date: str, country_code: str, limit: int = 300) -> dict:
     cache_key = (date, country_code.upper())
     cached = _cache_get(cache_key)
     if cached is not None:
-        return cached
+        return _with_table_limit(cached, limit)
 
     df = preprocess(date, country_code)
     if df.empty:
@@ -196,7 +204,7 @@ def _build_or_get_analysis(date: str, country_code: str, limit: int = 300) -> di
     if CLUSTER_AVAILABLE and "EventCluster" in df.columns:
         table_cols += ["EventCluster"]
 
-    table_records = df[table_cols].head(limit).to_dict(orient="records")
+    table_records = df[table_cols].to_dict(orient="records")
 
     # Domestic vs international split (mirrors the WebSocket pipeline's
     # payload shape) — both actors from the analyzed country = domestic.
@@ -249,7 +257,7 @@ def _build_or_get_analysis(date: str, country_code: str, limit: int = 300) -> di
 
     payload = _jsonable(payload)
     _cache_set(cache_key, payload)
-    return payload
+    return _with_table_limit(payload, limit)
 
 
 # ---------------------------------------------------------------------------
@@ -571,7 +579,7 @@ async def pipeline_ws(websocket: WebSocket):
             for stage, msg, pct in stages:
                 await _send(websocket, stage, "done", msg, pct)
                 await asyncio.sleep(0.12)
-            await _send(websocket, "done", "done", "Complete (cached)", 100, payload=cached)
+            await _send(websocket, "done", "done", "Complete (cached)", 100, payload=_with_table_limit(cached, 300))
             return
 
         # ── Stage 1: Fetch ────────────────────────────────────────────
@@ -690,8 +698,9 @@ async def pipeline_ws(websocket: WebSocket):
             "cluster_quality": df.attrs.get("cluster_quality") if CLUSTER_AVAILABLE else None,
             "partners": partners,
             "top5_events": top5,
-            "table": df[table_cols].head(300).to_dict(orient="records"),
-            "table_rows_shown": min(300, total),
+            # Team 128 integration fix: cache every row; this client gets 300.
+            "table": df[table_cols].to_dict(orient="records"),
+            "table_rows_shown": total,
             "table_rows_total": total,
             "narration_script": summary_text,
         "domestic": {
@@ -710,7 +719,7 @@ async def pipeline_ws(websocket: WebSocket):
         _cache_set(cache_key, payload)
 
         await _send(websocket, "done", "done", f"Pipeline complete — {total:,} events", 100,
-                    payload=payload)
+                    payload=_with_table_limit(payload, 300))
 
     except WebSocketDisconnect:
         pass

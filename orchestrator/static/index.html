@@ -85,6 +85,13 @@
   .views:empty { display: none; }
   .view { min-width: 0; }
   .view.wide { grid-column: 1 / -1; }
+  /* A bilateral question: the pair leads, the first country's whole day follows. */
+  .view.lead { border-left: 3px solid var(--accent); padding-left: 12px; }
+  .view.lead .claim { margin: 0 0 10px; font-size: 15px; }
+  .view.lead .baseline { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin: 0 0 10px; }
+  .view.secondary { border-top: 1px solid var(--line); padding-top: 12px; }
+  .view.secondary .kpis { margin-top: 6px; }
+  .view.secondary .tile .v { font-size: 16px; }
   .view h5 { margin: 0 0 6px; font-size: 12px; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
   .view .note { font-size: 12.5px; color: var(--muted); margin: 6px 0 0; }
   .barlist { display: grid; grid-template-columns: minmax(90px, 46%) 1fr auto; gap: 5px 10px; align-items: center; font-size: 13px; }
@@ -254,9 +261,11 @@ function tile(label, value, sub) {
   return el("div", { class: "tile" }, el("div", { class: "k", text: label }), el("div", { class: "v", text: String(value) }), sub ? el("div", { class: "s", text: sub }) : null);
 }
 
-function view(title, body, { wide = false, note = null } = {}) {
+function view(title, body, { wide = false, note = null, id = null, extra = "" } = {}) {
   if (!body) return null;
-  return el("div", { class: `view${wide ? " wide" : ""}` }, el("h5", { text: title }), body, note ? el("p", { class: "note", text: note }) : null);
+  const attrs = { class: `view${wide ? " wide" : ""}${extra ? ` ${extra}` : ""}` };
+  if (id) attrs["data-view"] = id;
+  return el("div", attrs, el("h5", { text: title }), body, note ? el("p", { class: "note", text: note }) : null);
 }
 
 // One series, one hue: bars grow from a shared baseline; the value is text.
@@ -320,65 +329,111 @@ function verifyBadge(v) {
   return el("span", { class: `vbadge ${status}` }, el("span", { "aria-hidden": "true", text: icon }), label + (v?.method === "url_only" ? " (URL check)" : ""));
 }
 
-const VIEWS = {
-  event_summarization(ins) {
-    const act = firstOf(ins, "event_activity")?.evidence || {};
-    const kpis = [
-      tile("Events", fmt.int(act.total_events), fmt.day(act.date) && `GDELT, ${fmt.day(act.date)}`),
-      tile("Mean Goldstein", fmt.signed(act.avg_goldstein), act.tone),
-      tile("Conflict / cooperation", fmt.pct(act.conflict_share) && `${fmt.pct(act.conflict_share)} / ${fmt.pct(act.cooperation_share)}`, "share of event types"),
-      tile("Initiated", isNum(act.initiator_pct) ? `${act.initiator_pct}%` : null, "of the day's events"),
-    ];
-    const views = [];
-    const themes = firstOf(ins, "event_themes");
-    if (themes) {
-      const q = themes.evidence.cluster_quality;
-      const note = q && isNum(q.silhouette)
-        ? `Cluster quality: ${q.silhouette.toFixed(2)} · ${q.label} (shuffled baseline ${fmt.signed(q.silhouette_null)}, seed stability ${isNum(q.stability_ari) ? q.stability_ari.toFixed(2) : "n/a"})`
-        : "Cluster quality: not available";
-      views.push(view("Themes", barList((themes.evidence.themes || []).map((t) => ({ label: t.label, value: t.share, display: `${fmt.pct(t.share)} · ${t.count}` })), { max: 1 }), { note }));
-    }
-    const split = firstOf(ins, "event_domestic_split");
-    if (split) {
-      const d = split.evidence.domestic || {}, i = split.evidence.international || {};
-      views.push(view("Domestic vs international", barList([
-        { label: "Domestic", value: d.total, display: `${d.total} · Goldstein ${fmt.signed(d.avg_goldstein)}` },
-        { label: "International", value: i.total, display: `${i.total} · Goldstein ${fmt.signed(i.avg_goldstein)}` },
-      ]), { note: split.caveat }));
-    }
-    const heads = byFacet(ins, "event_headline");
-    if (heads.length) {
-      views.push(view("Top events, checked against their source", el("ol", { class: "events-list" }, heads.map((h) => {
-        const e = h.evidence || {}, v = e.verification || {};
-        return el("li", { class: v.status === "mistagged" ? "mistagged" : "" },
-          el("div", { class: "agent-head" }, verifyBadge(v), el("span", { class: "muted", text: `#${e.rank} · ${e.event_type} · Goldstein ${fmt.signed(e.goldstein, 1)} · ${e.num_articles ?? "?"} articles` })),
-          el("p", { class: "what", text: plain(h.claim) }),
-          v.verdict ? el("p", { class: "why", text: v.verdict }) : null,
-          v.snippet ? el("p", { class: "why", text: `“${v.snippet}”` }) : null,
-          sourceLink(e.url));
-      })), { wide: true }));
-    }
-    const partners = firstOf(ins, "event_partners")?.evidence?.partners || [];
-    const baselines = Object.fromEntries(byFacet(ins, "relationship_baseline").map((b) => [(b.evidence.pair || [])[1], b.evidence]));
-    if (partners.length) {
-      const rows = partners.map((p) => {
-        const b = baselines[p.iso3];
-        const g = p.avg_goldstein, avg = b?.avg_10yr;
-        // Same thresholds as fusion's "out of character" check.
-        const out = isNum(avg) && ((avg >= 0.1 && g <= -1) || (avg <= -0.1 && g >= 1));
-        return el("tr", {},
-          el("td", { text: p.iso3 }),
-          el("td", { text: String(p.count) }),
-          el("td", { class: out ? "out" : "", text: `${fmt.signed(g, 1)}${out ? (g < 0 ? " ↓ out of character" : " ↑ warmer than history") : ""}` }),
+function headlineList(heads) {
+  return el("ol", { class: "events-list" }, heads.map((h) => {
+    const e = h.evidence || {}, v = e.verification || {};
+    return el("li", { class: v.status === "mistagged" ? "mistagged" : "" },
+      el("div", { class: "agent-head" }, verifyBadge(v), el("span", { class: "muted", text: `#${e.rank} · ${e.event_type} · Goldstein ${fmt.signed(e.goldstein, 1)} · ${e.num_articles ?? "?"} articles` })),
+      el("p", { class: "what", text: plain(h.claim) }),
+      v.verdict ? el("p", { class: "why", text: v.verdict }) : null,
+      v.snippet ? el("p", { class: "why", text: `“${v.snippet}”` }) : null,
+      sourceLink(e.url));
+  }));
+}
+
+// The first country's whole GDELT day: all counterparts, all events.
+function eventsDay(ins, { bilateral = false } = {}) {
+  const act = firstOf(ins, "event_activity")?.evidence || {};
+  const kpis = [
+    tile("Events", fmt.int(act.total_events), fmt.day(act.date) && `GDELT, ${fmt.day(act.date)}`),
+    tile("Mean Goldstein", fmt.signed(act.avg_goldstein), act.tone),
+    tile("Conflict / cooperation", fmt.pct(act.conflict_share) && `${fmt.pct(act.conflict_share)} / ${fmt.pct(act.cooperation_share)}`, "share of event types"),
+    tile("Initiated", isNum(act.initiator_pct) ? `${act.initiator_pct}%` : null, "of the day's events"),
+  ];
+  const views = [];
+  const themes = firstOf(ins, "event_themes");
+  if (themes) {
+    const q = themes.evidence.cluster_quality;
+    const note = q && isNum(q.silhouette)
+      ? `Cluster quality: ${q.silhouette.toFixed(2)} · ${q.label} (shuffled baseline ${fmt.signed(q.silhouette_null)}, seed stability ${isNum(q.stability_ari) ? q.stability_ari.toFixed(2) : "n/a"})`
+      : "Cluster quality: not available";
+    views.push(view("Themes", barList((themes.evidence.themes || []).map((t) => ({ label: t.label, value: t.share, display: `${fmt.pct(t.share)} · ${t.count}` })), { max: 1 }), { note }));
+  }
+  const split = firstOf(ins, "event_domestic_split");
+  if (split) {
+    const d = split.evidence.domestic || {}, i = split.evidence.international || {};
+    views.push(view("Domestic vs international", barList([
+      { label: "Domestic", value: d.total, display: `${d.total} · Goldstein ${fmt.signed(d.avg_goldstein)}` },
+      { label: "International", value: i.total, display: `${i.total} · Goldstein ${fmt.signed(i.avg_goldstein)}` },
+    ]), { note: split.caveat }));
+  }
+  // In a bilateral answer the only headlines are the pair's, shown in its own view.
+  const heads = bilateral ? [] : byFacet(ins, "event_headline");
+  if (heads.length) views.push(view("Top events, checked against their source", headlineList(heads), { wide: true }));
+  const partners = firstOf(ins, "event_partners")?.evidence?.partners || [];
+  const baselines = Object.fromEntries(byFacet(ins, "relationship_baseline").map((b) => [(b.evidence.pair || [])[1], b.evidence]));
+  if (partners.length) {
+    // A bilateral answer fetches only its own pair's baseline, shown in the
+    // relationship view, so the table keeps just today's columns.
+    const head = bilateral ? ["Partner", "Events today", "Goldstein today"] : ["Partner", "Events today", "Goldstein today", "GGE baseline", "10-yr avg", "GGE 2000-2024"];
+    const rows = partners.map((p) => {
+      const b = baselines[p.iso3];
+      const g = p.avg_goldstein, avg = b?.avg_10yr;
+      // Same thresholds as fusion's "out of character" check.
+      const out = isNum(avg) && ((avg >= 0.1 && g <= -1) || (avg <= -0.1 && g >= 1));
+      const cells = [
+        el("td", { text: p.iso3 }),
+        el("td", { text: String(p.count) }),
+        el("td", { class: out ? "out" : "", text: `${fmt.signed(g, 1)}${out ? (g < 0 ? " ↓ out of character" : " ↑ warmer than history") : ""}` }),
+      ];
+      if (!bilateral) {
+        cells.push(
           el("td", { text: b?.baseline_label || "—" }),
           el("td", { text: fmt.signed(avg, 3) || "—" }),
           el("td", {}, b ? sparkline(b.series) : el("span", { class: "muted", text: "not fetched" })));
-      });
-      views.push(view("Counterparts: today vs 1990-2024", el("div", { class: "scroll" }, el("table", { class: "ctable" },
-        el("tr", {}, ["Partner", "Events today", "Goldstein today", "GGE baseline", "10-yr avg", "GGE 2000-2024"].map((t) => el("th", { text: t }))),
-        rows)), { wide: true, note: "GGE baselines are fetched for the three most active counterparts." }));
-    }
-    return { kpis, views };
+      }
+      return el("tr", {}, cells);
+    });
+    views.push(view(bilateral ? "Most active counterparts today" : "Counterparts: today vs 1990-2024", el("div", { class: "scroll" }, el("table", { class: "ctable" },
+      el("tr", {}, head.map((t) => el("th", { text: t }))),
+      rows)), { wide: true, note: bilateral ? null : "GGE baselines are fetched for the three most active counterparts." }));
+  }
+  return { kpis, views };
+}
+
+// A bilateral question: the pair's own answer, then the whole day as context.
+function eventsPair(ins, plan) {
+  const pair = firstOf(ins, "bilateral_events");
+  const ev = pair.evidence || {};
+  const [a, b] = ev.pair || [];
+  const nameOf = (iso3) => (plan.entities || []).find((e) => e.iso3 === iso3)?.name || iso3;
+  const base = byFacet(ins, "relationship_baseline").find((x) => (x.evidence.pair || [])[1] === b)?.evidence;
+  const heads = byFacet(ins, "event_headline").filter((h) => h.evidence?.pair);
+  const none = firstOf(ins, "bilateral_headlines");
+  const kpis = [
+    tile("Events together", String(ev.count ?? 0), fmt.day(ev.date) && `GDELT, ${fmt.day(ev.date)}${ev.table_complete === false ? " · a floor" : ""}`),
+    tile("Goldstein together", ev.count ? fmt.signed(ev.avg_goldstein) : "—", ev.count ? ev.tone : "no joint events today"),
+    tile("GGE baseline", ev.baseline_label || "not available", isNum(ev.avg_10yr) ? `10-yr avg ${fmt.signed(ev.avg_10yr, 3)} · trend ${ev.trend}` : null),
+  ];
+  const spark = base ? sparkline(base.series, { w: 240, h: 40 }) : null;
+  const relationship = view(`Relationship: ${nameOf(a)} and ${nameOf(b)}`, el("div", {},
+    el("p", { class: "claim", text: plain(pair.claim) }),
+    spark ? el("div", { class: "baseline" }, spark, el("span", { class: "muted", text: `GGE alignment ${base.series[0].year}-${base.series[base.series.length - 1].year}, -1 (adversarial) to +1 (aligned)` })) : null,
+    el("h5", { text: `Top events involving both` }),
+    heads.length ? headlineList(heads) : el("p", { class: "muted", text: plain(none?.claim || "None of the day's top events involve both countries.") })),
+    { wide: true, id: "relationship", extra: "lead" });
+  const day = eventsDay(ins, { bilateral: true });
+  const dayKpis = day.kpis.filter(Boolean);
+  const context = view(`${nameOf(a)}'s whole day, all counterparts (context)`,
+    dayKpis.length ? el("div", { class: "kpis" }, dayKpis) : el("span"),
+    { wide: true, id: "day-activity", extra: "secondary", note: plain(firstOf(ins, "event_activity")?.claim || "") });
+  return { kpis, views: [relationship, context, ...day.views] };
+}
+
+const VIEWS = {
+  event_summarization(ins, plan) {
+    if (plan?.intent === "bilateral" && firstOf(ins, "bilateral_events")) return eventsPair(ins, plan);
+    return eventsDay(ins);
   },
 
   trade_intelligence(ins) {
@@ -450,7 +505,7 @@ function claimList(insights) {
   }));
 }
 
-function renderAgents(agents, order) {
+function renderAgents(agents, order, plan = {}) {
   const box = $("agents");
   box.replaceChildren();
   for (const name of order) {
@@ -469,7 +524,7 @@ function renderAgents(agents, order) {
     if (ok && insights.length) {
       let parts = { kpis: [], views: [] };
       try {
-        if (VIEWS[name]) parts = VIEWS[name](insights);
+        if (VIEWS[name]) parts = VIEWS[name](insights, plan);
       } catch (err) {
         // An unexpected response shape costs this panel its views, not the briefing.
         console.warn(`views for ${name} failed`, err);
@@ -522,7 +577,7 @@ function render(data) {
   if (brief.caveats?.length) {
     holder.append(el("h3", { class: "sec", text: "Caveats" }), el("div", { class: "card" }, el("ul", {}, brief.caveats.map((c) => el("li", { text: c })))));
   }
-  renderAgents(data.agents, data.plan.agents);
+  renderAgents(data.agents, data.plan.agents, data.plan);
   renderPlan(data);
   $("raw").textContent = JSON.stringify(data, null, 2);
   $("result").classList.remove("hidden");

@@ -49,7 +49,7 @@ agent's native format, which the team adopted as the four-agent contract.
 | Soft Power | `influence`, `influence_trend`, `influence_outlook`, `influence_drivers`, `influence_peers`, `bilateral_influence` | `/api/latest`, `/api/timeseries`, `/api/forecast/{iso3}`, `/api/drivers/{iso3}`, `/api/peers/{iso3}` |
 | Policy Stance | `diplomatic_alignment`, `diplomatic_partners`, `conflict_exposure`, `conflict_outlook`, `bilateral_diplomacy`, `diplomatic_blocs` | `/status`, `/countries`, `/blocs-by-year/{y}` (or `/alliance-blocs`), `/country/{name}`, `/compare-insight`, `/forecast` |
 | Trade | `trade_exposure` (risk), `trade_alignment` (blocs), `trade_dependence` (leverage), `supply_fragility`, `shock_impact`, `trade_outlook` (forecast), `bilateral_trade_bloc`, `bilateral_trade_dependence` | `POST /query`, `/capabilities` |
-| Events | `event_activity`, `event_partners`, `event_themes`, `event_domestic_split`, `event_headline`, `bilateral_events`, `relationship_baseline` | `POST /analyze`, `/historical-context`, `/article-relevance` |
+| Events | `event_activity`, `event_partners`, `event_themes`, `event_domestic_split`, `event_headline`, `bilateral_events`, `bilateral_headlines`, `relationship_baseline` | `POST /analyze`, `/historical-context`, `/article-relevance` |
 
 ## Events claims
 
@@ -63,7 +63,21 @@ For one country and one GDELT day, the Events adapter makes up to ten claims.
 | `event_domestic_split` | 1 | `/analyze` `domestic`, `international` | domestic vs international counts and tone. Always carries a `caveat`: the module counts an event as domestic only when both actors carry the country's code, so events with an uncoded counterpart land in "international" and the domestic count is a floor |
 | `event_headline` | 3 | `/analyze` `top5_events[:3]`, `/article-relevance` per event | each top event, checked against its source article (below) |
 | `relationship_baseline` | up to 3 | `/historical-context` for the three most active counterparts (the named pair in a bilateral question) | the GGE 1990-2024 label, 10-year average and trend, next to today's count and Goldstein for the same pair; `evidence.series` holds the yearly scores |
-| `bilateral_events` | 1 | `/analyze` `partners` | bilateral questions only: the named pair's activity today |
+
+**Bilateral questions** ("India and China relations") lead with the pair. The
+first country's day claims above follow as context. Its three headlines and
+its top-three counterpart baselines are replaced by these:
+
+| Facet | Count | Built from | What it says |
+|---|---|---|---|
+| `bilateral_events` | 1 | `/analyze` `table` (every row, `limit` 5000), `/historical-context` for the pair | whether the two appear together today, counted exactly by GDELT country code, with their mean Goldstein, next to the pair's GGE baseline. Confidence 0.75 when the baseline is available, otherwise the day's volume confidence; capped at the latter if the table came back truncated, in which case the count is stated as a floor |
+| `event_headline` | 0-5 | `/analyze` `top5_events`, matched to their `table` rows | only the day's top events whose two actors carry exactly the pair's country codes. "West Bengal" counts as India; "China" in the text of an event coded Canada-India does not. Events flagged `mistagged` are dropped |
+| `bilateral_headlines` | 0-1 | the same | when no top event involves both, says so, including how many were dropped as mis-tagged |
+| `relationship_baseline` | 0-1 | `/historical-context` for the pair | as above, with the pair's own count and Goldstein as "today" |
+
+The briefing puts these first in the Events section and summary line
+(`briefing.LEAD_FACETS`). The UI renders them as a "Relationship: A and B"
+view ahead of the first country's day.
 
 **Headline verification.** `/article-relevance` fetches the source article and
 reports whether it names the event's two actors. It uses no AI model. Its

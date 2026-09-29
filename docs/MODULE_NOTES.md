@@ -157,6 +157,13 @@ integration patch below re-applied without conflicts.
   aggregations now drop the placeholder. A blanket NaN fix was avoided because
   `get_top5_events` groups on these columns, and `groupby` would silently drop
   the rows.
+- `src/api.py`: **`/analyze` ignored `limit` after the first request for a
+  day and country.** Results are cached by `(date, country)`, and the cached
+  payload held the first caller's table. After the dashboard asked for 300
+  rows, a request for every row still got 300; after a 25-row request, the
+  dashboard got 25. The cache now keeps every row, and each response is cut
+  to its own `limit`. The WebSocket pipeline shares the same cache and was
+  changed the same way; its clients still receive 300 rows.
 - `requirements.txt` described the Streamlit prototype. It had no fastapi or
   uvicorn, and missed `gTTS`, `Pillow` and `python-dotenv`, which
   `src/api.py` imports at startup. It is replaced with the backend's real

@@ -15,6 +15,14 @@ Claims, by facet:
     event_headline         the top three events, each checked against its source article
     relationship_baseline  GGE 1990-2024 baseline for the top three counterparts, next to today
 
+Bilateral questions ("India and China relations") lead with the pair instead:
+    bilateral_events       whether the two appear together today, how often and in what tone,
+                           against their GGE baseline
+    event_headline         only the day's top events whose GDELT country codes are exactly the
+                           pair, and which their source does not contradict
+    bilateral_headlines    said explicitly when none of the top events involve both
+The whole-country day claims follow, as context.
+
 GDELT's machine coding is noisy: an article about fuel prices can be coded as a
 military clash. So each headline event is checked against its source article
 before the briefing repeats it, and one the article does not support is flagged
@@ -50,6 +58,9 @@ COOPERATION_TYPES = {"Verbal Cooperation", "Material Cooperation", "Diplomatic C
 
 HEADLINE_EVENTS = 3
 BASELINE_PARTNERS = 3
+# Every row of the day's table, so a bilateral question can count the pair's
+# events exactly and read each top event's country codes.
+FULL_TABLE = 5000
 RELEVANCE_TIMEOUT_S = 30.0
 
 # /article-relevance "link" -> how far the article supports the event.
@@ -83,6 +94,32 @@ def _volume_confidence(n: int) -> float:
     # More events make the day's aggregate steadier, but GDELT's coding noise
     # caps how far that goes.
     return min(0.7, 0.3 + 0.1 * math.log10(1 + max(0, n)))
+
+
+def _pair_rows(table: list[dict], iso3: str, other: str) -> list[dict]:
+    """Rows of the day's table whose two actors carry exactly the pair's GDELT country codes."""
+    pair = {countries.to_cameo(iso3), countries.to_cameo(other)}
+    return [r for r in table if {str(r.get("Actor1CountryCode")), str(r.get("Actor2CountryCode"))} == pair]
+
+
+def _involves_pair(event: dict, table: list[dict], iso3: str, other: str) -> bool:
+    """Whether a top event's two actors are the pair, by GDELT country code.
+
+    Names are not enough: "West Bengal" is India, and "China" can appear in a
+    sentence about someone else. The event is matched to its table rows (same
+    source URL, event type and Goldstein score) and their codes compared.
+    Without a matching row, fall back to the counterpart's name, taking the
+    queried country's side from the module's CountryRole."""
+    score = float(event.get("score") or 0.0)
+    rows = [r for r in table if r.get("SOURCEURL") == event.get("url") and r.get("EventType") == event.get("event_type")
+            and abs(float(r.get("GoldsteinScale") or 0.0) - score) < 1e-9]
+    if rows:
+        return bool(_pair_rows(rows, iso3, other))
+    role = event.get("role")
+    if role not in ("Initiator", "Recipient"):
+        return False
+    counterpart = event.get("actor2") if role == "Initiator" else event.get("actor1")
+    return countries.resolve(counterpart or "") == other
 
 
 def _slug_words(url: str) -> list[str]:
@@ -135,10 +172,10 @@ class EventsAdapter(AgentAdapter):
             "native_endpoints": ["POST /analyze", "GET /historical-context", "GET /article-relevance", "POST /briefing", "POST /enrich-event", "WS /ws/pipeline"],
         }
 
-    async def _analyze(self, iso3: str, day: str) -> dict:
-        return await self.post("/analyze", json={"date": day, "country_code": countries.to_cameo(iso3), "limit": 25})
+    async def _analyze(self, iso3: str, day: str, limit: int = 25) -> dict:
+        return await self.post("/analyze", json={"date": day, "country_code": countries.to_cameo(iso3), "limit": limit})
 
-    async def _latest_analysis(self, iso3: str, plan: QueryPlan, result: AgentResult) -> Optional[tuple[str, dict]]:
+    async def _latest_analysis(self, iso3: str, plan: QueryPlan, result: AgentResult, limit: int = 25) -> Optional[tuple[str, dict]]:
         if plan.time.mode == "date" and plan.time.date:
             candidates = [plan.time.date]
         else:
@@ -147,7 +184,7 @@ class EventsAdapter(AgentAdapter):
         last_error: Optional[AgentCallError] = None
         for day in candidates:
             try:
-                return day, await self._analyze(iso3, day)
+                return day, await self._analyze(iso3, day, limit)
             except AgentCallError as exc:
                 last_error = exc
                 text = str(exc)
@@ -173,7 +210,8 @@ class EventsAdapter(AgentAdapter):
         if plan.time.mode == "year":
             # A past year has no "today": answer from the annual GGE series only.
             return await self._historical_year(plan, result)
-        found = await self._latest_analysis(iso3, plan, result)
+        bilateral = plan.intent == "bilateral" and len(plan.iso3s) >= 2
+        found = await self._latest_analysis(iso3, plan, result, FULL_TABLE if bilateral else 25)
         metadata: dict = {"query_type": plan.intent, "time_grain": "daily", "method": "GDELT V1 daily export; CAMEO roots; Goldstein scale"}
         if not found:
             return [], metadata
@@ -181,13 +219,12 @@ class EventsAdapter(AgentAdapter):
         metadata.update({"date": day, "year": int(day[:4]), "data_quality": {"events": (payload.get("metrics") or {}).get("total_events")}})
 
         insights = self._day_insights(iso3, day, payload, result)
-        partners = result.context.get("partners", [])
-        if plan.intent == "bilateral" and len(plan.iso3s) >= 2:
-            baseline_partners = [plan.iso3s[1]]
-            insights.extend(self._pair_today(iso3, plan.iso3s[1], day, partners))
-        else:
-            baseline_partners = [p["iso3"] for p in partners[:BASELINE_PARTNERS]]
+        if bilateral:
+            # The pair answers the question; the whole-country day follows as context.
+            return await self._pair_today(iso3, plan.iso3s[1], day, payload, result) + insights, metadata
 
+        partners = result.context.get("partners", [])
+        baseline_partners = [p["iso3"] for p in partners[:BASELINE_PARTNERS]]
         headlines, baselines = await asyncio.gather(
             self._headline_insights(iso3, day, payload, _volume_confidence(int((payload.get("metrics") or {}).get("total_events") or 0))),
             asyncio.gather(*(self._baseline(iso3, other) for other in baseline_partners)),
@@ -197,17 +234,20 @@ class EventsAdapter(AgentAdapter):
         for other, baseline in zip(baseline_partners, baselines):
             if baseline and baseline.get("available"):
                 insights.append(self._baseline_insight(iso3, other, baseline, today_by_partner.get(other)))
+        self._note_baseline_gaps(iso3, baseline_partners, baselines, result)
+        return insights, metadata
+
+    def _note_baseline_gaps(self, iso3: str, partners: list[str], baselines: list[Optional[dict]], result: AgentResult) -> None:
         # GGE has no series for some pairs (e.g. China-Taiwan): a gap in the
         # dataset, not a failure of the agent.
         for call in self._calls:
             if call.path == "/historical-context" and call.status == 404:
                 call.handled = True
-        missing = [other for other, baseline in zip(baseline_partners, baselines) if baseline and baseline.get("missing_pair")]
+        missing = [other for other, baseline in zip(partners, baselines) if baseline and baseline.get("missing_pair")]
         if missing:
             result.notes.append("No GGE 1990-2024 series for: " + ", ".join(f"{countries.name_of(iso3)}-{countries.name_of(o)}" for o in missing) + ".")
-        if baseline_partners and any(c.status == 503 for c in self._calls if c.path == "/historical-context"):
+        if partners and any(c.status == 503 for c in self._calls if c.path == "/historical-context"):
             result.notes.append("GGE 1990-2024 baseline unavailable: the Events service has no dyad_geopolitical_scores.csv (see docs/DATA.md).")
-        return insights, metadata
 
     async def _baseline(self, iso3: str, other: str) -> Optional[dict]:
         try:
@@ -451,25 +491,96 @@ class EventsAdapter(AgentAdapter):
                     f"so {n_dom} is a floor for domestic activity, not an estimate."),
         )
 
-    @staticmethod
-    def _pair_today(iso3: str, other: str, day: str, partners: list[dict]) -> list[dict]:
-        a, b = countries.name_of(iso3), countries.name_of(other)
-        match = next((p for p in partners if p["iso3"] == other), None)
-        if not match:
-            return [
-                insight(iso3, f"{b} is not among {a}'s eight most active counterparts in GDELT on {day[:4]}-{day[4:6]}-{day[6:]}.", 0.0, 0.45, "absence from the top counterparts on one day", {"pair": [iso3, other], "date": day}, facet="bilateral_events")
-            ]
-        return [
-            insight(
-                iso3,
-                f"{a}-{b} coverage on {day[:4]}-{day[4:6]}-{day[6:]}: {match['count']} events, mean Goldstein {match['avg_goldstein']:+.2f} ({_tone(match['avg_goldstein'])}).",
-                (match["avg_goldstein"] + 10.0) / 20.0,
-                _volume_confidence(match["count"]),
-                f"{match['count']} machine-coded events for the pair on one day",
-                {"pair": [iso3, other], "date": day, **match, "tone": _tone(match["avg_goldstein"])},
-                facet="bilateral_events",
+    async def _pair_today(self, iso3: str, other: str, day: str, payload: dict, result: AgentResult) -> list[dict]:
+        """The answer to a bilateral question: the pair's activity today against
+        its GGE baseline, then only the top events that genuinely involve both."""
+        table = payload.get("table") or []
+        rows = _pair_rows(table, iso3, other)
+        complete = len(table) >= int(payload.get("table_rows_total") or len(table))
+        top = payload.get("top5_events") or []
+        candidates = [e for e in top if _involves_pair(e, table, iso3, other)]
+        day_confidence = _volume_confidence(int((payload.get("metrics") or {}).get("total_events") or 0))
+
+        baseline, checks = await asyncio.gather(self._baseline(iso3, other), asyncio.gather(*(self._relevance(e) for e in candidates)))
+        for call in self._calls:
+            if call.path == "/article-relevance" and call.error:
+                call.handled = True
+        self._note_baseline_gaps(iso3, [other], [baseline], result)
+        baseline = baseline if baseline and baseline.get("available") else None
+
+        checked = [self._headline_insight(iso3, day, e, check, day_confidence) for e, check in zip(candidates, checks)]
+        headlines = [h for h in checked if h["evidence"]["verification"]["status"] != "mistagged"]
+        excluded = len(checked) - len(headlines)
+        for h in headlines:
+            h["evidence"]["pair"] = [iso3, other]
+
+        g = sum(float(r.get("GoldsteinScale") or 0.0) for r in rows) / len(rows) if rows else None
+        out = [self._pair_summary(iso3, other, day, rows, g, complete, baseline, len(headlines), excluded, day_confidence)]
+        out.extend(headlines)
+        if not headlines:
+            a, b = countries.name_of(iso3), countries.name_of(other)
+            flagged = ""
+            if excluded:
+                flagged = f"; {excluded} that did {'was' if excluded == 1 else 'were'} flagged as likely mis-tagged by GDELT"
+            out.append(
+                insight(
+                    iso3,
+                    f"None of {a}'s top {len(top)} GDELT events on {day[:4]}-{day[4:6]}-{day[6:]} involve both {a} and {b}{flagged}.",
+                    0.0,
+                    day_confidence,
+                    "top events matched to the pair by their GDELT country codes",
+                    {"pair": [iso3, other], "date": day, "checked": len(top), "excluded_mistagged": excluded},
+                    facet="bilateral_headlines",
+                )
             )
-        ]
+        if baseline:
+            out.append(self._baseline_insight(iso3, other, baseline, {"count": len(rows), "avg_goldstein": g} if rows else None))
+        return out
+
+    @staticmethod
+    def _pair_summary(iso3: str, other: str, day: str, rows: list[dict], g: Optional[float], complete: bool,
+                      baseline: Optional[dict], headlines: int, excluded: int, day_confidence: float) -> dict:
+        a, b = countries.name_of(iso3), countries.name_of(other)
+        pretty_day = f"{day[:4]}-{day[4:6]}-{day[6:]}"
+        if rows:
+            today = f"{a} and {b} appear together in {len(rows)} GDELT event{'' if len(rows) == 1 else 's'} on {pretty_day}, mean Goldstein {g:+.2f} ({_tone(g)})"
+        else:
+            today = f"{a} and {b} do not appear together in any GDELT event on {pretty_day}"
+        evidence: dict = {"pair": [iso3, other], "date": day, "count": len(rows), "table_complete": complete,
+                          "pair_headlines": headlines, "excluded_mistagged": excluded}
+        if rows:
+            types: dict[str, int] = {}
+            for r in rows:
+                label = r.get("EventType") or "Unknown"
+                types[label] = types.get(label, 0) + 1
+            evidence.update({"avg_goldstein": round(g, 3), "tone": _tone(g), "event_type_counts": types})
+        if baseline:
+            avg = float(baseline.get("avg_10yr") or 0.0)
+            history = f"their 1990-2024 GGE baseline is {baseline.get('baseline_label')} (10-year average {avg:+.3f}, trend {baseline.get('trend')})"
+            # Same thresholds as fusion's "out of character" check.
+            if g is not None and avg >= 0.1 and g <= -1.0:
+                history += ", so today is more conflictual than that history"
+            elif g is not None and avg <= -0.1 and g >= 1.0:
+                history += ", so today is warmer than that history"
+            evidence.update({k: baseline.get(k) for k in ("baseline_label", "avg_10yr", "trend", "earliest_year", "latest_year")})
+            # An exact count from the day's full table next to the GGE series (0.75).
+            confidence = 0.75
+        else:
+            history = f"no GGE 1990-2024 baseline is available for {a}-{b}"
+            confidence = day_confidence
+        reason = "pair events counted by GDELT country code over the whole day, next to the GGE annual series"
+        if not complete:
+            confidence = min(confidence, day_confidence)
+            reason += "; the day's table was truncated, so the count is a floor"
+        return insight(
+            iso3,
+            f"{today}; {history}.",
+            (g + 10.0) / 20.0 if g is not None else 0.5,
+            confidence,
+            reason,
+            evidence,
+            facet="bilateral_events",
+        )
 
     @staticmethod
     def _baseline_insight(iso3: str, other: str, baseline: dict, today: Optional[dict] = None) -> dict:
