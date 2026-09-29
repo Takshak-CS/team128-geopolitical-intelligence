@@ -71,25 +71,38 @@ class PolicyStanceAdapter(AgentAdapter):
     time_grain = "annual (1989-2025)"
 
     async def capabilities(self) -> dict:
+        # Try to pull the live self-description from the module first.
+        try:
+            return await self.get("/capabilities", timeout=5.0)
+        except Exception:  # noqa: BLE001
+            pass
         return {
             "agent": self.name,
             "description": self.description,
             "time_grain": self.time_grain,
             "join_key": "Gleditsch-Ward code -> ISO3 (orchestrator crosswalk)",
-            "native_endpoints": ["/status", "/countries", "/country/{name}", "/alliance-blocs", "/blocs-by-year/{year}", "/compare-insight", "/forecast"],
+            "native_endpoints": [
+                "/status", "/health", "/capabilities",
+                "/countries", "/country/{name}",
+                "/alliance-blocs", "/blocs-by-year/{year}", "/bloc-discovery/{year}",
+                "/compare-insight", "/forecast",
+            ],
         }
 
     async def health(self) -> dict:
         base = await super().health()
         if base["status"] == "ok":
             return base
-        # The module has no /health; /status is its readiness probe.
-        try:
-            status = await self.get("/status", timeout=5.0)
-            ready = bool(status.get("ready"))
-            return {"status": "ok" if ready else "not_ready", "detail": status}
-        except Exception as exc:  # noqa: BLE001 - health must never raise
-            return {"status": base["status"], "detail": str(exc)}
+        # Try the native /health endpoint added in the Team 128 integration.
+        # Fall back to /status for older deployments that pre-date it.
+        for path in ("/health", "/status"):
+            try:
+                data = await self.get(path, timeout=5.0)
+                ready = bool(data.get("ready") if path == "/status" else data.get("status") == "ok")
+                return {"status": "ok" if ready else "not_ready", "detail": data}
+            except Exception:  # noqa: BLE001
+                continue
+        return {"status": "unreachable", "detail": "both /health and /status failed"}
 
     # -------------------------------------------------------------- identity
     async def _gw_names(self) -> dict[int, str]:

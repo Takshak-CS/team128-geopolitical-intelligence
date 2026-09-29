@@ -5,6 +5,9 @@ from pathlib import Path
 import pickle
 import re
 import threading
+import time as _time
+
+_startup_time = _time.time()
 
 # Human-readable labels for UCDP issue numeric codes still in cached data
 _ISSUE_CODE_MAP: dict[str, str] = {
@@ -217,11 +220,15 @@ def _build_country_profiles(graph_json: dict[str, Any], master_df: pd.DataFrame,
             partner = row['country_b'] if row.get('country_a_code') == code else row['country_a']
             conflicts.append({'year': int(row['year']), 'dataset': row.get('dataset'), 'issue': row.get('issue'), 'partner': partner, 'intensity': float(row.get('intensity') or 0.0), 'deaths': float(row.get('deaths') or 0.0), 'conflict_name': row.get('conflict_name')})
 
+        # Compute from timeline, not graph-node fields (which can be stale / undercounted)
+        total_conflicts_computed = sum(t['conflicts'] for t in timeline)
+        total_deaths_computed = sum(t['deaths'] for t in timeline)
+
         profiles[node['name']] = {
             'name': node['name'],
             'gw_code': code,
-            'total_conflicts': int(node.get('total_conflicts', 0)),
-            'total_deaths': float(node.get('total_deaths', 0.0)),
+            'total_conflicts': total_conflicts_computed,
+            'total_deaths': total_deaths_computed,
             'active_years': node.get('active_years', []),
             'centrality': {'degree': float(node.get('degree_centrality', 0.0)), 'betweenness': float(node.get('betweenness_centrality', 0.0)), 'eigenvector': float(node.get('eigenvector_centrality', 0.0)), 'pagerank': float(node.get('pagerank', 0.0))},
             'top_partners': partner_rows[:10],
@@ -978,6 +985,143 @@ def topics() -> list[dict[str, Any]]:
         return []
     counts = votes_df['topic'].value_counts().head(100)
     return [{'topic': topic, 'count': int(count)} for topic, count in counts.items()]
+
+
+@app.get('/health')
+def health() -> dict[str, Any]:
+    """Liveness + data stats. Matches the contract used by Trade Intelligence."""
+    votes_df: pd.DataFrame = state.data.get('votes_df', pd.DataFrame())
+    master_df: pd.DataFrame = state.data.get('master_df', pd.DataFrame())
+    return {
+        'status': 'ok' if state.ready else 'not_ready',
+        'uptime_s': round(_time.time() - _startup_time),
+        'progress': state.progress,
+        'profiles': len(state.data.get('country_profiles', {})),
+        'votes_loaded': 0 if votes_df.empty else len(votes_df),
+        'conflict_records': 0 if master_df.empty else len(master_df),
+    }
+
+
+@app.get('/capabilities')
+def capabilities() -> dict[str, Any]:
+    """Self-description consumed by the orchestrator's /capabilities endpoint."""
+    return {
+        'agent': 'policy_stance',
+        'description': 'UN General Assembly voting similarity, alliance blocs and UCDP conflict graphs (1989-2025).',
+        'time_grain': 'annual (1989-2025)',
+        'join_key': 'Gleditsch-Ward code -> ISO3 (orchestrator crosswalk)',
+        'facets': [
+            'diplomatic_alignment', 'diplomatic_partners', 'conflict_exposure',
+            'conflict_outlook', 'bilateral_diplomacy', 'diplomatic_blocs',
+        ],
+        'data_sources': [
+            'UCDP Dyadic (1946-2023)', 'UCDP GED (1989-2023)',
+            'UCDP Non-state (1989-2022)', 'UCDP One-sided (1989-2022)',
+            'UN General Assembly voting (1989-2025)',
+        ],
+        'endpoints': [
+            {'path': '/status', 'description': 'Pipeline readiness probe'},
+            {'path': '/health', 'description': 'Liveness check with data stats'},
+            {'path': '/capabilities', 'description': 'Module self-description'},
+            {'path': '/countries', 'description': 'Sovereign states with profiles'},
+            {'path': '/country/{name}', 'description': 'Full profile: conflicts, UN votes, centrality, partners'},
+            {'path': '/alliance-blocs', 'description': 'Country-to-bloc over full 1989-2025 history'},
+            {'path': '/blocs-by-year/{year}', 'description': 'Bloc assignment using rolling 7-year vote window'},
+            {'path': '/bloc-discovery/{year}', 'description': 'Louvain community detection on vote-similarity network (no pre-labelled blocs)'},
+            {'path': '/compare-insight', 'description': 'Bilateral similarity, bloc, vote match rate, drift'},
+            {'path': '/forecast', 'description': 'Linear conflict-activity trend and 5-year projection'},
+            {'path': '/policy-stance', 'description': 'Issue/topic stance matrix with temporal data'},
+            {'path': '/timeline', 'description': 'Per-country conflict timeline'},
+            {'path': '/graph', 'description': 'Full conflict network graph'},
+            {'path': '/graph/{year}', 'description': 'Conflict network for a specific year'},
+            {'path': '/embeddings/2d', 'description': '2-D country embeddings'},
+            {'path': '/embeddings/3d', 'description': '3-D country embeddings'},
+            {'path': '/similarity', 'description': 'Country-pair UN-vote cosine similarity matrix'},
+            {'path': '/heatmap/{type}', 'description': 'PNG heatmaps: conflict_intensity, un_voting, country_similarity'},
+        ],
+    }
+
+
+@app.get('/bloc-discovery/{year}')
+def bloc_discovery(year: int, min_sim: float = Query(0.5)) -> dict[str, Any]:
+    """Discover geopolitical communities via Louvain on the vote-similarity network.
+
+    Unlike /alliance-blocs and /blocs-by-year, this endpoint runs unsupervised
+    community detection — no anchor countries, no manual overrides. The returned
+    cluster ids are stable within a request but not labelled. The caller can
+    cross-reference with /blocs-by-year to attach a bloc name.
+    """
+    votes_df: pd.DataFrame = state.data.get('votes_df', pd.DataFrame())
+    if not state.ready:
+        raise HTTPException(status_code=503, detail='Pipeline not ready')
+    if votes_df.empty or 'year' not in votes_df.columns or 'country_name' not in votes_df.columns:
+        raise HTTPException(status_code=503, detail='Vote data not loaded')
+
+    window = votes_df[(votes_df['year'] >= year - 7) & (votes_df['year'] <= year)]
+    if len(window) < 200:
+        window = votes_df[votes_df['year'] <= year].tail(5000)
+
+    vote_map = {'yes': 1, 'Y': 1, 'no': -1, 'N': -1, 'abstain': 0, 'A': 0}
+    w = window.copy()
+    w['v'] = w['vote'].map(vote_map).fillna(0)
+    country_names = {p['name'] for p in state.data.get('countries', [])}
+    w = w[w['country_name'].isin(country_names)]
+    if w.empty:
+        raise HTTPException(status_code=422, detail='No vote rows match sovereign countries in this year window')
+
+    pivot = w.pivot_table(index='country_name', columns='resolution', values='v', aggfunc='mean').fillna(0)
+    countries_list = list(pivot.index)
+    if len(countries_list) < 3:
+        raise HTTPException(status_code=422, detail='Too few countries with vote data')
+
+    mat = pivot.values.astype(float)
+    norms = np.linalg.norm(mat, axis=1, keepdims=True)
+    normed = mat / np.where(norms > 0, norms, 1.0)
+    sim_matrix = (normed @ normed.T).tolist()
+
+    try:
+        import community as community_louvain
+        import networkx as nx
+
+        G: nx.Graph = nx.Graph()
+        G.add_nodes_from(countries_list)
+        n = len(countries_list)
+        for i in range(n):
+            for j in range(i + 1, n):
+                s = float(sim_matrix[i][j])
+                if s >= min_sim:
+                    G.add_edge(countries_list[i], countries_list[j], weight=s)
+
+        partition: dict[str, int] = community_louvain.best_partition(G, weight='weight', random_state=42)
+
+        clusters: dict[int, list[str]] = {}
+        for country, cid in partition.items():
+            clusters.setdefault(cid, []).append(country)
+
+        # Sort clusters largest-first and re-number 0..N
+        sorted_clusters = sorted(clusters.items(), key=lambda kv: -len(kv[1]))
+        renumber: dict[int, int] = {old: new for new, (old, _) in enumerate(sorted_clusters)}
+        cluster_list = [
+            {'cluster_id': renumber[old_id], 'size': len(members), 'members': sorted(members)}
+            for old_id, members in sorted_clusters
+        ]
+        country_to_cluster = {c: renumber[cid] for c, cid in partition.items()}
+
+        return {
+            'year': year,
+            'window': f'{year - 7}-{year}',
+            'method': 'louvain',
+            'min_similarity': min_sim,
+            'countries': len(countries_list),
+            'clusters': cluster_list,
+            'country_to_cluster': country_to_cluster,
+        }
+
+    except ImportError:
+        raise HTTPException(
+            status_code=503,
+            detail='python-louvain is not installed. Add python-louvain>=0.16 to requirements.txt.',
+        )
 
 
 # Catch-all: serve frontend for any non-API path (must be LAST)
