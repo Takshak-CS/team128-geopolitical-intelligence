@@ -16,6 +16,9 @@ start() { # name port dir app [ENV=VAL ...]
   echo "$name starting on :$port"
 }
 
+echo "Checking Policy Stance datasets..."
+bash "$ROOT/scripts/download_policy_data.sh"
+
 start soft_power 8101 services/soft_power/dash/backend app.main:app DATA_SOURCE=files
 start policy_stance 8102 services/policy_stance backend.main:app
 start trade_intelligence 8103 services/trade_intelligence api.app:app TRADE_CACHE_DIR="$ROOT/services/trade_intelligence/cache"

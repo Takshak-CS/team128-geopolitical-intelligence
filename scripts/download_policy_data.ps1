@@ -5,7 +5,9 @@
 $ErrorActionPreference = "Stop"
 $Root = Split-Path -Parent $PSScriptRoot
 $DataDir = Join-Path $Root "services\policy_stance\data"
-if (-not (Test-Path $DataDir)) { New-Item -ItemType Directory -Path $DataDir | Out-Null }
+$CacheDir = Join-Path $Root "services\policy_stance\outputs"
+if (-not (Test-Path $DataDir))  { New-Item -ItemType Directory -Path $DataDir  | Out-Null }
+if (-not (Test-Path $CacheDir)) { New-Item -ItemType Directory -Path $CacheDir | Out-Null }
 
 $BASE = "https://github.com/Takshak-CS/team128-geopolitical-intelligence/releases/download/policy-data-v1"
 
@@ -64,5 +66,20 @@ foreach ($f in $flat) {
     Get-File $f.file "$DataDir\$($f.file)" $f.label
 }
 
-Write-Host "`nAll datasets ready."
-Write-Host "First run of Policy Stance takes ~8 min to build cache; subsequent starts < 1 min."
+# Pre-built cache (skips the 8-minute first-run build entirely)
+Write-Host "`nPolicy Stance cache -> $CacheDir`n"
+$cacheFiles = @(
+    @{ zip="cache_master_df.zip";  pkl="master_df.pkl";     label="cache: master_df (47 MB)" },
+    @{ zip="cache_runtime.zip";    pkl="runtime_cache.pkl"; label="cache: runtime (79 MB)" }
+)
+foreach ($c in $cacheFiles) {
+    $pklPath = "$CacheDir\$($c.pkl)"
+    if (Test-Path $pklPath) { Write-Host "  [skip] $($c.label) (already present)"; continue }
+    $zipPath = "$CacheDir\$($c.zip)"
+    Get-File $c.zip $zipPath $c.label
+    Write-Host "  [unzip] $($c.pkl) ..."
+    Expand-Archive -Path $zipPath -DestinationPath $CacheDir -Force
+    Remove-Item $zipPath
+}
+
+Write-Host "`nAll datasets + cache ready. Policy Stance starts instantly."
