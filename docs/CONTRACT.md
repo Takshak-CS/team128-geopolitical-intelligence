@@ -47,7 +47,7 @@ agent's native format, which the team adopted as the four-agent contract.
 | Agent | Facets | Native call(s) |
 |---|---|---|
 | Soft Power | `influence`, `influence_trend`, `influence_outlook`, `influence_drivers`, `influence_peers`, `bilateral_influence` | `/api/latest`, `/api/timeseries`, `/api/forecast/{iso3}`, `/api/drivers/{iso3}`, `/api/peers/{iso3}` |
-| Policy Stance | `diplomatic_alignment`, `diplomatic_partners`, `conflict_exposure`, `conflict_outlook`, `bilateral_diplomacy`, `diplomatic_blocs` | `/status`, `/countries`, `/blocs-by-year/{y}` (or `/alliance-blocs`), `/country/{name}`, `/compare-insight`, `/forecast` |
+| Policy Stance | `diplomatic_alignment`, `diplomatic_partners`, `conflict_exposure`, `conflict_outlook`, `bilateral_diplomacy`, `diplomatic_blocs`, `issue_stance` | `/status`, `/health`, `/capabilities`, `/countries`, `/blocs-by-year/{y}` (or `/alliance-blocs`), `/bloc-discovery/{y}`, `/country/{name}`, `/compare-insight`, `/forecast` |
 | Trade | `trade_exposure` (risk), `trade_alignment` (blocs), `trade_dependence` (leverage), `supply_fragility`, `shock_impact`, `trade_outlook` (forecast), `bilateral_trade_bloc`, `bilateral_trade_dependence` | `POST /query`, `/capabilities` |
 | Events | `event_activity`, `event_partners`, `event_themes`, `event_domestic_split`, `event_headline`, `bilateral_events`, `bilateral_headlines`, `relationship_baseline` | `POST /analyze`, `/historical-context`, `/article-relevance` |
 

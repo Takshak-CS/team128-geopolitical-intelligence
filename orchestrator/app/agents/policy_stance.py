@@ -194,6 +194,14 @@ class PolicyStanceAdapter(AgentAdapter):
             year = plan.time.year if plan.time.mode == "year" else result.context.get("bloc_year") or 2024
             insights.extend(await self._bloc_discovery_insights(targets, bloc_by_iso3, gw_names, int(year)))
 
+        # Issue-level UN voting and conflict stance — unique to this module.
+        for iso3 in targets:
+            module_name = self._module_name(iso3, gw_names)
+            if module_name:
+                stance = await self._issue_stance(iso3, module_name)
+                if stance:
+                    insights.append(stance)
+
         return insights, metadata
 
     async def _blocs(self, plan: QueryPlan, result: AgentResult) -> tuple[dict, str, dict]:
@@ -320,6 +328,72 @@ class PolicyStanceAdapter(AgentAdapter):
                 )
             )
         return out
+
+    async def _issue_stance(self, iso3: str, module_name: str) -> Optional[dict]:
+        """Call /policy-stance and /topics to produce an issue_stance insight.
+
+        This endpoint is unique to the Policy Stance module — no other agent
+        reports which specific UN-voting topics and UCDP conflict issues a
+        country is most active on, with Yes/No/Abstain percentages.
+        """
+        # Get the country's UN voting topic distribution (top 5 topics)
+        votes_profile = await try_call(
+            self.cached_get(f"/country/{module_name}", ttl_s=600), None
+        )
+        if not votes_profile:
+            return None
+
+        top_topics: dict = (votes_profile.get("un_votes") or {}).get("top_topics") or {}
+        vote_counts: dict = (votes_profile.get("un_votes") or {}).get("counts") or {}
+        top_issues: list = (votes_profile.get("top_issues") or [])[:5]
+
+        if not top_topics and not top_issues:
+            return None
+
+        name = countries.name_of(iso3)
+        total_yes = vote_counts.get("yes", 0) + vote_counts.get("Y", 0)
+        total_no = vote_counts.get("no", 0) + vote_counts.get("N", 0)
+        total_abstain = vote_counts.get("abstain", 0) + vote_counts.get("A", 0)
+        total_votes = total_yes + total_no + total_abstain
+
+        parts: list[str] = []
+        if total_votes:
+            pct_yes = round(total_yes / total_votes * 100)
+            pct_no = round(total_no / total_votes * 100)
+            pct_abs = round(total_abstain / total_votes * 100)
+            parts.append(
+                f"Across {total_votes:,} UN GA votes, {name} voted Yes {pct_yes}%, No {pct_no}%, Abstain {pct_abs}%."
+            )
+
+        if top_topics:
+            top3 = sorted(top_topics.items(), key=lambda kv: kv[1], reverse=True)[:3]
+            topic_str = "; ".join(f"{t} ({n} resolutions)" for t, n in top3)
+            parts.append(f"Most active UN voting topics: {topic_str}.")
+
+        if top_issues:
+            issue_str = ", ".join(
+                str(item.get("issue", "")) for item in top_issues if item.get("issue")
+            )
+            if issue_str:
+                parts.append(f"Dominant UCDP conflict issues: {issue_str}.")
+
+        if not parts:
+            return None
+
+        return insight(
+            iso3,
+            " ".join(parts),
+            min(1.0, total_votes / 5000) if total_votes else 0.3,
+            0.70 if total_votes > 100 else 0.40,
+            "UN GA vote distribution from the full 1989-2025 voting record; UCDP issue codes from conflict datasets",
+            {
+                "total_votes": total_votes,
+                "vote_breakdown": {"yes": total_yes, "no": total_no, "abstain": total_abstain},
+                "top_topics": dict(list(top_topics.items())[:5]),
+                "top_issues": top_issues[:5],
+            },
+            facet="issue_stance",
+        )
 
     async def _bloc_discovery_insights(self, iso3s: list[str], anchor_blocs: dict[str, str], gw_names: dict[int, str], year: int) -> list[dict]:
         """Call /bloc-discovery and produce one diplomatic_blocs insight per country.
