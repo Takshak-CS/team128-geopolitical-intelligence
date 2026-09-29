@@ -22,6 +22,10 @@ $Services = @(
     @{ Name = "orchestrator";        Port = 8000; Dir = "orchestrator";                     App = "app.main:app";     Env = @{} }
 )
 
+# Ensure Policy Stance datasets are present before starting any service
+Write-Host "Checking Policy Stance datasets..."
+& "$PSScriptRoot\download_policy_data.ps1"
+
 foreach ($svc in $Services) {
     $busy = Get-NetTCPConnection -LocalPort $svc.Port -State Listen -ErrorAction SilentlyContinue
     if ($busy) { Write-Host ("{0,-20} port {1} already in use - skipping" -f $svc.Name, $svc.Port); continue }
