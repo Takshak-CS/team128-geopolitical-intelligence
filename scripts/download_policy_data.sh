@@ -17,14 +17,6 @@ get() {
     echo "  [ok] $label"
 }
 
-unzip_to() {
-    local zip="$1" dir="$2" label="$3"
-    if [ -d "$dir" ]; then echo "  [skip] $label (already extracted)"; rm -f "$zip"; return; fi
-    echo "  [unzip] $label ..."
-    unzip -q "$zip" -d "$DATA"
-    rm -f "$zip"
-}
-
 echo ""
 echo "Policy Stance datasets -> $DATA"
 echo ""
@@ -33,20 +25,23 @@ echo ""
 get "2025_7_23_ga_voting.xlsx" "$DATA/2025_7_23_ga_voting.xlsx" "UN GA voting 1989-2025 (70 MB)"
 
 # UCDP zip datasets
-declare -A ZIPS=(
-    ["ged251-csv.zip"]="ged251-csv"
-    ["ucdp-dyadic-251-csv_1.zip"]="ucdp-dyadic-251-csv"
-    ["ucdp-nonstate-251-csv.zip"]="ucdp-nonstate-251-csv"
-    ["ucdp-onesided-251-csv.zip"]="ucdp-onesided-251-csv"
-    ["ucdp-brd-dyadic-251-csv.zip"]="ucdp-brd-dyadic-251-csv"
-    ["ucdp-prio-acd-251-csv_1.zip"]="ucdp-prio-acd-251-csv"
-    ["ucdp-actor-251-csv.zip"]="ucdp-actor-251-csv"
-    ["organizedviolencecy-251-csv_1.zip"]="organizedviolencecy-251-csv"
-)
-for file in "${!ZIPS[@]}"; do
-    folder="${ZIPS[$file]}"
+for entry in \
+    "ged251-csv.zip|ged251-csv" \
+    "ucdp-dyadic-251-csv_1.zip|ucdp-dyadic-251-csv" \
+    "ucdp-nonstate-251-csv.zip|ucdp-nonstate-251-csv" \
+    "ucdp-onesided-251-csv.zip|ucdp-onesided-251-csv" \
+    "ucdp-brd-dyadic-251-csv.zip|ucdp-brd-dyadic-251-csv" \
+    "ucdp-prio-acd-251-csv_1.zip|ucdp-prio-acd-251-csv" \
+    "ucdp-actor-251-csv.zip|ucdp-actor-251-csv" \
+    "organizedviolencecy-251-csv_1.zip|organizedviolencecy-251-csv"
+do
+    file="${entry%%|*}"
+    folder="${entry##*|}"
+    if [ -d "$DATA/$folder" ]; then echo "  [skip] $folder"; continue; fi
     get "$file" "$DATA/$file" "$file"
-    unzip_to "$DATA/$file" "$DATA/$folder" "$folder"
+    echo "  [unzip] $folder ..."
+    unzip -q "$DATA/$file" -d "$DATA"
+    rm -f "$DATA/$file"
 done
 
 # Flat files
@@ -57,20 +52,15 @@ done
 # Pre-built cache (skips the 8-minute first-run build)
 echo ""
 echo "Policy Stance cache -> $CACHE"
-for z in cache_master_df.zip cache_runtime.zip; do
-    dest_name="${z%.zip}"        # cache_master_df / cache_runtime
-    pkl_name="${dest_name#cache_}.pkl"  # master_df.pkl / runtime.pkl -> wrong
-    # Correct mapping
-    case "$z" in
-        cache_master_df.zip)  pkl="master_df.pkl" ;;
-        cache_runtime.zip)    pkl="runtime_cache.pkl" ;;
-    esac
-    if [ -f "$CACHE/$pkl" ]; then echo "  [skip] $pkl (cache already present)"; continue; fi
-    get "$z" "$CACHE/$z" "$z"
+for entry in "cache_master_df.zip|master_df.pkl" "cache_runtime.zip|runtime_cache.pkl"; do
+    zip="${entry%%|*}"
+    pkl="${entry##*|}"
+    if [ -f "$CACHE/$pkl" ]; then echo "  [skip] $pkl"; continue; fi
+    get "$zip" "$CACHE/$zip" "$zip"
     echo "  [unzip] $pkl ..."
-    unzip -q "$CACHE/$z" -d "$CACHE"
-    rm -f "$CACHE/$z"
+    unzip -q "$CACHE/$zip" -d "$CACHE"
+    rm -f "$CACHE/$zip"
 done
 
 echo ""
-echo "All datasets ready. Policy Stance will start instantly (cache preloaded)."
+echo "All datasets ready. Policy Stance starts instantly (cache preloaded)."
