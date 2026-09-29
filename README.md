@@ -25,7 +25,7 @@ flowchart LR
 | Soft Power Index | Anushree | 10 open datasets → 23 KPIs, PCA weights, Kalman smoothing | influence level, trend, 5-year forecast, drivers, peers |
 | Policy Stance | Santhosh | UN GA voting (1989-2025), UCDP conflict data | UN-voting blocs, conflict record, diplomatic partners, pairwise alignment |
 | Trade Intelligence | Takshak | CEPII BACI HS92, 1995-2024 | structural risk, trading blocs, leverage, sector fragility, shock propagation, forecasts |
-| Event Summarization | Shreyas | GDELT V1 daily events, GGE 1990-2024 | today's activity, tone and counterparts vs the long-run baseline |
+| Event Summarization | Shreyas | GDELT V1 daily events, GGE 1990-2024 | today's activity, tone and counterparts vs the long-run baseline; validated themes; domestic vs international split; top events checked against their source articles |
 
 ## Quick start (Windows)
 
@@ -70,7 +70,10 @@ dashboard" links in the briefing UI expect. See the list below.
    agent gets a status, and the briefing is built from the rest.
 4. **Normalise.** One adapter per agent (`orchestrator/app/agents/`) converts
    native responses to the shared envelope, keyed on ISO3, with a confidence
-   and reason on every claim.
+   and reason on every claim, plus a caveat where a claim needs one. The
+   Events adapter also checks each of the day's top events against its source
+   article, with no AI model. It flags events the article does not support as
+   likely mis-tagged by GDELT, so the briefing does not report them as news.
 5. **Fuse** (`orchestrator/app/fusion.py`). Dedupe, then cross-check
    independent agents. Examples: trade bloc vs UN bloc, critical trade partner
    vs diplomatic camp, soft-power momentum vs trade forecast, today's news vs
@@ -78,7 +81,9 @@ dashboard" links in the briefing UI expect. See the list below.
    corroboration or a divergence, then everything is ranked by confidence.
 6. **Brief** (`orchestrator/app/briefing.py`). A headline, a summary, and
    sections in which every sentence cites the agent(s) and confidence behind
-   it.
+   it. The UI then shows each agent in the same panel: headline numbers,
+   views drawn from the evidence behind its claims, and every claim with its
+   confidence and caveat.
 
 ## Repository layout
 

@@ -1,4 +1,638 @@
 {
+ "event_summarization GET /article-relevance?term1=China&term2=Army&url=https://www.nbcnews.com/world/afghanistan/pakistan-says-airstrikes-afghanistan-kill-28-militants-kabul-reports-3-rcna599089": {
+  "json": {
+   "article_ok": true,
+   "best_snippet": "They also threatened to complicate mediation efforts by regional powers, including China.",
+   "cooccur_sentences": 0,
+   "link": "listed",
+   "main_entities": [
+    {
+     "count": 4,
+     "label": "ORG",
+     "name": "Taliban"
+    },
+    {
+     "count": 2,
+     "label": "ORG",
+     "name": "Pakistan\u2019s Information Ministry"
+    },
+    {
+     "count": 2,
+     "label": "ORG",
+     "name": "Fitrat"
+    },
+    {
+     "count": 2,
+     "label": "ORG",
+     "name": "TTP"
+    }
+   ],
+   "named_places": [
+    {
+     "count": 26,
+     "name": "Afghanistan"
+    },
+    {
+     "count": 24,
+     "name": "Pakistan"
+    },
+    {
+     "count": 3,
+     "name": "Kohat"
+    },
+    {
+     "count": 1,
+     "name": "China"
+    },
+    {
+     "count": 1,
+     "name": "Kunar"
+    },
+    {
+     "count": 1,
+     "name": "Nurgal"
+    }
+   ],
+   "reason": null,
+   "terms": [
+    {
+     "aliases": [
+      "China",
+      "Chinese",
+      "Beijing"
+     ],
+     "count": 1,
+     "in_first_paragraph": false,
+     "in_headline": false,
+     "prominence": "passing",
+     "snippets": [
+      "They also threatened to complicate mediation efforts by regional powers, including China."
+     ],
+     "term": "China"
+    },
+    {
+     "aliases": [
+      "Army"
+     ],
+     "count": 1,
+     "in_first_paragraph": false,
+     "in_headline": false,
+     "prominence": "passing",
+     "snippets": [
+      "The strikes came a day after six Pakistani security personnel, including two army officers, were killed in a shootout with militants in Hangu, a district in northwestern Khyber Pakhtunkhwa province near the Afghan border."
+     ],
+     "term": "Army"
+    }
+   ],
+   "verdict_text": "Both are named, but only in a list or in separate places \u2014 the article doesn't describe them interacting. The article is mainly about Taliban."
+  },
+  "status": 200
+ },
+ "event_summarization GET /article-relevance?term1=China&term2=Jordan&url=https://www.fox13seattle.com/news/see-it-chinese-nationals-intercepted-extremely-dangerous-infiltration-attempt-near-florida-coast": {
+  "json": {
+   "article_ok": true,
+   "best_snippet": "MIAMI, Fla. - A smuggling vessel filled with Chinese nationals and other illegal immigrants was intercepted by U.S.",
+   "cooccur_sentences": 1,
+   "link": "listed",
+   "main_entities": [
+    {
+     "count": 5,
+     "label": "ORG",
+     "name": "CBP"
+    },
+    {
+     "count": 5,
+     "label": "ORG",
+     "name": "Fox News"
+    },
+    {
+     "count": 4,
+     "label": "PERSON",
+     "name": "Donald Trump"
+    },
+    {
+     "count": 3,
+     "label": "PERSON",
+     "name": "Gordon Chang"
+    }
+   ],
+   "named_places": [
+    {
+     "count": 12,
+     "name": "United States"
+    },
+    {
+     "count": 10,
+     "name": "China"
+    },
+    {
+     "count": 3,
+     "name": "Florida"
+    },
+    {
+     "count": 2,
+     "name": "Cuba"
+    },
+    {
+     "count": 2,
+     "name": "Dominican Republic"
+    },
+    {
+     "count": 2,
+     "name": "Austin"
+    }
+   ],
+   "reason": null,
+   "terms": [
+    {
+     "aliases": [
+      "China",
+      "Chinese",
+      "Beijing"
+     ],
+     "count": 10,
+     "in_first_paragraph": true,
+     "in_headline": false,
+     "prominence": "central",
+     "snippets": [
+      "MIAMI, Fla. - A smuggling vessel filled with Chinese nationals and other illegal immigrants was intercepted by U.S. Customs and Border Protection (CBP) and the Coast Guard in what sources called a rare and \"extremely dangerous\" attempt to enter the U.S. through Florida.",
+      "CBP confirmed the interdiction exclusively with Fox News, sharing video and photos of U.S. authorities intercepting the vessel, which was carrying 22 illegal immigrants, including 13 Chinese nationals . The boat, a 27-foot cuddy cabin vessel, was stopped, and the migrants aboard were arrested without incident Tuesday."
+     ],
+     "term": "China"
+    },
+    {
+     "aliases": [
+      "Jordan",
+      "Jordanian"
+     ],
+     "count": 1,
+     "in_first_paragraph": false,
+     "in_headline": false,
+     "prominence": "passing",
+     "snippets": [
+      "\"So, this is a very dangerous period for us.\" Chang\u2019s remarks follow reports that China aided Iran in attacks that killed three U.S. troops in Jordan earlier this summer. ICE SHOOTING ROCKS AUSTIN AS DEMOCRAT DEMANDS BODYCAM VIDEO, INDEPENDENT PROBE"
+     ],
+     "term": "Jordan"
+    }
+   ],
+   "verdict_text": "Both are named, but only in a list or in separate places \u2014 the article doesn't describe them interacting. The article is mainly about CBP."
+  },
+  "status": 200
+ },
+ "event_summarization GET /article-relevance?term1=Iran&term2=Israel&url=https://www.wvlkam.com/2026/09/22/trump-faces-packed-un-schedule-as-iran-and-ukraine-wars-dominate-talks/": {
+  "json": {
+   "article_ok": false,
+   "best_snippet": "",
+   "cooccur_sentences": 0,
+   "link": "unavailable",
+   "main_entities": [],
+   "named_places": [],
+   "reason": "Article could not be fetched or had no readable text",
+   "terms": [],
+   "verdict_text": "The article text couldn't be retrieved, so relevance can't be judged."
+  },
+  "status": 200
+ },
+ "event_summarization GET /article-relevance?term1=Iran&term2=an unidentified party&url=https://www.defensenews.com/news/your-military/2026/09/22/centcom-has-become-a-battle-lab-for-unmanned-systems/": {
+  "json": {
+   "article_ok": true,
+   "best_snippet": "A month later, three Corsairs were used for something entirely different : striking a submarine and ship maintenance facility at the Bandar Abbas naval base in Iran, marking the \u201cfirst time American forces have employed sea drones in combat operations,\u201d CENTCOM confirmed .",
+   "cooccur_sentences": 0,
+   "link": "unavailable",
+   "main_entities": [
+    {
+     "count": 8,
+     "label": "ORG",
+     "name": "CENTCOM"
+    },
+    {
+     "count": 8,
+     "label": "ORG",
+     "name": "Navy"
+    },
+    {
+     "count": 2,
+     "label": "PERSON",
+     "name": "Daryl Caudle"
+    },
+    {
+     "count": 1,
+     "label": "PERSON",
+     "name": "Abbas"
+    }
+   ],
+   "named_places": [
+    {
+     "count": 7,
+     "name": "United States"
+    },
+    {
+     "count": 4,
+     "name": "Iran"
+    },
+    {
+     "count": 3,
+     "name": "Middle East"
+    },
+    {
+     "count": 2,
+     "name": "Strait of Hormuz"
+    }
+   ],
+   "reason": null,
+   "terms": [
+    {
+     "aliases": [
+      "Iran",
+      "Iranian",
+      "Tehran"
+     ],
+     "count": 4,
+     "in_first_paragraph": false,
+     "in_headline": false,
+     "prominence": "central",
+     "snippets": [
+      "A month later, three Corsairs were used for something entirely different : striking a submarine and ship maintenance facility at the Bandar Abbas naval base in Iran, marking the \u201cfirst time American forces have employed sea drones in combat operations,\u201d CENTCOM confirmed .",
+      "At the same time, CENTCOM used unmanned attack vessels during the July strikes on Iranian port facilities, according to the command."
+     ],
+     "term": "Iran"
+    },
+    {
+     "aliases": [],
+     "count": 0,
+     "in_first_paragraph": false,
+     "in_headline": false,
+     "prominence": "n/a",
+     "snippets": [],
+     "term": "an unidentified party"
+    }
+   ],
+   "verdict_text": "Iran is named, but \"an unidentified party\" is a generic label that can't be checked by name."
+  },
+  "status": 200
+ },
+ "event_summarization GET /article-relevance?term1=Toronto&term2=Tamil Nadu&url=https://newstodaynet.com/2026/09/22/flying-students-from-tn-killed-during-flight-training-in-toronto/": {
+  "json": {
+   "article_ok": false,
+   "best_snippet": "",
+   "cooccur_sentences": 0,
+   "link": "unavailable",
+   "main_entities": [],
+   "named_places": [],
+   "reason": "Article could not be fetched or had no readable text",
+   "terms": [],
+   "verdict_text": "The article text couldn't be retrieved, so relevance can't be judged."
+  },
+  "status": 200
+ },
+ "event_summarization GET /article-relevance?term1=Uttar Pradesh&term2=Citizen&url=https://economictimes.indiatimes.com/news/politics-and-nation/bjp-will-once-again-form-govt-in-up-with-massive-majority-in-2027-nitin-nabin/articleshow/134410498.cms": {
+  "json": {
+   "article_ok": true,
+   "best_snippet": "",
+   "cooccur_sentences": 0,
+   "link": "none",
+   "main_entities": [
+    {
+     "count": 1,
+     "label": "PERSON",
+     "name": "\u0930\u0939\u0947"
+    },
+    {
+     "count": 1,
+     "label": "PERSON",
+     "name": "@BJP4UP"
+    },
+    {
+     "count": 1,
+     "label": "ORG",
+     "name": "\u0909\u0924\u094d\u0924\u0930 \u092a\u094d\u0930\u0926\u0947\u0936"
+    },
+    {
+     "count": 1,
+     "label": "ORG",
+     "name": "US Fed"
+    }
+   ],
+   "named_places": [
+    {
+     "count": 3,
+     "name": "India"
+    },
+    {
+     "count": 1,
+     "name": "Tanishq"
+    }
+   ],
+   "reason": null,
+   "terms": [
+    {
+     "aliases": [
+      "Uttar Pradesh"
+     ],
+     "count": 0,
+     "in_first_paragraph": false,
+     "in_headline": false,
+     "prominence": "absent",
+     "snippets": [],
+     "term": "Uttar Pradesh"
+    },
+    {
+     "aliases": [
+      "Citizen"
+     ],
+     "count": 0,
+     "in_first_paragraph": false,
+     "in_headline": false,
+     "prominence": "absent",
+     "snippets": [],
+     "term": "Citizen"
+    }
+   ],
+   "verdict_text": "Neither Uttar Pradesh nor Citizen is named in this article \u2014 GDELT likely mis-tagged it. The article is mainly about \u0930\u0939\u0947."
+  },
+  "status": 200
+ },
+ "event_summarization GET /article-relevance?term1=an unidentified party&term2=Andhra Pradesh&url=https://aninews.in/news/national/politics/ys-jagan-reddy-to-take-attack-on-ysrcp-protest-to-governor20260922125326/": {
+  "json": {
+   "article_ok": true,
+   "best_snippet": "Tadepalli (Andhra Pradesh) [India], September 22 (ANI): Former Andra Pradesh Chief Minister and YSRCP President Y.S.",
+   "cooccur_sentences": 0,
+   "link": "unavailable",
+   "main_entities": [
+    {
+     "count": 7,
+     "label": "PERSON",
+     "name": "Y.S. Jagan"
+    },
+    {
+     "count": 7,
+     "label": "ORG",
+     "name": "YSRCP"
+    },
+    {
+     "count": 5,
+     "label": "ORG",
+     "name": "DSC"
+    },
+    {
+     "count": 3,
+     "label": "PERSON",
+     "name": "Chandrababu Naidu"
+    }
+   ],
+   "named_places": [
+    {
+     "count": 1,
+     "name": "India"
+    }
+   ],
+   "reason": null,
+   "terms": [
+    {
+     "aliases": [],
+     "count": 0,
+     "in_first_paragraph": false,
+     "in_headline": false,
+     "prominence": "n/a",
+     "snippets": [],
+     "term": "an unidentified party"
+    },
+    {
+     "aliases": [
+      "Andhra Pradesh"
+     ],
+     "count": 2,
+     "in_first_paragraph": true,
+     "in_headline": false,
+     "prominence": "passing",
+     "snippets": [
+      "Tadepalli (Andhra Pradesh) [India], September 22 (ANI): Former Andra Pradesh Chief Minister and YSRCP President Y.S. Jagan Mohan Reddy has decided to meet the Governor and explain the attack carried out by TDP groups on the party\u2019s peaceful rallies demanding a CBI inquiry into the DSC recruitment irregularities.",
+      "YS Jagan stated that such groups were being encouraged across the State to attack and intimidate anyone questioning the government. Andhra Pradesh had been pushed into a situation worse than \u201cJungle Raj,\u201d he said. Despite suffering injuries, YSRCP leaders and workers exercised great restraint."
+     ],
+     "term": "Andhra Pradesh"
+    }
+   ],
+   "verdict_text": "Andhra Pradesh is named, but \"an unidentified party\" is a generic label that can't be checked by name."
+  },
+  "status": 200
+ },
+ "event_summarization GET /article-relevance?term1=an unidentified party&term2=China&url=https://healthimpactnews.com/2026/is-ai-a-threat-to-destroy-humanity-or-is-the-real-threat-those-who-control-the-technology/": {
+  "json": {
+   "article_ok": true,
+   "best_snippet": "It prompted calls for legislation to control AI, and some of the largest AI Chat Bot producers stated that the development of AI should slow down, which both President Donald Trump and China President Xi rejected, as China called it \u201cfear mongering.\u201d",
+   "cooccur_sentences": 0,
+   "link": "unavailable",
+   "main_entities": [
+    {
+     "count": 5,
+     "label": "ORG",
+     "name": "AI"
+    },
+    {
+     "count": 4,
+     "label": "ORG",
+     "name": "Google"
+    },
+    {
+     "count": 3,
+     "label": "ORG",
+     "name": "Wall Street Journal"
+    },
+    {
+     "count": 2,
+     "label": "PERSON",
+     "name": "Elon Musk"
+    }
+   ],
+   "named_places": [
+    {
+     "count": 17,
+     "name": "AI"
+    },
+    {
+     "count": 2,
+     "name": "China"
+    },
+    {
+     "count": 2,
+     "name": "United States"
+    },
+    {
+     "count": 2,
+     "name": "San Francisco"
+    }
+   ],
+   "reason": null,
+   "terms": [
+    {
+     "aliases": [],
+     "count": 0,
+     "in_first_paragraph": false,
+     "in_headline": false,
+     "prominence": "n/a",
+     "snippets": [],
+     "term": "an unidentified party"
+    },
+    {
+     "aliases": [
+      "China",
+      "Chinese",
+      "Beijing"
+     ],
+     "count": 2,
+     "in_first_paragraph": false,
+     "in_headline": false,
+     "prominence": "passing",
+     "snippets": [
+      "It prompted calls for legislation to control AI, and some of the largest AI Chat Bot producers stated that the development of AI should slow down, which both President Donald Trump and China President Xi rejected, as China called it \u201cfear mongering.\u201d"
+     ],
+     "term": "China"
+    }
+   ],
+   "verdict_text": "China is named, but \"an unidentified party\" is a generic label that can't be checked by name."
+  },
+  "status": 200
+ },
+ "event_summarization GET /article-relevance?term1=an unidentified party&term2=Iran&url=https://www.niagarathisweek.com/news/ontario-gas-price-prediction-for-sept-23/article_abf43d19-ac43-5e18-a0ba-dcd2648640ef.html": {
+  "json": {
+   "article_ok": false,
+   "best_snippet": "",
+   "cooccur_sentences": 0,
+   "link": "unavailable",
+   "main_entities": [],
+   "named_places": [],
+   "reason": "Article could not be fetched or had no readable text",
+   "terms": [],
+   "verdict_text": "The article text couldn't be retrieved, so relevance can't be judged."
+  },
+  "status": 200
+ },
+ "event_summarization GET /historical-context?cc1=CHN&cc2=IRN": {
+  "json": {
+   "available": true,
+   "avg_10yr": 0.6357,
+   "baseline_label": "strongly cooperative",
+   "cc1": "CHN",
+   "cc2": "IRN",
+   "country1": "China",
+   "country2": "Iran",
+   "earliest_year": 1990,
+   "latest_dynamic": 0.5735,
+   "latest_static": 0.4483,
+   "latest_year": 2024,
+   "sparkline": [
+    {
+     "score": 0.637,
+     "year": 2000
+    },
+    {
+     "score": 0.533,
+     "year": 2001
+    },
+    {
+     "score": 0.65,
+     "year": 2002
+    },
+    {
+     "score": 0.567,
+     "year": 2003
+    },
+    {
+     "score": 0.675,
+     "year": 2004
+    },
+    {
+     "score": 0.46,
+     "year": 2005
+    },
+    {
+     "score": -0.037,
+     "year": 2006
+    },
+    {
+     "score": 0.338,
+     "year": 2007
+    },
+    {
+     "score": 0.075,
+     "year": 2008
+    },
+    {
+     "score": 0.517,
+     "year": 2009
+    },
+    {
+     "score": 0.237,
+     "year": 2010
+    },
+    {
+     "score": 0.27,
+     "year": 2011
+    },
+    {
+     "score": -0.033,
+     "year": 2012
+    },
+    {
+     "score": 0.25,
+     "year": 2013
+    },
+    {
+     "score": 0.71,
+     "year": 2014
+    },
+    {
+     "score": 0.65,
+     "year": 2015
+    },
+    {
+     "score": 0.9,
+     "year": 2016
+    },
+    {
+     "score": 0.617,
+     "year": 2017
+    },
+    {
+     "score": 0.287,
+     "year": 2018
+    },
+    {
+     "score": 0.7,
+     "year": 2019
+    },
+    {
+     "score": 0.65,
+     "year": 2020
+    },
+    {
+     "score": 0.667,
+     "year": 2021
+    },
+    {
+     "score": 0.713,
+     "year": 2022
+    },
+    {
+     "score": 0.725,
+     "year": 2023
+    },
+    {
+     "score": 0.448,
+     "year": 2024
+    }
+   ],
+   "summary": "Based on 1990\u20132024 GGE data, China\u2013Iran relations are strongly cooperative (10-year avg: +0.636). Trend: stable.",
+   "trend": "stable"
+  },
+  "status": 200
+ },
+ "event_summarization GET /historical-context?cc1=CHN&cc2=TWN": {
+  "json": {
+   "detail": "No GGE data found for pair CHN-TWN."
+  },
+  "status": 404
+ },
  "event_summarization GET /historical-context?cc1=CHN&cc2=USA": {
   "json": {
    "available": true,
@@ -115,6 +749,126 @@
     }
    ],
    "summary": "Based on 1990\u20132024 GGE data, China\u2013United States relations are moderately tense (10-year avg: -0.269). Trend: improving.",
+   "trend": "improving"
+  },
+  "status": 200
+ },
+ "event_summarization GET /historical-context?cc1=IND&cc2=BGD": {
+  "json": {
+   "available": true,
+   "avg_10yr": 0.5816,
+   "baseline_label": "strongly cooperative",
+   "cc1": "IND",
+   "cc2": "BGD",
+   "country1": "India",
+   "country2": "Bangladesh",
+   "earliest_year": 1990,
+   "latest_dynamic": 0.5889,
+   "latest_static": 0.61,
+   "latest_year": 2024,
+   "sparkline": [
+    {
+     "score": 0.083,
+     "year": 2000
+    },
+    {
+     "score": -0.2,
+     "year": 2001
+    },
+    {
+     "score": -0.067,
+     "year": 2002
+    },
+    {
+     "score": 0.017,
+     "year": 2003
+    },
+    {
+     "score": -0.062,
+     "year": 2004
+    },
+    {
+     "score": 0.1,
+     "year": 2005
+    },
+    {
+     "score": 0.283,
+     "year": 2006
+    },
+    {
+     "score": -0.075,
+     "year": 2007
+    },
+    {
+     "score": 0.188,
+     "year": 2008
+    },
+    {
+     "score": 0.34,
+     "year": 2009
+    },
+    {
+     "score": 0.7,
+     "year": 2010
+    },
+    {
+     "score": 0.45,
+     "year": 2011
+    },
+    {
+     "score": 0.275,
+     "year": 2012
+    },
+    {
+     "score": 0.338,
+     "year": 2013
+    },
+    {
+     "score": 0.613,
+     "year": 2014
+    },
+    {
+     "score": 0.762,
+     "year": 2015
+    },
+    {
+     "score": 0.65,
+     "year": 2016
+    },
+    {
+     "score": 0.53,
+     "year": 2017
+    },
+    {
+     "score": 0.6,
+     "year": 2018
+    },
+    {
+     "score": 0.24,
+     "year": 2019
+    },
+    {
+     "score": 0.519,
+     "year": 2020
+    },
+    {
+     "score": 0.64,
+     "year": 2021
+    },
+    {
+     "score": 0.54,
+     "year": 2022
+    },
+    {
+     "score": 0.725,
+     "year": 2023
+    },
+    {
+     "score": 0.61,
+     "year": 2024
+    }
+   ],
+   "summary": "Based on 1990\u20132024 GGE data, India\u2013Bangladesh relations are strongly cooperative (10-year avg: +0.582). Trend: improving.",
    "trend": "improving"
   },
   "status": 200
@@ -239,6 +993,126 @@
   },
   "status": 200
  },
+ "event_summarization GET /historical-context?cc1=IND&cc2=GBR": {
+  "json": {
+   "available": true,
+   "avg_10yr": 0.4394,
+   "baseline_label": "strongly cooperative",
+   "cc1": "IND",
+   "cc2": "GBR",
+   "country1": "India",
+   "country2": "United Kingdom",
+   "earliest_year": 1990,
+   "latest_dynamic": 0.3834,
+   "latest_static": 0.246,
+   "latest_year": 2024,
+   "sparkline": [
+    {
+     "score": 0.287,
+     "year": 2000
+    },
+    {
+     "score": 0.533,
+     "year": 2001
+    },
+    {
+     "score": 0.25,
+     "year": 2002
+    },
+    {
+     "score": 0.512,
+     "year": 2003
+    },
+    {
+     "score": 0.8,
+     "year": 2004
+    },
+    {
+     "score": 0.613,
+     "year": 2005
+    },
+    {
+     "score": 0.65,
+     "year": 2006
+    },
+    {
+     "score": 0.575,
+     "year": 2007
+    },
+    {
+     "score": 0.5,
+     "year": 2008
+    },
+    {
+     "score": 0.362,
+     "year": 2009
+    },
+    {
+     "score": 0.75,
+     "year": 2010
+    },
+    {
+     "score": 0.375,
+     "year": 2011
+    },
+    {
+     "score": 0.06,
+     "year": 2012
+    },
+    {
+     "score": -0.083,
+     "year": 2013
+    },
+    {
+     "score": 0.433,
+     "year": 2014
+    },
+    {
+     "score": 0.688,
+     "year": 2015
+    },
+    {
+     "score": 0.3,
+     "year": 2016
+    },
+    {
+     "score": 0.5,
+     "year": 2017
+    },
+    {
+     "score": 0.367,
+     "year": 2018
+    },
+    {
+     "score": 0.223,
+     "year": 2019
+    },
+    {
+     "score": 0.637,
+     "year": 2020
+    },
+    {
+     "score": 0.64,
+     "year": 2021
+    },
+    {
+     "score": 0.494,
+     "year": 2022
+    },
+    {
+     "score": 0.3,
+     "year": 2023
+    },
+    {
+     "score": 0.246,
+     "year": 2024
+    }
+   ],
+   "summary": "Based on 1990\u20132024 GGE data, India\u2013United Kingdom relations are strongly cooperative (10-year avg: +0.439). Trend: deteriorating.",
+   "trend": "deteriorating"
+  },
+  "status": 200
+ },
  "event_summarization GET /historical-context?cc1=IND&cc2=USA": {
   "json": {
    "available": true,
@@ -356,6 +1230,246 @@
    ],
    "summary": "Based on 1990\u20132024 GGE data, India\u2013United States relations are strongly cooperative (10-year avg: +0.386). Trend: stable.",
    "trend": "stable"
+  },
+  "status": 200
+ },
+ "event_summarization GET /historical-context?cc1=IRN&cc2=CHN": {
+  "json": {
+   "available": true,
+   "avg_10yr": 0.6357,
+   "baseline_label": "strongly cooperative",
+   "cc1": "IRN",
+   "cc2": "CHN",
+   "country1": "Iran",
+   "country2": "China",
+   "earliest_year": 1990,
+   "latest_dynamic": 0.5735,
+   "latest_static": 0.4483,
+   "latest_year": 2024,
+   "sparkline": [
+    {
+     "score": 0.637,
+     "year": 2000
+    },
+    {
+     "score": 0.533,
+     "year": 2001
+    },
+    {
+     "score": 0.65,
+     "year": 2002
+    },
+    {
+     "score": 0.567,
+     "year": 2003
+    },
+    {
+     "score": 0.675,
+     "year": 2004
+    },
+    {
+     "score": 0.46,
+     "year": 2005
+    },
+    {
+     "score": -0.037,
+     "year": 2006
+    },
+    {
+     "score": 0.338,
+     "year": 2007
+    },
+    {
+     "score": 0.075,
+     "year": 2008
+    },
+    {
+     "score": 0.517,
+     "year": 2009
+    },
+    {
+     "score": 0.237,
+     "year": 2010
+    },
+    {
+     "score": 0.27,
+     "year": 2011
+    },
+    {
+     "score": -0.033,
+     "year": 2012
+    },
+    {
+     "score": 0.25,
+     "year": 2013
+    },
+    {
+     "score": 0.71,
+     "year": 2014
+    },
+    {
+     "score": 0.65,
+     "year": 2015
+    },
+    {
+     "score": 0.9,
+     "year": 2016
+    },
+    {
+     "score": 0.617,
+     "year": 2017
+    },
+    {
+     "score": 0.287,
+     "year": 2018
+    },
+    {
+     "score": 0.7,
+     "year": 2019
+    },
+    {
+     "score": 0.65,
+     "year": 2020
+    },
+    {
+     "score": 0.667,
+     "year": 2021
+    },
+    {
+     "score": 0.713,
+     "year": 2022
+    },
+    {
+     "score": 0.725,
+     "year": 2023
+    },
+    {
+     "score": 0.448,
+     "year": 2024
+    }
+   ],
+   "summary": "Based on 1990\u20132024 GGE data, Iran\u2013China relations are strongly cooperative (10-year avg: +0.636). Trend: stable.",
+   "trend": "stable"
+  },
+  "status": 200
+ },
+ "event_summarization GET /historical-context?cc1=IRN&cc2=ISR": {
+  "json": {
+   "available": true,
+   "avg_10yr": -0.7332,
+   "baseline_label": "historically adversarial",
+   "cc1": "IRN",
+   "cc2": "ISR",
+   "country1": "Iran",
+   "country2": "Israel",
+   "earliest_year": 1990,
+   "latest_dynamic": -0.7689,
+   "latest_static": -0.7625,
+   "latest_year": 2024,
+   "sparkline": [
+    {
+     "score": -0.667,
+     "year": 2000
+    },
+    {
+     "score": -0.733,
+     "year": 2001
+    },
+    {
+     "score": -0.533,
+     "year": 2002
+    },
+    {
+     "score": -0.08,
+     "year": 2003
+    },
+    {
+     "score": -0.6,
+     "year": 2004
+    },
+    {
+     "score": -0.72,
+     "year": 2005
+    },
+    {
+     "score": -0.8,
+     "year": 2006
+    },
+    {
+     "score": -0.725,
+     "year": 2007
+    },
+    {
+     "score": -0.73,
+     "year": 2008
+    },
+    {
+     "score": -0.71,
+     "year": 2009
+    },
+    {
+     "score": -0.762,
+     "year": 2010
+    },
+    {
+     "score": -0.812,
+     "year": 2011
+    },
+    {
+     "score": -0.76,
+     "year": 2012
+    },
+    {
+     "score": -0.59,
+     "year": 2013
+    },
+    {
+     "score": -0.63,
+     "year": 2014
+    },
+    {
+     "score": -0.664,
+     "year": 2015
+    },
+    {
+     "score": -0.512,
+     "year": 2016
+    },
+    {
+     "score": -0.787,
+     "year": 2017
+    },
+    {
+     "score": -0.717,
+     "year": 2018
+    },
+    {
+     "score": -0.774,
+     "year": 2019
+    },
+    {
+     "score": -0.686,
+     "year": 2020
+    },
+    {
+     "score": -0.824,
+     "year": 2021
+    },
+    {
+     "score": -0.792,
+     "year": 2022
+    },
+    {
+     "score": -0.812,
+     "year": 2023
+    },
+    {
+     "score": -0.762,
+     "year": 2024
+    }
+   ],
+   "summary": "Based on 1990\u20132024 GGE data, Iran\u2013Israel relations are historically adversarial (10-year avg: -0.733). Trend: deteriorating.",
+   "trend": "deteriorating"
   },
   "status": 200
  },
@@ -605,6 +1719,40 @@
     "Conflict & Violence": 57,
     "Diplomatic Cooperation": 741,
     "Diplomatic Pressure": 130
+   },
+   "cluster_quality": {
+    "best_k": 2,
+    "k": 4,
+    "k_sweep": [
+     {
+      "k": 2,
+      "silhouette": 0.6871844076092194
+     },
+     {
+      "k": 3,
+      "silhouette": 0.5810126498286745
+     },
+     {
+      "k": 4,
+      "silhouette": 0.5905638363614427
+     },
+     {
+      "k": 5,
+      "silhouette": 0.6410603568514391
+     },
+     {
+      "k": 6,
+      "silhouette": 0.6592011654358821
+     }
+    ],
+    "label": "strong structure",
+    "metric": "euclidean",
+    "n_events": 928,
+    "reason": null,
+    "silhouette": 0.5905638363614427,
+    "silhouette_null": -0.037221408626756027,
+    "stability_ari": 0.8464664923101823,
+    "weak": false
    },
    "country_code": "CHN",
    "country_name": "China",
@@ -1178,6 +2326,40 @@
     "Diplomatic Cooperation": 563,
     "Diplomatic Pressure": 158
    },
+   "cluster_quality": {
+    "best_k": 2,
+    "k": 4,
+    "k_sweep": [
+     {
+      "k": 2,
+      "silhouette": 0.663939644319504
+     },
+     {
+      "k": 3,
+      "silhouette": 0.6258467536146615
+     },
+     {
+      "k": 4,
+      "silhouette": 0.6067683135880835
+     },
+     {
+      "k": 5,
+      "silhouette": 0.6400670733468083
+     },
+     {
+      "k": 6,
+      "silhouette": 0.6575716063035706
+     }
+    ],
+    "label": "strong structure",
+    "metric": "euclidean",
+    "n_events": 867,
+    "reason": null,
+    "silhouette": 0.6067683135880835,
+    "silhouette_null": -0.050196671217368184,
+    "stability_ari": 0.9922388469147807,
+    "weak": false
+   },
    "country_code": "IND",
    "country_name": "India",
    "date": "20260922",
@@ -1750,6 +2932,40 @@
     "Conflict & Violence": 96,
     "Diplomatic Cooperation": 672,
     "Diplomatic Pressure": 147
+   },
+   "cluster_quality": {
+    "best_k": 2,
+    "k": 4,
+    "k_sweep": [
+     {
+      "k": 2,
+      "silhouette": 0.7033205119715268
+     },
+     {
+      "k": 3,
+      "silhouette": 0.5692789124937658
+     },
+     {
+      "k": 4,
+      "silhouette": 0.5792673934696946
+     },
+     {
+      "k": 5,
+      "silhouette": 0.615598845470347
+     },
+     {
+      "k": 6,
+      "silhouette": 0.6203021645501039
+     }
+    ],
+    "label": "strong structure",
+    "metric": "euclidean",
+    "n_events": 915,
+    "reason": null,
+    "silhouette": 0.5792673934696946,
+    "silhouette_null": -0.04621571578961038,
+    "stability_ari": 0.9902917354098444,
+    "weak": false
    },
    "country_code": "IRN",
    "country_name": "Iran",

@@ -71,8 +71,51 @@
   .caveat { margin-top: 8px; font-size: 13px; color: var(--warn); }
   details.support { margin-top: 8px; font-size: 13px; color: var(--muted); }
   details.support li { margin: 4px 0; }
-  .agents { display: grid; grid-template-columns: repeat(auto-fill, minmax(520px, 1fr)); gap: 12px; }
-  @media (max-width: 600px) { .agents { grid-template-columns: 1fr; } .ask form { flex-direction: column; } }
+  /* One full-width panel per agent, all in the same frame: header, KPI row,
+     agent-specific views, claims, then calls. */
+  .agents { display: grid; grid-template-columns: 1fr; gap: 14px; }
+  @media (max-width: 600px) { .ask form { flex-direction: column; } }
+  .panel { padding: 16px 18px; }
+  .kpis { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin-top: 12px; }
+  .tile { background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 9px 12px; min-width: 0; }
+  .tile .k { font-size: 12px; color: var(--muted); }
+  .tile .v { font-size: 20px; font-weight: 600; line-height: 1.25; overflow-wrap: anywhere; }
+  .tile .s { font-size: 12px; color: var(--muted); overflow-wrap: anywhere; }
+  .views { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px 22px; margin-top: 14px; }
+  .views:empty { display: none; }
+  .view { min-width: 0; }
+  .view.wide { grid-column: 1 / -1; }
+  .view h5 { margin: 0 0 6px; font-size: 12px; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+  .view .note { font-size: 12.5px; color: var(--muted); margin: 6px 0 0; }
+  .barlist { display: grid; grid-template-columns: minmax(90px, 46%) 1fr auto; gap: 5px 10px; align-items: center; font-size: 13px; }
+  .barlist .lbl { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .barlist .track { height: 8px; border-radius: 0 4px 4px 0; background: var(--line); overflow: hidden; }
+  .barlist .track i { display: block; height: 100%; min-width: 2px; border-radius: 0 4px 4px 0; background: var(--accent); }
+  .barlist .val { color: var(--muted); font-variant-numeric: tabular-nums; }
+  .barlist .row { display: contents; }
+  .barlist .row:hover .lbl, .barlist .row:hover .val { color: var(--ink); }
+  .events-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+  .events-list li { border: 1px solid var(--line); border-radius: 10px; padding: 9px 12px; background: var(--bg); }
+  .events-list li.mistagged { border-color: var(--bad); }
+  .events-list .what { margin: 4px 0 0; }
+  .events-list .why { margin: 4px 0 0; font-size: 12.5px; color: var(--muted); }
+  .vbadge { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; padding: 1px 8px; border-radius: 999px; border: 1px solid currentColor; }
+  .vbadge.verified { color: var(--agree); } .vbadge.weak { color: var(--warn); } .vbadge.unverified { color: var(--muted); } .vbadge.mistagged { color: var(--bad); }
+  .scroll { overflow-x: auto; }
+  table.ctable { width: 100%; border-collapse: collapse; font-size: 13px; }
+  table.ctable th { text-align: left; font-weight: 600; color: var(--muted); font-size: 12px; padding: 4px 8px 4px 0; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  table.ctable td { padding: 5px 8px 5px 0; border-bottom: 1px solid var(--line); white-space: nowrap; font-variant-numeric: tabular-nums; }
+  table.ctable td.out { color: var(--diverge); font-weight: 600; }
+  svg.spark { display: block; overflow: visible; }
+  svg.spark .zero { stroke: var(--line); stroke-width: 1; }
+  svg.spark .line { fill: none; stroke: var(--muted); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+  svg.spark .end { fill: var(--accent); }
+  svg.spark .hit { fill: transparent; }
+  svg.spark .hit:hover { fill: var(--accent); fill-opacity: .35; }
+  .claims { padding-left: 18px; margin: 14px 0 0; }
+  .claims li { margin: 8px 0; }
+  .claims li small { display: block; color: var(--muted); }
+  .claims .caveat { margin-top: 2px; }
   .agent-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
   .agent-head h4 { margin: 0; font-size: 16px; }
   .agent-head a { font-size: 13px; color: var(--accent); }
@@ -126,7 +169,7 @@
 
     <div id="findingSections"></div>
 
-    <h3 class="sec">Agent responses</h3>
+    <h3 class="sec">By agent</h3>
     <div class="agents" id="agents"></div>
 
     <h3 class="sec">How the question was handled</h3>
@@ -192,6 +235,221 @@ function findingCard(finding) {
   return card;
 }
 
+// ---------------------------------------------------------------- agent panels
+// Every agent gets the same frame: header, KPI tiles, agent-specific views,
+// every claim with its confidence and caveat, then the raw calls. The views
+// read the evidence each claim already carries; nothing here computes new facts.
+const isNum = (v) => typeof v === "number" && isFinite(v);
+const fmt = {
+  pct: (v, d = 0) => (isNum(v) ? `${(v * 100).toFixed(d)}%` : null),
+  signed: (v, d = 2) => (isNum(v) ? `${v >= 0 ? "+" : ""}${v.toFixed(d)}` : null),
+  int: (v) => (isNum(v) ? v.toLocaleString() : null),
+  day: (d) => (typeof d === "string" && d.length === 8 ? `${d.slice(0, 4)}-${d.slice(4, 6)}-${d.slice(6)}` : null),
+};
+const firstOf = (insights, facet) => insights.find((i) => i.facet === facet);
+const byFacet = (insights, facet) => insights.filter((i) => i.facet === facet);
+
+function tile(label, value, sub) {
+  if (value == null || value === "") return null;
+  return el("div", { class: "tile" }, el("div", { class: "k", text: label }), el("div", { class: "v", text: String(value) }), sub ? el("div", { class: "s", text: sub }) : null);
+}
+
+function view(title, body, { wide = false, note = null } = {}) {
+  if (!body) return null;
+  return el("div", { class: `view${wide ? " wide" : ""}` }, el("h5", { text: title }), body, note ? el("p", { class: "note", text: note }) : null);
+}
+
+// One series, one hue: bars grow from a shared baseline; the value is text.
+function barList(rows, { max } = {}) {
+  rows = (rows || []).filter((r) => isNum(r.value));
+  if (!rows.length) return null;
+  const top = max ?? Math.max(...rows.map((r) => Math.abs(r.value)), 1e-9);
+  return el("div", { class: "barlist", role: "list" }, rows.map((r) => {
+    const pct = Math.max(0, Math.min(100, (Math.abs(r.value) / top) * 100));
+    const tip = r.title || `${r.label}: ${r.display}`;
+    return el("div", { class: "row", role: "listitem" },
+      el("span", { class: "lbl", text: r.label, title: tip }),
+      el("span", { class: "track", title: tip }, el("i", { style: `width:${pct}%` })),
+      el("span", { class: "val", text: r.display, title: tip }));
+  }));
+}
+
+const SVGNS = "http://www.w3.org/2000/svg";
+function svg(tag, attrs = {}, ...children) {
+  const node = document.createElementNS(SVGNS, tag);
+  for (const [key, value] of Object.entries(attrs)) node.setAttribute(key, value);
+  for (const child of children) if (child) node.append(child);
+  return node;
+}
+
+// GGE alignment series on its fixed -1..+1 scale, zero line for reference.
+function sparkline(series, { lo = -1, hi = 1, w = 120, h = 28 } = {}) {
+  const pts = (series || []).filter((p) => isNum(p.score));
+  if (pts.length < 2) return null;
+  const x = (i) => (i / (pts.length - 1)) * w;
+  const y = (v) => h - ((Math.max(lo, Math.min(hi, v)) - lo) / (hi - lo)) * h;
+  const last = pts[pts.length - 1];
+  const root = svg("svg", { class: "spark", width: w, height: h, viewBox: `0 0 ${w} ${h}`, role: "img", "aria-label": `GGE alignment ${pts[0].year} to ${last.year}, latest ${fmt.signed(last.score, 3)}` },
+    svg("line", { class: "zero", x1: 0, x2: w, y1: y(0), y2: y(0) }),
+    svg("path", { class: "line", d: pts.map((p, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${y(p.score).toFixed(1)}`).join("") }),
+    svg("circle", { class: "end", cx: x(pts.length - 1), cy: y(last.score), r: 4 }));
+  pts.forEach((p, i) => {
+    const title = svg("title");
+    title.textContent = `${p.year}: ${fmt.signed(p.score, 3)}`;
+    root.append(svg("circle", { class: "hit", cx: x(i), cy: y(p.score), r: 5 }, title));
+  });
+  return root;
+}
+
+function sourceLink(url) {
+  if (typeof url !== "string" || !/^https?:\/\//.test(url)) return null;
+  let host = url;
+  try { host = new URL(url).hostname.replace(/^www\./, ""); } catch { /* keep the raw url */ }
+  return el("a", { href: url, target: "_blank", rel: "noopener noreferrer", class: "muted", text: `${host} ↗` });
+}
+
+const VERIFY = {
+  verified: ["✓", "Verified in article"],
+  weak: ["◐", "Weakly supported"],
+  unverified: ["?", "Unverified"],
+  mistagged: ["✕", "Likely mis-tagged"],
+};
+function verifyBadge(v) {
+  const status = VERIFY[v?.status] ? v.status : "unverified";
+  const [icon, label] = VERIFY[status];
+  return el("span", { class: `vbadge ${status}` }, el("span", { "aria-hidden": "true", text: icon }), label + (v?.method === "url_only" ? " (URL check)" : ""));
+}
+
+const VIEWS = {
+  event_summarization(ins) {
+    const act = firstOf(ins, "event_activity")?.evidence || {};
+    const kpis = [
+      tile("Events", fmt.int(act.total_events), fmt.day(act.date) && `GDELT, ${fmt.day(act.date)}`),
+      tile("Mean Goldstein", fmt.signed(act.avg_goldstein), act.tone),
+      tile("Conflict / cooperation", fmt.pct(act.conflict_share) && `${fmt.pct(act.conflict_share)} / ${fmt.pct(act.cooperation_share)}`, "share of event types"),
+      tile("Initiated", isNum(act.initiator_pct) ? `${act.initiator_pct}%` : null, "of the day's events"),
+    ];
+    const views = [];
+    const themes = firstOf(ins, "event_themes");
+    if (themes) {
+      const q = themes.evidence.cluster_quality;
+      const note = q && isNum(q.silhouette)
+        ? `Cluster quality: ${q.silhouette.toFixed(2)} · ${q.label} (shuffled baseline ${fmt.signed(q.silhouette_null)}, seed stability ${isNum(q.stability_ari) ? q.stability_ari.toFixed(2) : "n/a"})`
+        : "Cluster quality: not available";
+      views.push(view("Themes", barList((themes.evidence.themes || []).map((t) => ({ label: t.label, value: t.share, display: `${fmt.pct(t.share)} · ${t.count}` })), { max: 1 }), { note }));
+    }
+    const split = firstOf(ins, "event_domestic_split");
+    if (split) {
+      const d = split.evidence.domestic || {}, i = split.evidence.international || {};
+      views.push(view("Domestic vs international", barList([
+        { label: "Domestic", value: d.total, display: `${d.total} · Goldstein ${fmt.signed(d.avg_goldstein)}` },
+        { label: "International", value: i.total, display: `${i.total} · Goldstein ${fmt.signed(i.avg_goldstein)}` },
+      ]), { note: split.caveat }));
+    }
+    const heads = byFacet(ins, "event_headline");
+    if (heads.length) {
+      views.push(view("Top events, checked against their source", el("ol", { class: "events-list" }, heads.map((h) => {
+        const e = h.evidence || {}, v = e.verification || {};
+        return el("li", { class: v.status === "mistagged" ? "mistagged" : "" },
+          el("div", { class: "agent-head" }, verifyBadge(v), el("span", { class: "muted", text: `#${e.rank} · ${e.event_type} · Goldstein ${fmt.signed(e.goldstein, 1)} · ${e.num_articles ?? "?"} articles` })),
+          el("p", { class: "what", text: plain(h.claim) }),
+          v.verdict ? el("p", { class: "why", text: v.verdict }) : null,
+          v.snippet ? el("p", { class: "why", text: `“${v.snippet}”` }) : null,
+          sourceLink(e.url));
+      })), { wide: true }));
+    }
+    const partners = firstOf(ins, "event_partners")?.evidence?.partners || [];
+    const baselines = Object.fromEntries(byFacet(ins, "relationship_baseline").map((b) => [(b.evidence.pair || [])[1], b.evidence]));
+    if (partners.length) {
+      const rows = partners.map((p) => {
+        const b = baselines[p.iso3];
+        const g = p.avg_goldstein, avg = b?.avg_10yr;
+        // Same thresholds as fusion's "out of character" check.
+        const out = isNum(avg) && ((avg >= 0.1 && g <= -1) || (avg <= -0.1 && g >= 1));
+        return el("tr", {},
+          el("td", { text: p.iso3 }),
+          el("td", { text: String(p.count) }),
+          el("td", { class: out ? "out" : "", text: `${fmt.signed(g, 1)}${out ? (g < 0 ? " ↓ out of character" : " ↑ warmer than history") : ""}` }),
+          el("td", { text: b?.baseline_label || "—" }),
+          el("td", { text: fmt.signed(avg, 3) || "—" }),
+          el("td", {}, b ? sparkline(b.series) : el("span", { class: "muted", text: "not fetched" })));
+      });
+      views.push(view("Counterparts: today vs 1990-2024", el("div", { class: "scroll" }, el("table", { class: "ctable" },
+        el("tr", {}, ["Partner", "Events today", "Goldstein today", "GGE baseline", "10-yr avg", "GGE 2000-2024"].map((t) => el("th", { text: t }))),
+        rows)), { wide: true, note: "GGE baselines are fetched for the three most active counterparts." }));
+    }
+    return { kpis, views };
+  },
+
+  trade_intelligence(ins) {
+    const risk = firstOf(ins, "trade_exposure")?.evidence, bloc = firstOf(ins, "trade_alignment")?.evidence, lev = firstOf(ins, "trade_dependence")?.evidence;
+    const kpis = [
+      tile("Trade risk rank", risk && `#${risk.rank} of ${risk.countries_ranked}`, risk && isNum(risk.trade_concentration) ? `partner concentration ${risk.trade_concentration.toFixed(2)}` : null),
+      tile("Trading bloc", bloc && `${bloc.bloc_name}-anchored`, bloc && `${bloc.bloc_size} members · ${fmt.pct(bloc.internal_trade_share)} internal trade`),
+      tile("Most critical partner", lev?.most_critical_partner, lev && `${fmt.pct(lev.critical_partner_dependence, 1)} of its trade`),
+      tile("Net leverage", lev && fmt.signed(lev.net_leverage), lev && `dominates ${lev.partners_dominated} · depends on ${lev.partners_dependent_on}`),
+    ];
+    const views = [];
+    if (lev) {
+      views.push(view("Most dependent on (share of its trade)", barList((lev.vulnerable_to || []).map((r) => ({ label: r.leverage_holder, value: r.exposed_dependence, display: fmt.pct(r.exposed_dependence, 1) })))));
+      views.push(view("Holds leverage over (their dependence)", barList((lev.holds_leverage_over || []).map((r) => ({ label: r.exposed_country, value: r.exposed_dependence, display: fmt.pct(r.exposed_dependence, 1) })))));
+    }
+    const fragile = byFacet(ins, "supply_fragility");
+    if (fragile.length) {
+      views.push(view("Sector fragility (0-1)", barList(fragile.map((f) => ({ label: f.evidence.sector, value: f.evidence.fragility_score, display: `${f.evidence.fragility_score.toFixed(2)} · top ${f.evidence.top_supplier || "?"} ${fmt.pct(f.evidence.top_supplier_share) || ""}` })), { max: 1 })));
+    }
+    const shock = byFacet(ins, "shock_impact").filter((s) => isNum(s.evidence?.impact_score));
+    if (shock.length) {
+      views.push(view("Shock impact by economy", barList(shock.map((s) => ({ label: s.entity_name, value: s.evidence.impact_score, display: s.evidence.impact_score.toFixed(3) })))));
+    }
+    return { kpis, views };
+  },
+
+  soft_power(ins) {
+    const inf = firstOf(ins, "influence")?.evidence, trend = firstOf(ins, "influence_trend")?.evidence;
+    const outlook = (firstOf(ins, "influence_outlook")?.evidence?.forecast || []).slice(-1)[0];
+    const kpis = [
+      tile("Soft Power score", inf && isNum(inf.score) ? `${inf.score.toFixed(1)} / 100` : null, inf && `#${inf.rank} of ${inf.of} · ${inf.year}`),
+      tile("Change", trend && fmt.signed(trend.delta, 1), trend && `${trend.from_year}-${trend.to_year}, ${trend.direction}`),
+      tile("Forecast", outlook && isNum(outlook.score) ? outlook.score.toFixed(1) : null, outlook && `${outlook.year} · interval ${outlook.lo?.toFixed(1)}-${outlook.hi?.toFixed(1)}`),
+    ];
+    const drivers = firstOf(ins, "influence_drivers")?.evidence?.drivers || [];
+    const peers = firstOf(ins, "influence_peers")?.evidence?.peers || [];
+    return {
+      kpis,
+      views: [
+        view("Top drivers (mean |SHAP|)", barList(drivers.slice(0, 6).map((d) => ({ label: d.feature, value: d.shap, display: d.shap.toFixed(2) })))),
+        view("Closest profiles (similarity)", barList(peers.slice(0, 6).map((p) => ({ label: p.iso3, value: p.similarity, display: p.similarity.toFixed(2) })), { max: 1 })),
+      ],
+    };
+  },
+
+  policy_stance(ins) {
+    const al = firstOf(ins, "diplomatic_alignment")?.evidence, conflict = firstOf(ins, "conflict_exposure")?.evidence;
+    const kpis = [
+      tile("UN bloc", al?.bloc, al?.provenance && `provenance: ${al.provenance}`),
+      tile("Conflict records", conflict && fmt.int(conflict.conflict_records), conflict && `${fmt.int(conflict.deaths)} deaths`),
+      tile("Deaths, last 5 years", conflict && fmt.int(conflict.recent_deaths_5y)),
+    ];
+    const partners = firstOf(ins, "diplomatic_partners")?.evidence?.partners || [];
+    return {
+      kpis,
+      views: [view("Closest UN voting partners (agreement)", barList(partners.slice(0, 6).map((p) => ({ label: p.name, value: p.un_agree_rate, display: fmt.pct(p.un_agree_rate) })), { max: 1 }))],
+    };
+  },
+};
+
+function claimList(insights) {
+  return el("ol", { class: "claims" }, insights.map((item) => {
+    const row = el("li", {}, plain(item.claim));
+    const link = sourceLink(item.evidence?.url);
+    if (link) row.append(" ", link);
+    row.append(el("small", { text: `${item.facet || ""} · conf ${Number(item.confidence).toFixed(2)} · ${item.reason || ""}` }));
+    if (item.caveat) row.append(el("div", { class: "caveat", text: `Caveat: ${item.caveat}` }));
+    return row;
+  }));
+}
+
 function renderAgents(agents, order) {
   const box = $("agents");
   box.replaceChildren();
@@ -204,18 +462,22 @@ function renderAgents(agents, order) {
       el("span", { class: "muted", text: `${result.status} · ${Math.round(result.latency_ms)} ms · ${result.insight_count} insights` }),
     );
     if (result.dashboard_url) head.append(el("a", { href: result.dashboard_url, target: "_blank", rel: "noopener", text: "Open module dashboard ↗" }));
-    const card = el("article", { class: "card agent" }, head);
+    const card = el("article", { class: "card agent panel" }, head);
     if (result.error) card.append(el("p", { class: "caveat", text: result.error }));
     for (const note of result.notes || []) card.append(el("p", { class: "muted", text: note }));
     const insights = result.envelope?.insights || [];
     if (ok && insights.length) {
-      card.append(el("ol", {}, insights.map((item) => {
-        const row = el("li", {}, plain(item.claim));
-        const url = item.evidence?.url;
-        if (typeof url === "string" && /^https?:\/\//.test(url)) row.append(" ", el("a", { href: url, target: "_blank", rel: "noopener noreferrer", text: "source ↗" }));
-        row.append(el("small", { text: `${item.facet || ""} · conf ${Number(item.confidence).toFixed(2)} · ${item.reason || ""}` }));
-        return row;
-      })));
+      let parts = { kpis: [], views: [] };
+      try {
+        if (VIEWS[name]) parts = VIEWS[name](insights);
+      } catch (err) {
+        // An unexpected response shape costs this panel its views, not the briefing.
+        console.warn(`views for ${name} failed`, err);
+      }
+      const kpis = (parts.kpis || []).filter(Boolean), views = (parts.views || []).filter(Boolean);
+      if (kpis.length) card.append(el("div", { class: "kpis" }, kpis));
+      if (views.length) card.append(el("div", { class: "views" }, views));
+      card.append(claimList(insights));
     }
     const meta = result.envelope?.metadata;
     const calls = el("table", { class: "calls" }, (result.calls || []).map((c) =>

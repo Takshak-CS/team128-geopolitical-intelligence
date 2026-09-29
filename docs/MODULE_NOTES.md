@@ -142,6 +142,12 @@ numpy 2.5.3).
 
 ## Event Summarization (Shreyas)
 
+Vendored at `3f026ed` (synced from `3e6579e`). That update added the module's
+own validation of its KMeans themes (`cluster_quality` in `/analyze`), the
+`/article-context` and `/article-relevance` endpoints, and "Domestic event
+within X" wording for events with the same actor on both sides. The
+integration patch below re-applied without conflicts.
+
 **Patched**
 - `src/api.py` and `src/preprocess.py`: **missing GDELT country codes became
   a partner called "NAN"**. `preprocess()` upper-cases the code columns with
@@ -161,7 +167,22 @@ numpy 2.5.3).
   *both* actors carry the country's code. Events whose counterpart GDELT left
   uncoded (most of them) are counted as international: India shows 23
   domestic and 844 international on 2026-09-22, although most of those are
-  state-level Indian politics. The orchestrator no longer quotes the split.
+  state-level Indian politics. The orchestrator quotes the split as its own
+  claim (`event_domestic_split`), at confidence 0.4 or lower, with a caveat
+  saying the domestic count is a floor rather than an estimate.
+- **The theme validation describes a different clustering from the themes
+  shown.** Production KMeans uses k=4, but two of the four clusters receive the
+  same theme name. `cluster_counts` therefore lists three themes (China, India
+  and Iran on 2026-09-22 and Iran on 2026-09-28 all show this). The reported
+  silhouette (for example 0.54 for Iran on 2026-09-28) scores the 4-cluster
+  fit. The module's own `k_sweep` rates k=2 best (`best_k`: 2) in every
+  case. The orchestrator states the validation as the module reports it. Fixing
+  this belongs in the module: choose k from the sweep, or validate the named
+  themes.
+- `/article-relevance` returns `unavailable` for sites that refuse non-browser
+  fetches (HTTP 403). On 2026-09-28 `northbaynipissing.com` always refused.
+  `krcgtv.com` refused on some attempts and served the page on others. The
+  orchestrator falls back to the URL slug in that case (see below).
 - The country list (`src/utils.py COUNTRY_MAP`) covers about 150 countries.
   GDELT codes outside it still work in `/analyze`, but display as the raw
   code.
@@ -169,6 +190,46 @@ numpy 2.5.3).
   redirect, but `GDELT_BASE_URL` should use `https://`.
 - The day's export is published around 10:00 UTC the next day. Before that,
   "yesterday" returns 404. The orchestrator retries the previous day.
+
+**What the orchestrator now uses from this module, and why**
+
+Before this change the Events adapter turned `/analyze` into three claims: the
+day's activity, the top counterparts, and the single top event, which was
+quoted unchecked. Trade contributes up to six claims to a country question.
+This module's distinctive output never reached the briefing:
+
+- the theme validation, which was dropped
+- the domestic split, which was held back
+- a check on whether an event is mis-tagged, which was never made
+- the GGE baseline, fetched for only one partner
+
+The top event could be plainly wrong. For Iran on 2026-09-28, event #3,
+"Israel vs Iran, Fight, Goldstein -10", came from an article titled "Ontario
+gas price prediction for Sept. 30".
+
+The adapter now makes up to ten claims per country and day
+(docs/CONTRACT.md, "Events claims"):
+
+- `event_themes`: the themes, stated with the module's cluster validation.
+- `event_domestic_split`: the split, with its caveat attached.
+- `event_headline` × 3: each top event is checked against its source article
+  with `/article-relevance`, which uses no AI model. Gemini `/enrich-event`
+  is not used, so it needs no key and spends no quota. When the site refuses
+  the fetch, the adapter checks whether the URL slug names either country. An
+  event the source does not support is reported as "Likely mis-tagged by
+  GDELT" at confidence 0.15-0.2, not as news.
+- `relationship_baseline` × 3: GGE baselines for the three most active
+  counterparts, each next to today's figures for that pair. Fusion's
+  "out of character" check now has three pairs to test instead of one.
+- `event_activity` also reports the share of events the country initiated and
+  carries `tone_counts`.
+
+The briefing UI gives every agent the same panel: KPI tiles, views drawn from
+the claims' evidence, every claim with its confidence and caveat, and the raw
+calls. Previously each agent got only a numbered list of claim sentences. The
+Events panel shows themes with their cluster quality, the domestic split, the
+checked headlines with verification badges, and a counterparts table that
+puts today's Goldstein next to the 1990-2024 baseline and its trend line.
 
 ## CAMEO codes (verified)
 

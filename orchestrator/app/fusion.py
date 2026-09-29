@@ -46,9 +46,13 @@ PRIMARY_FACETS = {
     "shock": {"shock_impact"},
     "forecast": {"trade_outlook", "influence_outlook", "conflict_outlook"},
     "blocs": {"trade_alignment", "diplomatic_alignment", "diplomatic_blocs"},
-    "events": {"event_activity", "event_partners", "event_headline", "relationship_baseline"},
+    "events": {"event_activity", "event_partners", "event_headline", "event_themes", "event_domestic_split", "relationship_baseline"},
     "ranking": {"trade_exposure", "trade_dependence", "supply_fragility", "trade_alignment", "influence", "diplomatic_blocs"},
 }
+
+# Facets where one agent legitimately makes several claims about the same entity
+# (one per affected economy, one per headline event), so dedupe keys on the claim.
+CLAIM_KEYED_FACETS = (None, "shock_impact", "event_headline")
 
 PROVENANCE_CAVEAT = {
     "override_replaced": "Policy Stance publishes a hard-coded UN bloc for {name}; this finding uses the module's own vote-model placement instead, which comes from the full 1989-2025 voting history rather than the aligned year.",
@@ -116,7 +120,7 @@ class InsightIndex:
             for item in result.insights:
                 self.received += 1
                 evidence = item.get("evidence") or {}
-                key = (agent, item.get("entity_iso3"), item.get("facet"), evidence.get("sector"), _pair_key(evidence), item.get("claim") if item.get("facet") in (None, "shock_impact") else None)
+                key = (agent, item.get("entity_iso3"), item.get("facet"), evidence.get("sector"), _pair_key(evidence), item.get("claim") if item.get("facet") in CLAIM_KEYED_FACETS else None)
                 current = best.get(key)
                 if current is None or item.get("confidence", 0) > current[1].get("confidence", 0):
                     best[key] = (agent, item)
@@ -417,7 +421,7 @@ def fuse(plan: QueryPlan, results: dict[str, AgentResult]) -> dict:
         findings.append(Finding(
             "insight", AGENT_LABELS.get(agent, agent), item.get("claim", ""), entity, item.get("entity_name") or countries.name_of(entity),
             float(item.get("confidence", 0.0)), [agent], [item.get("facet") or "general"], [_support(agent, item)],
-            rank=float(item.get("confidence", 0.0)) * relevance,
+            caveat=item.get("caveat"), rank=float(item.get("confidence", 0.0)) * relevance,
         ))
 
     for finding in findings:

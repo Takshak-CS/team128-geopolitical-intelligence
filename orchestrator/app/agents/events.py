@@ -1,9 +1,24 @@
 """Event Summarization adapter (Shreyas's module, FastAPI over GDELT V1 + GGE).
 
 Native API:
-    POST /analyze                {date: YYYYMMDD, country_code: CAMEO} -> metrics, partners, top events
+    POST /analyze                {date: YYYYMMDD, country_code: CAMEO} -> metrics, partners, top events,
+                                 KMeans themes with their validation (cluster_quality)
     GET  /historical-context     GGE bilateral alignment 1990-2024 for a CAMEO/ISO3 pair
+    GET  /article-relevance      whether a source article actually names the event's two actors (no AI call)
     GET  /health                 ML layers and GGE availability
+
+Claims, by facet:
+    event_activity         the day's volume, tone, conflict/cooperation mix, share initiated
+    event_partners         most active counterparts
+    event_themes           KMeans themes, stated with the module's own cluster validation
+    event_domestic_split   domestic vs international, with the module's counting caveat
+    event_headline         the top three events, each checked against its source article
+    relationship_baseline  GGE 1990-2024 baseline for the top three counterparts, next to today
+
+GDELT's machine coding is noisy: an article about fuel prices can be coded as a
+military clash. So each headline event is checked against its source article
+before the briefing repeats it, and one the article does not support is flagged
+as likely mis-tagged instead of being quoted as news.
 
 Time alignment. GDELT is daily; the other three agents are annual. This adapter
 keeps the day it analysed in ``metadata.date`` and, where it can, puts that day
@@ -17,9 +32,12 @@ the export exists, otherwise the day before.
 
 from __future__ import annotations
 
+import asyncio
 import math
+import re
 from datetime import datetime, timedelta, timezone
 from typing import Optional
+from urllib.parse import urlsplit
 
 from .. import countries
 from ..contract import insight
@@ -29,6 +47,24 @@ from .base import AgentAdapter, AgentCallError, AgentResult, try_call
 # CAMEO root codes 14-20 (EVENT_MAP labels in the module's preprocess.py).
 CONFLICT_TYPES = {"Protest", "Exhibit Force", "Reduce Relations", "Coerce", "Assault", "Fight", "Mass Violence"}
 COOPERATION_TYPES = {"Verbal Cooperation", "Material Cooperation", "Diplomatic Cooperation", "Consultation", "Mediation", "Engagement", "Provision of Aid", "Yield / Concession"}
+
+HEADLINE_EVENTS = 3
+BASELINE_PARTNERS = 3
+RELEVANCE_TIMEOUT_S = 30.0
+
+# /article-relevance "link" -> how far the article supports the event.
+VERIFICATION = {
+    "together": "verified",    # both actors named in the same, non-list sentence
+    "listed": "weak",          # both named, but only in a list or apart
+    "one_sided": "weak",       # only one actor named
+    "none": "mistagged",       # neither actor named
+}
+HEADLINE_CONFIDENCE = {"verified": 0.55, "weak": 0.35, "unverified": 0.45, "mistagged": 0.15}
+
+# Words in a URL path that say nothing about an article's subject.
+_SLUG_NOISE = {"news", "article", "articles", "story", "stories", "world", "nation", "html", "index", "amp", "the", "and", "for",
+               "with", "from", "that", "this", "what", "about", "after", "over", "into", "local", "national", "international"}
+_GENERIC_ACTOR = re.compile(r"^(an? |the )?(unidentified|unknown|unnamed)\b", re.I)
 
 
 def _tone(goldstein: float) -> str:
@@ -49,6 +85,41 @@ def _volume_confidence(n: int) -> float:
     return min(0.7, 0.3 + 0.1 * math.log10(1 + max(0, n)))
 
 
+def _slug_words(url: str) -> list[str]:
+    """Subject words from the hyphenated slug segments of a URL path.
+
+    Only hyphenated segments count, so opaque IDs ("article-909972",
+    "article_82cca2f2-0bbc-...") contribute nothing."""
+    words: list[str] = []
+    for segment in urlsplit(url or "").path.lower().split("/"):
+        if "-" not in segment:
+            continue
+        for part in segment.split("-"):
+            if part.isalpha() and len(part) >= 3 and part not in _SLUG_NOISE:
+                words.append(part)
+    return words
+
+
+def _slug_check(url: str, actor1: str, actor2: str) -> Optional[str]:
+    """Fallback when the article itself cannot be fetched: "none" when the URL's
+    slug is descriptive (4+ subject words) and names neither actor, "named" when
+    it names one, None when the slug cannot settle it.
+
+    Only country actors can be checked this way. A role label ("Police",
+    "Gang") or a generic one ("an unidentified party") has no name a slug
+    would carry, so any such actor leaves the event unverified."""
+    words = _slug_words(url)
+    actors = list(dict.fromkeys(a.strip() for a in (actor1, actor2) if a and a.strip()))
+    if len(words) < 4 or not actors or any(_GENERIC_ACTOR.match(a) or not countries.resolve(a) for a in actors):
+        return None
+    for actor in actors:
+        tokens = [t for t in re.findall(r"[a-z]+", actor.lower()) if len(t) >= 3]
+        # Prefix match, so "iran" also finds "iranian" and "israel" finds "israeli".
+        if any(word.startswith(token) for token in tokens for word in words):
+            return "named"
+    return "none"
+
+
 class EventsAdapter(AgentAdapter):
     name = "event_summarization"
     label = "Events"
@@ -61,7 +132,7 @@ class EventsAdapter(AgentAdapter):
             "description": self.description,
             "time_grain": self.time_grain,
             "join_key": "CAMEO actor country code -> ISO3",
-            "native_endpoints": ["POST /analyze", "GET /historical-context", "POST /briefing", "POST /enrich-event", "WS /ws/pipeline"],
+            "native_endpoints": ["POST /analyze", "GET /historical-context", "GET /article-relevance", "POST /briefing", "POST /enrich-event", "WS /ws/pipeline"],
         }
 
     async def _analyze(self, iso3: str, day: str) -> dict:
@@ -110,20 +181,114 @@ class EventsAdapter(AgentAdapter):
         metadata.update({"date": day, "year": int(day[:4]), "data_quality": {"events": (payload.get("metrics") or {}).get("total_events")}})
 
         insights = self._day_insights(iso3, day, payload, result)
-        partner_iso3 = None
+        partners = result.context.get("partners", [])
         if plan.intent == "bilateral" and len(plan.iso3s) >= 2:
-            partner_iso3 = plan.iso3s[1]
-            insights.extend(self._pair_today(iso3, partner_iso3, day, result.context.get("partners", [])))
-        elif result.context.get("partners"):
-            partner_iso3 = result.context["partners"][0]["iso3"]
+            baseline_partners = [plan.iso3s[1]]
+            insights.extend(self._pair_today(iso3, plan.iso3s[1], day, partners))
+        else:
+            baseline_partners = [p["iso3"] for p in partners[:BASELINE_PARTNERS]]
 
-        if partner_iso3:
-            baseline = await try_call(self.get("/historical-context", params={"cc1": countries.to_cameo(iso3), "cc2": countries.to_cameo(partner_iso3)}), None)
+        headlines, baselines = await asyncio.gather(
+            self._headline_insights(iso3, day, payload, _volume_confidence(int((payload.get("metrics") or {}).get("total_events") or 0))),
+            asyncio.gather(*(self._baseline(iso3, other) for other in baseline_partners)),
+        )
+        insights.extend(headlines)
+        today_by_partner = {p["iso3"]: p for p in partners}
+        for other, baseline in zip(baseline_partners, baselines):
             if baseline and baseline.get("available"):
-                insights.append(self._baseline_insight(iso3, partner_iso3, baseline))
-            elif baseline is None and any(c.status == 503 for c in self._calls if c.path == "/historical-context"):
-                result.notes.append("GGE 1990-2024 baseline unavailable: the Events service has no dyad_geopolitical_scores.csv (see docs/DATA.md).")
+                insights.append(self._baseline_insight(iso3, other, baseline, today_by_partner.get(other)))
+        # GGE has no series for some pairs (e.g. China-Taiwan): a gap in the
+        # dataset, not a failure of the agent.
+        for call in self._calls:
+            if call.path == "/historical-context" and call.status == 404:
+                call.handled = True
+        missing = [other for other, baseline in zip(baseline_partners, baselines) if baseline and baseline.get("missing_pair")]
+        if missing:
+            result.notes.append("No GGE 1990-2024 series for: " + ", ".join(f"{countries.name_of(iso3)}-{countries.name_of(o)}" for o in missing) + ".")
+        if baseline_partners and any(c.status == 503 for c in self._calls if c.path == "/historical-context"):
+            result.notes.append("GGE 1990-2024 baseline unavailable: the Events service has no dyad_geopolitical_scores.csv (see docs/DATA.md).")
         return insights, metadata
+
+    async def _baseline(self, iso3: str, other: str) -> Optional[dict]:
+        try:
+            return await self.get("/historical-context", params={"cc1": countries.to_cameo(iso3), "cc2": countries.to_cameo(other)})
+        except AgentCallError as exc:
+            # 404: the GGE file is loaded but has no series for this pair.
+            return {"available": False, "missing_pair": True} if exc.status_code == 404 else None
+
+    async def _relevance(self, event: dict) -> Optional[dict]:
+        url = event.get("url") or ""
+        if not url.startswith(("http://", "https://")):
+            return None
+        params = {"url": url, "term1": event.get("actor1") or "", "term2": event.get("actor2") or ""}
+        return await try_call(self.get("/article-relevance", params=params, timeout=min(RELEVANCE_TIMEOUT_S, self.config.timeout_s)), None)
+
+    async def _headline_insights(self, iso3: str, day: str, payload: dict, volume_confidence: float) -> list[dict]:
+        events = (payload.get("top5_events") or [])[:HEADLINE_EVENTS]
+        checks = await asyncio.gather(*(self._relevance(event) for event in events))
+        # The check is optional: a site that refuses the fetch is reported on the
+        # claim itself, not as a failure of the Events agent.
+        for call in self._calls:
+            if call.path == "/article-relevance" and call.error:
+                call.handled = True
+        return [self._headline_insight(iso3, day, event, check, volume_confidence) for event, check in zip(events, checks)]
+
+    @staticmethod
+    def _headline_insight(iso3: str, day: str, event: dict, check: Optional[dict], volume_confidence: float) -> dict:
+        actor1, actor2 = event.get("actor1") or "", event.get("actor2") or ""
+        url = event.get("url") or ""
+        link = (check or {}).get("link")
+        status = VERIFICATION.get(link, "unverified")
+        method = "article_text" if link in VERIFICATION else None
+        verdict = (check or {}).get("verdict_text") or ("The article relevance check did not answer." if check is None else "")
+        if status == "unverified" and check is not None and not check.get("article_ok"):
+            # The site refused the fetch (often HTTP 403 to non-browsers); fall back to the URL.
+            slug = _slug_check(url, actor1, actor2)
+            if slug == "none":
+                status, method = "mistagged", "url_only"
+                subject = " ".join(_slug_words(url))
+                verdict = f"The article could not be fetched, and its URL (\"{subject}\") names neither {actor1} nor {actor2}."
+        score = float(event.get("score") or 0.0)
+        confidence = min(volume_confidence, HEADLINE_CONFIDENCE[status])
+        if method == "url_only":
+            confidence = min(confidence, 0.2)
+        rank = event.get("rank")
+        if status == "mistagged":
+            claim = (f"Likely mis-tagged by GDELT: event #{rank} codes {actor1} vs {actor2} as \"{event.get('event_type')}\" "
+                     f"(Goldstein {score:+.1f}), but the source does not support it.")
+            reason = "source article check (no AI): " + ("URL only, article text unavailable" if method == "url_only" else "full article text")
+        else:
+            claim = f"Top event #{rank}: {event.get('sentence')}"
+            reason = ("single machine-coded event, confirmed against its source article" if status == "verified"
+                      else "single machine-coded event; GDELT often miscodes accidents and domestic politics, so verify against the source article")
+        caveat = None if status == "verified" else verdict or None
+        return insight(
+            iso3,
+            claim,
+            score,
+            confidence,
+            reason,
+            {
+                "date": day,
+                "rank": rank,
+                "actor1": actor1,
+                "actor2": actor2,
+                "event_type": event.get("event_type"),
+                "goldstein": score,
+                "tone": event.get("tone"),
+                "url": url,
+                "num_articles": event.get("num_articles"),
+                "verification": {
+                    "status": status,
+                    "method": method,
+                    "link": link,
+                    "verdict": verdict,
+                    "snippet": (check or {}).get("best_snippet") or None,
+                },
+            },
+            facet="event_headline",
+            caveat=caveat,
+        )
 
     async def _historical_year(self, plan: QueryPlan, result: AgentResult) -> tuple[list[dict], dict]:
         year = plan.time.year
@@ -163,7 +328,7 @@ class EventsAdapter(AgentAdapter):
         typed_total = sum(types.values()) or 1
         conflict = sum(v for k, v in types.items() if k in CONFLICT_TYPES)
         cooperation = sum(v for k, v in types.items() if k in COOPERATION_TYPES)
-        domestic = (payload.get("domestic") or {}).get("total", 0)
+        initiated = metrics.get("initiator_pct")
         pretty_day = f"{day[:4]}-{day[4:6]}-{day[6:]}"
         confidence = _volume_confidence(total)
         reason = f"{total} machine-coded GDELT events; coverage carries publication-location bias"
@@ -180,7 +345,8 @@ class EventsAdapter(AgentAdapter):
             insight(
                 iso3,
                 f"{pretty_day}: {total} GDELT events involve {name}, mean Goldstein {goldstein:+.2f} ({_tone(goldstein)}); "
-                f"{conflict / typed_total:.0%} conflictual vs {cooperation / typed_total:.0%} cooperative event types.",
+                f"{conflict / typed_total:.0%} conflictual vs {cooperation / typed_total:.0%} cooperative event types"
+                + (f"; {name} initiated {initiated}% of them." if isinstance(initiated, (int, float)) else "."),
                 (goldstein + 10.0) / 20.0,
                 confidence,
                 reason,
@@ -191,17 +357,19 @@ class EventsAdapter(AgentAdapter):
                     "tone": _tone(goldstein),
                     "conflict_share": round(conflict / typed_total, 3),
                     "cooperation_share": round(cooperation / typed_total, 3),
-                    "domestic_events": domestic,
-                    "international_events": (payload.get("international") or {}).get("total", 0),
-                    # The module counts an event as domestic only when both actors
-                    # carry this country's code, so events whose counterpart GDELT
-                    # left uncoded land in "international".
-                    "domestic_split_note": "events with an uncoded counterpart are counted as international by the module",
+                    "initiator_pct": initiated,
+                    "tone_counts": payload.get("tone_counts") or {},
                     "event_type_counts": types,
                 },
                 facet="event_activity",
             )
         ]
+        themes = self._themes_insight(iso3, day, payload, confidence)
+        if themes:
+            out.append(themes)
+        split = self._domestic_insight(iso3, day, payload, total, confidence)
+        if split:
+            out.append(split)
         if partners:
             text = ", ".join(f"{countries.name_of(p['iso3'])} ({p['count']} events, {p['avg_goldstein']:+.1f})" for p in partners[:3])
             out.append(
@@ -215,21 +383,73 @@ class EventsAdapter(AgentAdapter):
                     facet="event_partners",
                 )
             )
-        top = (payload.get("top5_events") or [])[:1]
-        if top:
-            event = top[0]
-            out.append(
-                insight(
-                    iso3,
-                    f"Top event: {event.get('sentence')}",
-                    float(event.get("score") or 0.0),
-                    min(confidence, 0.45),
-                    "single machine-coded event; GDELT often miscodes accidents and domestic politics, so verify against the source article",
-                    {"date": day, "event_type": event.get("event_type"), "tone": event.get("tone"), "url": event.get("url"), "num_articles": event.get("num_articles")},
-                    facet="event_headline",
-                )
-            )
         return out
+
+    @staticmethod
+    def _themes_insight(iso3: str, day: str, payload: dict, volume_confidence: float) -> Optional[dict]:
+        counts = {k: int(v) for k, v in (payload.get("cluster_counts") or {}).items() if v}
+        total = sum(counts.values())
+        if not total:
+            return None
+        themes = sorted(counts.items(), key=lambda kv: kv[1], reverse=True)
+        shares = ", ".join(f"{label} {count / total:.0%}" for label, count in themes)
+        quality = payload.get("cluster_quality") or None
+        silhouette = quality.get("silhouette") if quality else None
+        caveat = None
+        if isinstance(silhouette, (int, float)):
+            null = quality.get("silhouette_null")
+            ari = quality.get("stability_ari")
+            validation = f"cluster quality: silhouette {silhouette:.2f}"
+            if isinstance(null, (int, float)):
+                validation += f" vs {null:.2f} on shuffled data"
+            if isinstance(ari, (int, float)):
+                validation += f", stability across seeds {ari:.2f}"
+            validation += f" ({quality.get('label')})"
+            # Separation above the shuffled baseline, scaled to the event-volume ceiling.
+            confidence = min(volume_confidence, 0.35 + 0.5 * max(0.0, silhouette - max(0.0, null or 0.0)))
+            if quality.get("weak"):
+                confidence = min(confidence, 0.35)
+                caveat = "The module rates today's clusters as weak, so treat these themes as tentative."
+        else:
+            validation = "cluster quality: not available" + (f" ({quality.get('reason')})" if quality and quality.get("reason") else "")
+            confidence = min(volume_confidence, 0.4)
+            caveat = "The module did not validate today's clustering, so the themes are unscored."
+        return insight(
+            iso3,
+            f"{countries.name_of(iso3)}'s coverage on {day[:4]}-{day[4:6]}-{day[6:]} falls into {len(themes)} themes: {shares}; {validation}.",
+            themes[0][1] / total,
+            confidence,
+            "KMeans themes over the day's events, validated by the module (silhouette vs a shuffled baseline, seed stability)",
+            {"date": day, "themes": [{"label": label, "count": count, "share": round(count / total, 3)} for label, count in themes], "cluster_quality": quality},
+            facet="event_themes",
+            caveat=caveat,
+        )
+
+    @staticmethod
+    def _domestic_insight(iso3: str, day: str, payload: dict, total: int, volume_confidence: float) -> Optional[dict]:
+        domestic, international = payload.get("domestic") or {}, payload.get("international") or {}
+        n_dom, n_int = int(domestic.get("total") or 0), int(international.get("total") or 0)
+        if not (n_dom or n_int):
+            return None
+        name = countries.name_of(iso3)
+        g_dom, g_int = float(domestic.get("avg_goldstein") or 0.0), float(international.get("avg_goldstein") or 0.0)
+        return insight(
+            iso3,
+            f"{n_dom} of {total or n_dom + n_int} events are domestic to {name} (mean Goldstein {g_dom:+.2f}) "
+            f"and {n_int} international ({g_int:+.2f}).",
+            n_dom / max(1, n_dom + n_int),
+            # The split is biased by construction (see caveat), so it never outranks the day's totals.
+            min(volume_confidence, 0.4),
+            "the module counts an event as domestic only when both actors carry the country's code",
+            {
+                "date": day,
+                "domestic": {"total": n_dom, "avg_goldstein": round(g_dom, 3), "event_type_counts": domestic.get("event_type_counts") or {}},
+                "international": {"total": n_int, "avg_goldstein": round(g_int, 3), "event_type_counts": international.get("event_type_counts") or {}},
+            },
+            facet="event_domestic_split",
+            caveat=(f"GDELT often leaves the counterpart uncoded, and the module counts those events as international, "
+                    f"so {n_dom} is a floor for domestic activity, not an estimate."),
+        )
 
     @staticmethod
     def _pair_today(iso3: str, other: str, day: str, partners: list[dict]) -> list[dict]:
@@ -252,14 +472,21 @@ class EventsAdapter(AgentAdapter):
         ]
 
     @staticmethod
-    def _baseline_insight(iso3: str, other: str, baseline: dict) -> dict:
+    def _baseline_insight(iso3: str, other: str, baseline: dict, today: Optional[dict] = None) -> dict:
+        claim = (f"{countries.name_of(iso3)}-{countries.name_of(other)} 1990-2024 baseline (GGE): {baseline.get('baseline_label')}, "
+                 f"10-year average {baseline.get('avg_10yr', 0):+.3f}, trend {baseline.get('trend')}")
+        if today:
+            claim += f"; today {today['count']} events at mean Goldstein {today['avg_goldstein']:+.1f} ({_tone(today['avg_goldstein'])})"
+        evidence = {"pair": [iso3, other], **{k: baseline.get(k) for k in ("baseline_label", "avg_10yr", "latest_static", "latest_dynamic", "trend", "earliest_year", "latest_year")}}
+        evidence["series"] = [{"year": p.get("year"), "score": p.get("score")} for p in baseline.get("sparkline") or [] if p.get("year") is not None]
+        if today:
+            evidence["today"] = {"count": today["count"], "avg_goldstein": round(today["avg_goldstein"], 3), "tone": _tone(today["avg_goldstein"])}
         return insight(
             iso3,
-            f"{countries.name_of(iso3)}-{countries.name_of(other)} 1990-2024 baseline (GGE): {baseline.get('baseline_label')}, "
-            f"10-year average {baseline.get('avg_10yr', 0):+.3f}, trend {baseline.get('trend')}.",
+            claim + ".",
             float(baseline.get("avg_10yr") or 0.0),
             0.75,
             "annual bilateral alignment scores from the Global Geopolitical Events database (Fan, 2025)",
-            {"pair": [iso3, other], **{k: baseline.get(k) for k in ("baseline_label", "avg_10yr", "latest_static", "latest_dynamic", "trend", "earliest_year", "latest_year")}},
+            evidence,
             facet="relationship_baseline",
         )
