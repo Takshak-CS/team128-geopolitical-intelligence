@@ -202,6 +202,19 @@ class PolicyStanceAdapter(AgentAdapter):
                 if stance:
                     insights.append(stance)
 
+        # Conflict network changes for the queried year — uses /graph-delta.
+        if targets and plan.time.mode == "year":
+            delta_year = plan.time.year
+            delta = await self._conflict_network_delta(targets, gw_names, int(delta_year))
+            if delta:
+                insights.append(delta)
+
+        # Bilateral: temporal voting drift — uses /temporal-agreement.
+        if plan.intent == "bilateral" and len(targets) == 2:
+            ta_insight = await self._temporal_agreement_insight(targets, gw_names)
+            if ta_insight:
+                insights.append(ta_insight)
+
         return insights, metadata
 
     async def _blocs(self, plan: QueryPlan, result: AgentResult) -> tuple[dict, str, dict]:
@@ -328,6 +341,115 @@ class PolicyStanceAdapter(AgentAdapter):
                 )
             )
         return out
+
+    async def _conflict_network_delta(self, iso3s: list[str], gw_names: dict[int, str], year: int) -> Optional[dict]:
+        """Use /graph-delta/{year} to report which conflicts started or ended in this year."""
+        delta = await try_call(self.cached_get(f"/graph-delta/{year}", ttl_s=600), None)
+        if not isinstance(delta, dict):
+            return None
+        new_edges: list[dict] = delta.get("new_edge_names", [])
+        ended_edges: list[dict] = delta.get("ended_edge_names", [])
+        new_total: int = delta.get("new_edges", 0)
+        ended_total: int = delta.get("ended_edges", 0)
+        if not new_total and not ended_total:
+            return None
+
+        # Filter to edges involving any queried country
+        name_to_iso3 = self._name_to_iso3(gw_names)
+        queried_names = {gw_names.get(countries.get(iso3).gw) for iso3 in iso3s if countries.get(iso3) and countries.get(iso3).gw}
+        queried_names.discard(None)
+
+        def _involves(edge: dict) -> bool:
+            return edge.get("source") in queried_names or edge.get("target") in queried_names
+
+        relevant_new = [e for e in new_edges if _involves(e)][:5]
+        relevant_ended = [e for e in ended_edges if _involves(e)][:5]
+
+        if not relevant_new and not relevant_ended:
+            # Return a global delta claim if no direct involvement
+            if new_total + ended_total < 2:
+                return None
+            claim = f"In {year}, the global conflict network saw {new_total} new conflict links and {ended_total} ended, for a net {'increase' if new_total > ended_total else 'decrease'}."
+            evidence = {"year": year, "new_edges": new_total, "ended_edges": ended_total, "node_count": delta.get("nodes"), "edge_count": delta.get("edges")}
+        else:
+            new_str = "; ".join(f"{e['source']} ↔ {e['target']}" for e in relevant_new[:3]) if relevant_new else "none"
+            ended_str = "; ".join(f"{e['source']} ↔ {e['target']}" for e in relevant_ended[:3]) if relevant_ended else "none"
+            country_name = countries.name_of(iso3s[0])
+            claim = (
+                f"Conflict network change in {year} involving {country_name}: "
+                f"{len(relevant_new)} new link(s) ({new_str}); "
+                f"{len(relevant_ended)} ended link(s) ({ended_str}). "
+                f"Globally: {new_total} new, {ended_total} ended conflict edges."
+            )
+            evidence = {
+                "year": year, "global_new": new_total, "global_ended": ended_total,
+                "relevant_new": relevant_new, "relevant_ended": relevant_ended,
+                "node_count": delta.get("nodes"), "edge_count": delta.get("edges"),
+            }
+
+        return insight(
+            iso3s[0],
+            claim,
+            min(1.0, (new_total + ended_total) / 20),
+            0.55,
+            "UCDP conflict network graph delta between consecutive years",
+            evidence,
+            facet="conflict_outlook",
+        )
+
+    async def _temporal_agreement_insight(self, iso3s: list[str], gw_names: dict[int, str]) -> Optional[dict]:
+        """Use /temporal-agreement to show UN vote drift between two countries over decades."""
+        names = [self._module_name(iso3, gw_names) for iso3 in iso3s]
+        if not all(names):
+            return None
+        ta_all: dict = await try_call(self.cached_get("/temporal-agreement", ttl_s=600), None) or {}
+        if not ta_all:
+            return None
+
+        # The key format is "CountryA||CountryB" or "CountryA-CountryB"
+        key = None
+        for sep in ["||", "-"]:
+            k1 = f"{names[0]}{sep}{names[1]}"
+            k2 = f"{names[1]}{sep}{names[0]}"
+            if k1 in ta_all:
+                key = k1; break
+            if k2 in ta_all:
+                key = k2; break
+        if not key:
+            return None
+
+        year_map: dict = ta_all[key]
+        if not isinstance(year_map, dict) or not year_map:
+            return None
+
+        sorted_years = sorted(year_map.keys())
+        early = [float(year_map[y]) for y in sorted_years[:5] if isinstance(year_map[y], (int, float))]
+        recent = [float(year_map[y]) for y in sorted_years[-5:] if isinstance(year_map[y], (int, float))]
+        if not early or not recent:
+            return None
+
+        early_avg = round(sum(early) / len(early) * 100, 1)
+        recent_avg = round(sum(recent) / len(recent) * 100, 1)
+        drift = round(recent_avg - early_avg, 1)
+        direction = "converging" if drift > 3 else "diverging" if drift < -3 else "stable"
+        a_name, b_name = countries.name_of(iso3s[0]), countries.name_of(iso3s[1])
+
+        return insight(
+            iso3s[0],
+            f"UN vote agreement between {a_name} and {b_name}: {early_avg}% in the {sorted_years[0]}s → {recent_avg}% recently ({direction}, Δ{drift:+.1f}pp across {len(sorted_years)} years).",
+            abs(drift) / 50,
+            0.65,
+            f"year-by-year UN GA vote agreement rate over {len(sorted_years)} years of shared voting",
+            {
+                "early_avg_pct": early_avg,
+                "recent_avg_pct": recent_avg,
+                "drift_pp": drift,
+                "direction": direction,
+                "years_covered": len(sorted_years),
+                "series": {y: round(float(year_map[y]) * 100, 1) for y in sorted_years[-10:] if isinstance(year_map[y], (int, float))},
+            },
+            facet="bilateral_diplomacy",
+        )
 
     async def _issue_stance(self, iso3: str, module_name: str) -> Optional[dict]:
         """Call /policy-stance and /topics to produce an issue_stance insight.
