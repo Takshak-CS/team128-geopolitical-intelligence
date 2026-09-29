@@ -40,7 +40,8 @@ right now?*. Stop everything with `scripts\stop_all.ps1`.
 On macOS or Linux use `scripts/run_all.sh` (and `scripts/run_all.sh stop`).
 With Docker: `docker compose up --build`.
 
-Data is not committed. **docs/DATA.md** lists what each service needs and
+Large datasets are not committed; the trade agent's 21 MB parquet cache is,
+so it answers on a fresh clone. **docs/DATA.md** lists what each service needs and
 where to get it. Any agent without its data still starts, and the briefing
 says what is missing.
 

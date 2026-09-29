@@ -2,7 +2,7 @@
 # Briefing UI: http://localhost:8000
 #
 # Data is mounted from the host, not baked into images (see docs/DATA.md):
-#   services/trade_intelligence/cache        BACI parquet cache (scripts/build_cache.py)
+#   services/trade_intelligence/cache        BACI parquet cache (committed; rebuild: scripts/build_cache.py)
 #   services/policy_stance/data              UN GA voting + UCDP datasets
 #   services/event_summarization/data        GDELT daily cache + GGE scores
 

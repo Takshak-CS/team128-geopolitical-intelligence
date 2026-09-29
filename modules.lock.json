@@ -5,20 +5,25 @@
     "repo": "https://github.com/AnushreeSanjeev30/cap.git",
     "ref": "main",
     "commit": "ab4d55d5ffc3b8f5d7f7705f2507839eaa5edd4b",
-    "exclude": ["archive/__pycache__"]
+    "exclude": [
+      "archive/__pycache__"
+    ]
   },
   "policy_stance": {
     "owner": "Santhosh",
     "repo": "https://github.com/SanthoshRam18/geopolitical-intelligence-system.git",
     "ref": "main",
     "commit": "6f9b5160fdbc6012b18318e1526e995e7a7ad1c5",
-    "exclude": ["backend/uvicorn.err.log", "backend/uvicorn.out.log"]
+    "exclude": [
+      "backend/uvicorn.err.log",
+      "backend/uvicorn.out.log"
+    ]
   },
   "trade_intelligence": {
     "owner": "Takshak",
     "repo": "https://github.com/Takshak-CS/trade-intelligence-module.git",
     "ref": "main",
-    "commit": "917fd05ecc1bb85ab614afc94c453b4ae4624084",
+    "commit": "f61c3a607ae9ba2ff497851f48535634386f29db",
     "exclude": []
   },
   "event_summarization": {

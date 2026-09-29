@@ -1,13 +1,14 @@
 # Data each service needs
 
-No large dataset is committed. Every data directory below is gitignored.
+No large dataset is committed. Every data directory below is gitignored
+except the trade cache, which is small enough to commit.
 Everything is public; sources are listed so the system can be rebuilt from
 nothing.
 
 | Service | Put it here | What | Source | Size |
 |---|---|---|---|---|
 | Soft Power | `services/soft_power/output/` | model artifacts (panel, Kalman results, SHAP, embeddings) | **committed upstream**, nothing to do | 69 MB |
-| Trade | `services/trade_intelligence/cache/` | parquet cache built from CEPII BACI HS92 V202601 | build with `python scripts/build_cache.py` from the 30 yearly BACI CSVs (8.2 GB, cepii.fr), or copy an existing `cache/` | 21 MB |
+| Trade | `services/trade_intelligence/cache/` | parquet cache built from CEPII BACI HS92 V202601 (1995-2024, 4 sectors, 234 countries, World Bank GDP/population) | **committed**, nothing to do. To rebuild (new BACI release): `python scripts/build_cache.py` from the 30 yearly BACI CSVs (8.2 GB, cepii.fr) in the trade repo, commit `cache/` there, then copy it here | 21 MB |
 | Policy Stance | `services/policy_stance/data/` | `2025_7_23_ga_voting.xlsx` (UN GA voting) | UN Digital Library, record 4060887 | 74 MB |
 | | | `ucdp-prio-acd-251-csv.zip`, `ucdp-dyadic-251-csv.zip`, `ucdp-brd-dyadic-251-csv.zip`, `ucdp-nonstate-251-csv.zip`, `ucdp-onesided-251-csv.zip`, `ged251-csv.zip` | `https://ucdp.uu.se/downloads/` (UCDP 25.1) | 29.6 MB |
 | Events | `services/event_summarization/data/` | `dyad_geopolitical_scores.csv` (GGE 1990-2024 baseline) | unzip `Geopolitical_Scores/dyad_geopolitical_scores.zip` from github.com/tianyufan-econ/global-geopolitics | 97 MB |

@@ -9,8 +9,9 @@ __pycache__/
 node_modules/
 dist/
 
-# Data (see docs/DATA.md) - never committed
-services/trade_intelligence/cache/
+# Data (see docs/DATA.md) - never committed. The one exception is the trade
+# parquet cache (services/trade_intelligence/cache/, 21 MB), which is committed
+# so the trade agent works on a fresh clone without the 8 GB BACI dataset.
 services/trade_intelligence/dataset/
 services/policy_stance/data/
 services/policy_stance/outputs/
