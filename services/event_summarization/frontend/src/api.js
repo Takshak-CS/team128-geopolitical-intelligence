@@ -51,5 +51,15 @@ export const enrichEvent = (data) =>
 export const getArticleHeadline = (url) =>
   request(`/article-headline?url=${encodeURIComponent(url)}`);
 
+export const getArticleContext = (url, term) =>
+  request(`/article-context?url=${encodeURIComponent(url)}&term=${encodeURIComponent(term)}`);
+
+export const getArticleRelevance = (url, term1, term2, headline) =>
+  request(
+    `/article-relevance?url=${encodeURIComponent(url)}` +
+    `&term1=${encodeURIComponent(term1 || "")}&term2=${encodeURIComponent(term2 || "")}` +
+    (headline ? `&headline=${encodeURIComponent(headline)}` : "")
+  );
+
 export const getHistoricalContext = (cc1, cc2) =>
   request(`/historical-context?cc1=${encodeURIComponent(cc1)}&cc2=${encodeURIComponent(cc2)}`);

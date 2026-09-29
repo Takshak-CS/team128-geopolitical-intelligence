@@ -20,6 +20,7 @@ Phase 3 (/briefing) additionally needs:
 import json
 import math
 import asyncio
+import threading
 from collections import OrderedDict
 from contextlib import asynccontextmanager
 from typing import Optional
@@ -167,11 +168,19 @@ def _compute_partners(df: pd.DataFrame, cc: str, limit: int = 8) -> list:
 # pipeline only ever runs once per (date, country), regardless of which
 # endpoint asks for it first.
 # ---------------------------------------------------------------------------
+def _with_table_limit(payload: dict, limit: int) -> dict:
+    # Team 128 integration fix: the cache key is (date, country), so the cached
+    # payload keeps every table row and each request is cut to its own limit.
+    # Before, the first caller's limit applied to everyone after it.
+    table = payload["table"][:max(0, limit)]
+    return {**payload, "table": table, "table_rows_shown": len(table)}
+
+
 def _build_or_get_analysis(date: str, country_code: str, limit: int = 300) -> dict:
     cache_key = (date, country_code.upper())
     cached = _cache_get(cache_key)
     if cached is not None:
-        return cached
+        return _with_table_limit(cached, limit)
 
     df = preprocess(date, country_code)
     if df.empty:
@@ -195,7 +204,7 @@ def _build_or_get_analysis(date: str, country_code: str, limit: int = 300) -> di
     if CLUSTER_AVAILABLE and "EventCluster" in df.columns:
         table_cols += ["EventCluster"]
 
-    table_records = df[table_cols].head(limit).to_dict(orient="records")
+    table_records = df[table_cols].to_dict(orient="records")
 
     # Domestic vs international split (mirrors the WebSocket pipeline's
     # payload shape) — both actors from the analyzed country = domestic.
@@ -227,6 +236,7 @@ def _build_or_get_analysis(date: str, country_code: str, limit: int = 300) -> di
             df["EventCluster"].value_counts().to_dict()
             if CLUSTER_AVAILABLE and "EventCluster" in df.columns else {}
         ),
+        "cluster_quality": df.attrs.get("cluster_quality") if CLUSTER_AVAILABLE else None,
         "partners": partners,
         "top5_events": top5,
         "table": table_records,
@@ -247,7 +257,7 @@ def _build_or_get_analysis(date: str, country_code: str, limit: int = 300) -> di
 
     payload = _jsonable(payload)
     _cache_set(cache_key, payload)
-    return payload
+    return _with_table_limit(payload, limit)
 
 
 # ---------------------------------------------------------------------------
@@ -278,7 +288,17 @@ def health():
             "clustering": CLUSTER_AVAILABLE,
         },
         "gge_database": gge_available(),
+        # Model chosen by the enricher so far (null until first AI call).
+        "gemini_model": _gemini_model_name(),
     }
+
+
+def _gemini_model_name():
+    try:
+        from src.enricher import get_cached_model_name
+        return get_cached_model_name()
+    except Exception:
+        return None
 
 
 @app.get("/dates")
@@ -387,6 +407,13 @@ class EnrichRequest(BaseModel):
     score: float
 
 
+# Successful /enrich-event results, so re-opening the same event card
+# doesn't spend Gemini quota again. Failures are never cached.
+_ENRICH_CACHE: "OrderedDict[tuple, dict]" = OrderedDict()
+_ENRICH_CACHE_MAX = 500
+_ENRICH_CACHE_LOCK = threading.Lock()
+
+
 @app.post("/enrich-event")
 def enrich_event_route(req: EnrichRequest):
     """
@@ -395,6 +422,11 @@ def enrich_event_route(req: EnrichRequest):
     to identify the real actors and summarise what happened.
     Only called when the user explicitly requests it (per-event button).
     """
+    cache_key = (req.url, req.actor1, req.actor2, req.event_type)
+    with _ENRICH_CACHE_LOCK:
+        if cache_key in _ENRICH_CACHE:
+            _ENRICH_CACHE.move_to_end(cache_key)
+            return _ENRICH_CACHE[cache_key]
     try:
         result = enrich_event(
             url=req.url,
@@ -404,6 +436,12 @@ def enrich_event_route(req: EnrichRequest):
             country=req.country,
             score=req.score,
         )
+        if isinstance(result, dict) and result.get("enriched"):
+            with _ENRICH_CACHE_LOCK:
+                _ENRICH_CACHE[cache_key] = result
+                _ENRICH_CACHE.move_to_end(cache_key)
+                while len(_ENRICH_CACHE) > _ENRICH_CACHE_MAX:
+                    _ENRICH_CACHE.popitem(last=False)
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -426,6 +464,43 @@ def article_headline(url: str = Query(...)):
         "headline": result.get("headline", ""),
         "domain": result.get("domain", ""),
     }
+
+
+@app.get("/article-context")
+def article_context(
+    url: str = Query(...),
+    term: str = Query(..., min_length=1, max_length=200),
+):
+    """
+    Returns the sentence(s) of the source article that mention `term`
+    (plus one sentence of context either side). No AI call — full-text
+    fetch + regex. See src/article_context.py.
+    """
+    from src.article_context import find_mentions
+    if not (url.startswith("http://") or url.startswith("https://")):
+        raise HTTPException(status_code=400, detail="Invalid URL")
+    return find_mentions(url, term)
+
+
+@app.get("/article-relevance")
+def article_relevance(
+    url: str = Query(...),
+    term1: str = Query("", max_length=200),
+    term2: str = Query("", max_length=200),
+    headline: Optional[str] = Query(None, max_length=1000),
+):
+    """
+    Judges from the full article text how well the source article supports
+    the event's two actors (prominence of each, co-occurrence, places and
+    main people/orgs named, a best_snippet sentence, and a link of
+    together/listed/one_sided/none/unavailable with a one-line verdict_text).
+    No AI call — see analyze_relevance in src/article_context.py, which
+    also rejects loopback/private hosts.
+    """
+    from src.article_context import analyze_relevance
+    if not (url.startswith("http://") or url.startswith("https://")):
+        raise HTTPException(status_code=400, detail="Invalid URL")
+    return analyze_relevance(url, term1, term2, headline)
 
 
 
@@ -504,7 +579,7 @@ async def pipeline_ws(websocket: WebSocket):
             for stage, msg, pct in stages:
                 await _send(websocket, stage, "done", msg, pct)
                 await asyncio.sleep(0.12)
-            await _send(websocket, "done", "done", "Complete (cached)", 100, payload=cached)
+            await _send(websocket, "done", "done", "Complete (cached)", 100, payload=_with_table_limit(cached, 300))
             return
 
         # ── Stage 1: Fetch ────────────────────────────────────────────
@@ -620,10 +695,12 @@ async def pipeline_ws(websocket: WebSocket):
                 df["EventCluster"].value_counts().to_dict()
                 if CLUSTER_AVAILABLE and "EventCluster" in df.columns else {}
             ),
+            "cluster_quality": df.attrs.get("cluster_quality") if CLUSTER_AVAILABLE else None,
             "partners": partners,
             "top5_events": top5,
-            "table": df[table_cols].head(300).to_dict(orient="records"),
-            "table_rows_shown": min(300, total),
+            # Team 128 integration fix: cache every row; this client gets 300.
+            "table": df[table_cols].to_dict(orient="records"),
+            "table_rows_shown": total,
             "table_rows_total": total,
             "narration_script": summary_text,
         "domestic": {
@@ -642,7 +719,7 @@ async def pipeline_ws(websocket: WebSocket):
         _cache_set(cache_key, payload)
 
         await _send(websocket, "done", "done", f"Pipeline complete — {total:,} events", 100,
-                    payload=payload)
+                    payload=_with_table_limit(payload, 300))
 
     except WebSocketDisconnect:
         pass

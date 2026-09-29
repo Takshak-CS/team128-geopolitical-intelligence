@@ -12,11 +12,13 @@ The Trade agent emits this natively. The other three agents return their own
 shapes, and the adapters in ``app.agents`` coerce them into it, so fusion only
 ever sees one format.
 
-Adapters add one optional field the contract does not require: ``facet``, a
+Adapters add two optional fields the contract does not require: ``facet``, a
 short label for *what aspect* of an entity the insight is about ("trade_alignment",
-"diplomatic_alignment", ...). Fusion uses it to line up claims from different
-agents about the same thing. Consumers that only know the base contract can
-ignore it.
+"diplomatic_alignment", ...), and ``caveat``, a sentence the reader must see next
+to the claim (a known bias in how the number was produced, or a failed check).
+Fusion uses ``facet`` to line up claims from different agents about the same
+thing and carries ``caveat`` onto the finding. Consumers that only know the base
+contract can ignore both.
 """
 
 from __future__ import annotations
@@ -51,6 +53,7 @@ def insight(
     evidence: Optional[Mapping[str, Any]] = None,
     facet: Optional[str] = None,
     entity_name: Optional[str] = None,
+    caveat: Optional[str] = None,
 ) -> dict:
     """Build one insight in the shared shape."""
     iso3 = countries.resolve(entity_iso3) if entity_iso3 else None
@@ -65,6 +68,8 @@ def insight(
     }
     if facet:
         record["facet"] = facet
+    if caveat:
+        record["caveat"] = str(caveat)
     return record
 
 

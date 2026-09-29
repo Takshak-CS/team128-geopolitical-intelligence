@@ -13,6 +13,24 @@ from .agents.base import AgentResult
 from .contract import AGENT_LABELS
 from .intent import QueryPlan
 
+# Claims shown per agent section. Events makes up to ten for a country
+# (day, partners, themes, domestic split, three headlines, three baselines).
+SECTION_LIMIT = 10
+
+# The claims that lead an agent's summary line and its section for a kind of
+# question, in this order, when confidence alone would pick others. "What
+# happened" is answered by the day's activity, not by the (more confident)
+# 1990-2024 baseline beside it; a bilateral question by the pair, not by the
+# first country's whole day, which follows as context.
+LEAD_FACETS = {
+    "events": {"event_summarization": ("event_activity",)},
+    "bilateral": {"event_summarization": ("bilateral_events", "event_headline", "bilateral_headlines", "relationship_baseline")},
+}
+
+
+def _lead_order(finding: dict, facets: tuple[str, ...]) -> int:
+    return next((i for i, facet in enumerate(facets) if facet in finding["facets"]), len(facets))
+
 
 def _cite(finding: dict) -> str:
     labels = "+".join(finding.get("agent_labels") or [])
@@ -74,6 +92,10 @@ def compose(plan: QueryPlan, fused: dict, results: dict[str, AgentResult], align
     best_per_agent: dict[str, dict] = {}
     for finding in singles:
         best_per_agent.setdefault(finding["agents"][0], finding)
+    for agent, facets in LEAD_FACETS.get(plan.intent, {}).items():
+        leads = sorted((f for f in singles if f["agents"][0] == agent and _lead_order(f, facets) < len(facets)), key=lambda f: _lead_order(f, facets))
+        if leads:
+            best_per_agent[agent] = leads[0]
     ordered = [a for a in plan.agents if a in plan.focus_agents] + [a for a in plan.agents if a not in plan.focus_agents]
     for agent in ordered:
         if len(summary) >= 5:
@@ -93,11 +115,16 @@ def compose(plan: QueryPlan, fused: dict, results: dict[str, AgentResult], align
     by_agent: dict[str, list[dict]] = {}
     for finding in singles:
         by_agent.setdefault(finding["agents"][0], []).append(finding)
+    for agent, facets in LEAD_FACETS.get(plan.intent, {}).items():
+        # Stable sort: the lead claims in their order, then the rest by rank.
+        by_agent.get(agent, []).sort(key=lambda f: _lead_order(f, facets))
     for agent in plan.agents:
         if by_agent.get(agent):
-            sections.append({"title": AGENT_LABELS.get(agent, agent), "kind": "agent", "agent": agent, "findings": by_agent[agent][:6]})
+            sections.append({"title": AGENT_LABELS.get(agent, agent), "kind": "agent", "agent": agent, "findings": by_agent[agent][:SECTION_LIMIT]})
 
-    caveats = sorted({f["caveat"] for f in findings if f.get("caveat")})
+    # Page-level caveats qualify cross-agent findings; a single agent's caveat
+    # stays next to its own claim.
+    caveats = sorted({f["caveat"] for f in findings if f.get("caveat") and f["kind"] != "insight"})
     coverage = _coverage(plan, results, alignment)
     headline = _headline(plan, findings, results)
 
@@ -108,6 +135,8 @@ def compose(plan: QueryPlan, fused: dict, results: dict[str, AgentResult], align
         lines += ["", f"### {section['title']}"]
         for finding in section["findings"]:
             lines.append(f"- {finding['claim']} {_cite(finding)}")
+            if section["kind"] == "agent" and finding.get("caveat"):
+                lines.append(f"  - _Caveat: {finding['caveat']}_")
     if caveats:
         lines += ["", "### Caveats"] + [f"- {text}" for text in caveats]
     if alignment.get("warnings"):

@@ -1,0 +1,15 @@
+﻿soft_power           starting on :8101 (pid 8572)
+policy_stance        starting on :8102 (pid 3036)
+trade_intelligence   starting on :8103 (pid 8296)
+event_summarization  starting on :8104 (pid 15048)
+orchestrator         starting on :8000 (pid 12412)
+
+Waiting for health checks (Policy Stance can take several minutes on its first build)...
+  ready: soft_power
+  ready: orchestrator
+  ready: trade_intelligence
+  ready: policy_stance
+  ready: event_summarization
+
+Briefing UI:  http://127.0.0.1:8000
+API docs:     http://127.0.0.1:8000/docs

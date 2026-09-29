@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { getArticleHeadline, enrichEvent } from "../api";
+import { useState, useEffect, useRef } from "react";
+import { getArticleHeadline, enrichEvent, getArticleRelevance } from "../api";
 
 const EVENT_MEANINGS = {
   "Fight":                "active physical fighting",
@@ -42,7 +42,10 @@ function buildDataSummary({ actor1, actor2, score, country, numArticles, role, c
   // verification behind it, so it must read as a claim GDELT made, not
   // as something that happened.
   let eventSentence = "";
-  if (role === "Recipient") {
+  if (isSelfReferential(actor1, actor2)) {
+    // "between Israel and Israel" is meaningless — say what it actually is.
+    eventSentence = `GDELT recorded ${meaning} as a domestic event within ${actor1.trim()}.`;
+  } else if (role === "Recipient") {
     eventSentence = `GDELT recorded ${country} as the recipient of ${meaning} from ${a1}.`;
   } else if (role === "Initiator") {
     eventSentence = `GDELT recorded ${country} as initiating ${meaning} directed at ${a2}.`;
@@ -126,6 +129,109 @@ function headlineMentionsActor(headlineText, actorName) {
   return token.split(/\s+/).filter(w => w.length >= 5).some(w => h.includes(w.toLowerCase()));
 }
 
+function escapeRegex(s) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+// Wraps every whole-word occurrence of any alias in <mark>. Mirrors the
+// backend matcher: aliases over 3 chars are case-insensitive (optional
+// plural "s"); short ones (US, UK, UAE) are case-sensitive.
+function highlightTerms(text, aliases) {
+  const uniq = [...new Set((aliases || []).filter(Boolean))].sort((a, b) => b.length - a.length);
+  const long = uniq.filter((a) => a.length > 3).map(escapeRegex);
+  const short = uniq.filter((a) => a.length <= 3).map(escapeRegex);
+  const wrap = (parts, suffix) => `(?<![\\p{L}\\p{N}_])(?:${parts.join("|")})${suffix}(?![\\p{L}\\p{N}_])`;
+  const regexes = [];
+  if (long.length) regexes.push(new RegExp(wrap(long, "s?"), "giu"));
+  if (short.length) regexes.push(new RegExp(wrap(short, ""), "gu"));
+  if (regexes.length === 0) return text;
+
+  const matches = regexes
+    .flatMap((re) => [...text.matchAll(re)])
+    .sort((a, b) => a.index - b.index || b[0].length - a[0].length);
+  const out = [];
+  let pos = 0;
+  for (const m of matches) {
+    if (m.index < pos) continue; // overlaps an earlier match
+    if (m.index > pos) out.push(text.slice(pos, m.index));
+    out.push(<mark key={m.index}>{m[0]}</mark>);
+    pos = m.index + m[0].length;
+  }
+  if (pos < text.length) out.push(text.slice(pos));
+  return out;
+}
+
+function prominenceLabel(t) {
+  if (t.prominence === "central") return "central";
+  if (t.prominence === "passing") return `passing mention (${t.count}x)`;
+  if (t.prominence === "absent") return "not named";
+  return "generic label — can't be matched by name";
+}
+
+// Links that mean the article doesn't show the actors interacting — worth
+// an automatic AI check.
+const WEAK_LINKS = ["listed", "one_sided", "none"];
+
+// Compact relevance summary from /article-relevance: a colored dot plus
+// the one-line verdict, and (optionally) the single best quoted sentence.
+function RelevanceSummary({ data, showSnippet }) {
+  if (!data) return null;
+  const aliases = (data.terms || []).flatMap((t) => t.aliases || []);
+  return (
+    <>
+      <div className="relevance-line">
+        {data.link !== "unavailable" && <span className={`relevance-dot relevance-dot-${data.link}`} />}
+        <span>{data.verdict_text}</span>
+      </div>
+      {showSnippet && data.best_snippet && (
+        <p className="relevance-snippet">“{highlightTerms(data.best_snippet, aliases)}”</p>
+      )}
+    </>
+  );
+}
+
+// Per-actor prominence with matching sentences, places and main topics —
+// shown only after "More detail" is clicked.
+function RelevanceDetail({ data, highlightTerm }) {
+  if (!data) return null;
+  const terms = [...(data.terms || [])];
+  // List the clicked actor first.
+  const hl = (highlightTerm || "").trim().toLowerCase();
+  const isClicked = (t) =>
+    t.term.toLowerCase() === hl || (t.aliases || []).some((a) => a.toLowerCase() === hl);
+  if (hl && terms.length === 2 && !isClicked(terms[0]) && isClicked(terms[1])) terms.reverse();
+
+  const places = data.named_places || [];
+  const entities = data.main_entities || [];
+  return (
+    <div className="scan-relevance">
+      {data.article_ok && terms.map((t, i) => (
+        <div key={`${t.term}-${i}`} className="relevance-actor">
+          <div className="relevance-actor-head">
+            <span className="relevance-actor-name">{t.term}</span> — {prominenceLabel(t)}
+          </div>
+          {(t.snippets || []).map((s, j) => (
+            <p key={j} className="scan-mentions-snippet">{highlightTerms(s, t.aliases)}</p>
+          ))}
+        </div>
+      ))}
+      {places.length > 0 && (
+        <div className="relevance-meta">
+          Places named in the article:{" "}
+          {places.map((p) => (
+            <span key={p.name} className="relevance-place-chip">{p.name} ({p.count})</span>
+          ))}
+        </div>
+      )}
+      {entities.length > 0 && (
+        <div className="relevance-meta">
+          Article is mainly about: {entities.map((e) => `${e.name} (${e.count}x)`).join(", ")}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // Auto-loads article headline on mount, staggered by index to avoid
 // hammering the backend. Shows immediately when loaded — no button needed.
 // If either actor is generic, automatically follows up with AI
@@ -135,24 +241,94 @@ export default function ArticleScan({
   url, actor1, actor2, eventType, country,
   score, numArticles, role, cluster,
   autoLoad = false, loadDelay = 0,
+  highlightTerm = "",
+  onRelevance,
 }) {
   const [state, setState] = useState(autoLoad ? "loading-headline" : "idle");
   const [headline, setHeadline] = useState(null);
   const [enriched, setEnriched] = useState(null);
   const [error, setError] = useState("");
   const [dataSummary, setDataSummary] = useState(null);
+  const [relevance, setRelevance] = useState(null);
+  const [relevanceFailed, setRelevanceFailed] = useState(false);
+  const [showDetail, setShowDetail] = useState(false);
+  // url the AI verification was last started for (auto or manual), so the
+  // auto-verify effect below never fires twice for the same event.
+  const verifiedForRef = useRef(null);
+  const urlRef = useRef(url);
+  urlRef.current = url;
+
+  // Once the headline for THIS url has loaded, run the local relevance
+  // analysis. Runs after (never before) the headline is shown, so it can't
+  // delay it. `headline.forUrl` guards against firing on a stale headline
+  // in the render where `url` has just changed but the reset below hasn't
+  // landed yet. Resets whenever url / actor1 / actor2 change.
+  const headlineReady = !!headline && headline.forUrl === url;
+  const headlineText = headlineReady ? headline.headline : "";
+  useEffect(() => {
+    setRelevance(null);
+    setRelevanceFailed(false);
+    setShowDetail(false);
+    if (!headlineReady) return;
+    let cancelled = false;
+    getArticleRelevance(url, actor1, actor2, headlineText)
+      .then((data) => { if (!cancelled) setRelevance({ ...data, forUrl: url }); })
+      .catch(() => { if (!cancelled) setRelevanceFailed(true); });
+    return () => { cancelled = true; };
+  }, [url, actor1, actor2, headlineReady]);
+  const relevanceReady = !!relevance && relevance.forUrl === url;
+  const link = relevanceReady ? relevance.link : null;
+
+  // Tell the parent list (once per url + link) how the article relates.
+  const reportedRef = useRef(null);
+  useEffect(() => {
+    if (!link || !onRelevance) return;
+    const key = `${url}|${link}`;
+    if (reportedRef.current === key) return;
+    reportedRef.current = key;
+    onRelevance(url, link);
+  }, [url, link]);
 
   const needsIdentity = isGenericActor(actor1) || isGenericActor(actor2) || isSelfReferential(actor1, actor2);
 
   const runDeepScan = () => {
+    const forUrl = url;
+    verifiedForRef.current = forUrl;
+    setError("");
     setState("loading-ai");
     enrichEvent({ url, actor1, actor2, event_type: eventType, country, score })
       .then((data) => {
-        if (data.enriched) { setEnriched(data); setState("enriched"); }
-        else { setError(data.error || "Could not enrich"); setState("headline"); }
+        if (urlRef.current !== forUrl) return; // user moved on to another event
+        // Only a real Gemini judgment (gdelt_match present) counts as verified.
+        if (data.enriched && data.gdelt_match !== undefined && data.gdelt_match !== null) {
+          setEnriched(data); setState("enriched");
+        } else {
+          setError(data.error || "AI verification could not complete"); setState("headline");
+        }
       })
-      .catch((e) => { setError(e.message); setState("headline"); });
+      .catch((e) => {
+        if (urlRef.current !== forUrl) return;
+        setError(e.message); setState("headline");
+      });
   };
+
+  // Auto-verify once the relevance link is in: listed / one_sided / none
+  // is worth an AI check. If the relevance call failed (or the article text
+  // was unavailable to it), fall back to the headline-text heuristic —
+  // require BOTH actors to show up in the headline before trusting it (matching only one side, e.g. a
+  // "Bahrain-Qatar" event whose headline is about India and Bahrain, isn't
+  // strong enough evidence).
+  useEffect(() => {
+    if (!autoLoad || state !== "headline" || !headlineReady) return;
+    if (verifiedForRef.current === url) return;
+    if (relevanceReady && link !== "unavailable") {
+      if (WEAK_LINKS.includes(link)) runDeepScan();
+    } else if (relevanceFailed || relevanceReady) {
+      const h = headline.headline;
+      const looksUnrelated = !!h && !(headlineMentionsActor(h, actor1) && headlineMentionsActor(h, actor2));
+      if (looksUnrelated) runDeepScan();
+    }
+  }, [state, relevanceReady, relevanceFailed, headlineReady]);
 
   useEffect(() => {
     if (!autoLoad || !url || !url.startsWith("http")) return;
@@ -166,24 +342,21 @@ export default function ArticleScan({
     setEnriched(null);
     setError("");
     setDataSummary(null);
+    setRelevance(null);
+    setRelevanceFailed(false);
+    setShowDetail(false);
+    verifiedForRef.current = null;
     setState("loading-headline");
 
     const timer = setTimeout(() => {
       getArticleHeadline(url)
         .then((data) => {
-          setHeadline(data);
-          const mentionsA1 = headlineMentionsActor(data.headline, actor1);
-          const mentionsA2 = headlineMentionsActor(data.headline, actor2);
-          // Require BOTH actors to show up in the headline before trusting
-          // it as a correct match. Matching only one side (e.g. a
-          // "Bahrain-Qatar" event where the headline is actually about
-          // India and Bahrain — "Bahrain" matches by coincidence, "Qatar"
-          // never appears) isn't strong enough evidence; the other actor
-          // may be entirely miscoded. Self-referential pairs (actor1 ===
-          // actor2) trivially satisfy this and are already separately
-          // caught by needsIdentity anyway.
-          const looksUnrelated = !!data.headline && !(mentionsA1 && mentionsA2);
-          if (needsIdentity || looksUnrelated) { runDeepScan(); }
+          setHeadline({ ...data, forUrl: url });
+          // Generic / self-referential actors always get AI verification.
+          // Everything else shows the headline right away; the auto-verify
+          // effect above decides once the relevance verdict (or, if that
+          // call fails, the headline heuristic) is in.
+          if (needsIdentity) { runDeepScan(); }
           else { setState("headline"); }
         })
         .catch((e) => {
@@ -201,7 +374,7 @@ export default function ArticleScan({
   const handleHeadline = () => {
     setState("loading-headline");
     getArticleHeadline(url)
-      .then((data) => { setHeadline(data); setState("headline"); })
+      .then((data) => { setHeadline({ ...data, forUrl: url }); setState("headline"); })
       .catch((e) => {
         const summary = buildDataSummary({ actor1, actor2, score, country, numArticles, role, cluster, eventType });
         setDataSummary(summary);
@@ -215,13 +388,36 @@ export default function ArticleScan({
 
   const isMismatch = enriched && enriched.gdelt_match === false;
 
+  const detailToggle = relevanceReady && relevance.article_ok && (
+    <button className="relevance-more" onClick={() => setShowDetail((v) => !v)}>
+      {showDetail ? "Less detail" : "More detail"}
+    </button>
+  );
+
+  // MIS-TAGGED — neither actor named: collapse to headline + verdict line
+  // until "More detail" is clicked.
+  const collapsed = link === "none" && !showDetail &&
+    (state === "headline" || state === "loading-ai" || state === "enriched");
+  if (collapsed) return (
+    <div className="scan-result scan-result-collapsed">
+      <div className="scan-result-label">
+        📰 ARTICLE HEADLINE
+        {headline?.domain && <span className="scan-source"> · {headline.domain}</span>}
+      </div>
+      {headline?.headline && <p className="scan-what-happened">{headline.headline}</p>}
+      <RelevanceSummary data={relevance} showSnippet={false} />
+      {detailToggle}
+    </div>
+  );
+
   // IDLE
   if (state === "idle") return (
     <button className="scan-btn" onClick={handleHeadline}>📰 Load article headline</button>
   );
 
-  // LOADING
-  if (state === "loading-headline" || state === "loading-ai") return (
+  // LOADING — once the headline is in, AI verification runs underneath
+  // it (see HEADLINE below) instead of replacing it with a spinner.
+  if (state === "loading-headline" || (state === "loading-ai" && !headlineReady)) return (
     <div className="scan-loading">
       <span className="scan-spinner">◉</span>
       {state === "loading-headline" ? "Fetching article…" :
@@ -242,27 +438,46 @@ export default function ArticleScan({
 
   // HEADLINE
   const selfRef = isSelfReferential(actor1, actor2);
-  if (state === "headline") return (
+  if (state === "headline" || state === "loading-ai") return (
     <div className="scan-result">
       <div className="scan-result-label">
         📰 ARTICLE HEADLINE
         {headline?.domain && <span className="scan-source"> · {headline.domain}</span>}
       </div>
       {headline?.headline && <p className="scan-what-happened">{headline.headline}</p>}
-      <div className="scan-matched-note">
-        {selfRef ? (
-          <>⚠ GDELT coded both sides of this event as {actor1} — that's unusual and often
-          means the actual other party wasn't correctly identified. Checking with AI now
-          to confirm whether this is really a {actor1}-only event or something got missed.</>
-        ) : (
-          <>GDELT recorded this as the source for the {eventType || "event"} above
-          {actor1 && actor2 ? ` between ${actor1} and ${actor2}` : ""} — if the headline
-          doesn't obviously mention both, click "Verify with AI" to check the actual match.</>
-        )}
-      </div>
+      {relevanceReady ? (
+        <RelevanceSummary data={relevance} showSnippet={true} />
+      ) : !relevanceFailed && (
+        <div className="relevance-meta">Checking how well the article supports this event…</div>
+      )}
+      {detailToggle}
+      {relevanceReady && showDetail && <RelevanceDetail data={relevance} highlightTerm={highlightTerm} />}
+      {(selfRef || !relevanceReady) && (
+        <div className="scan-matched-note">
+          {selfRef ? (
+            <>⚠ GDELT coded both sides of this event as {actor1} — that's unusual and often
+            means the actual other party wasn't correctly identified. Checking with AI now
+            to confirm whether this is really a {actor1}-only event or something got missed.</>
+          ) : (
+            <>GDELT recorded this as the source for the {eventType || "event"} above
+            {actor1 && actor2 ? ` between ${actor1} and ${actor2}` : ""} — if the headline
+            doesn't obviously mention both, click "Verify with AI" to check the actual match.</>
+          )}
+        </div>
+      )}
+      {state === "headline" && error && (
+        <div className="scan-ai-error">AI verification unavailable: {error}</div>
+      )}
       <div className="scan-actions-row">
-        <button className="scan-btn" onClick={handleDeepScan}>🤖 Verify with AI</button>
-        {!autoLoad && <button className="scan-btn-sm" onClick={() => setState("idle")}>dismiss</button>}
+        {state === "loading-ai" ? (
+          <div className="scan-loading">
+            <span className="scan-spinner">◉</span>
+            {needsIdentity ? "Resolving unnamed actor from article…" : "Running AI analysis…"}
+          </div>
+        ) : (
+          <button className="scan-btn" onClick={handleDeepScan}>🤖 Verify with AI</button>
+        )}
+        {!autoLoad && state === "headline" && <button className="scan-btn-sm" onClick={() => setState("idle")}>dismiss</button>}
       </div>
     </div>
   );
@@ -322,6 +537,9 @@ export default function ArticleScan({
       {enriched.key_detail && !isMismatch && (
         <p className="scan-key-detail">📌 {enriched.key_detail}</p>
       )}
+      {relevanceReady && <RelevanceSummary data={relevance} showSnippet={false} />}
+      {detailToggle}
+      {relevanceReady && showDetail && <RelevanceDetail data={relevance} highlightTerm={highlightTerm} />}
       {!autoLoad && (
         <button className="scan-btn-sm" onClick={() => setState("idle")} style={{ marginTop: 6 }}>
           dismiss

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import InfoTip from "./InfoTip.jsx";
 import {
   BarChart,
@@ -95,11 +96,79 @@ function Donut({ title, counts, colorFn }) {
   );
 }
 
+// Validation of the KMeans fit behind the "Event clusters" donut. Renders
+// safely when cluster_quality is null/missing (e.g. older cached results).
+function ClusterQuality({ quality }) {
+  const [open, setOpen] = useState(false);
+  if (!quality) return null;
+
+  const fmt = (v) => (typeof v === "number" ? v.toFixed(2) : "n/a");
+  const hasSil = typeof quality.silhouette === "number";
+  const sweep = Array.isArray(quality.k_sweep) ? quality.k_sweep : [];
+
+  return (
+    <div className="cq">
+      <p className="cq-line">
+        Cluster quality:{" "}
+        {hasSil ? (
+          <>
+            <strong>{fmt(quality.silhouette)}</strong> · {quality.label}
+          </>
+        ) : (
+          <>not available{quality.reason ? ` (${quality.reason})` : ""}</>
+        )}
+        <InfoTip>
+          Silhouette measures how tight and well separated the clusters are,
+          from -1 to +1; higher is better. Beating the shuffled baseline and
+          staying stable across random seeds is the evidence that the clusters
+          are real and not an artifact of one initialization.
+        </InfoTip>
+      </p>
+      {hasSil && quality.weak && (
+        <p className="cq-weak">
+          Clusters are weak for this day — treat themes as tentative.
+        </p>
+      )}
+      {hasSil && (
+        <button
+          type="button"
+          className="cq-toggle"
+          aria-expanded={open}
+          onClick={() => setOpen((o) => !o)}
+        >
+          {open ? "Hide details" : "Details"}
+        </button>
+      )}
+      {hasSil && open && (
+        <div className="cq-details">
+          <span>Shuffled baseline {fmt(quality.silhouette_null)}</span>
+          <span>Stability (ARI) {fmt(quality.stability_ari)}</span>
+          {sweep.length > 0 && (
+            <span className="cq-chips">
+              {sweep.map((s) => (
+                <span
+                  key={s.k}
+                  className={
+                    "cq-chip" + (s.k === quality.best_k ? " cq-chip-best" : "")
+                  }
+                >
+                  k={s.k} {fmt(s.silhouette)}
+                </span>
+              ))}
+            </span>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function ChartsPanel({
   eventTypeCounts,
   toneCounts,
   sentimentCounts,
   clusterCounts,
+  clusterQuality,
 }) {
   const eventData = toEntries(eventTypeCounts).slice(0, 8);
 
@@ -166,6 +235,7 @@ export default function ChartsPanel({
             colorFn={clusterColor}
           />
         </div>
+        <ClusterQuality quality={clusterQuality} />
       </div>
     </section>
   );

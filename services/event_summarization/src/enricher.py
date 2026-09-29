@@ -35,10 +35,14 @@ Article content:
 {article_text}
 
 Your job:
-1. Read the article carefully
-2. Decide whether GDELT's coding accurately reflects what the article is about
-3. If the article is about something different (e.g., GDELT coded a sports match as a Fight, or an accident as a military confrontation), flag this as a misclassification
-4. Identify EVERY country that is actually a real participant in the events the article describes — not just {country}. This matters because GDELT sometimes files an event as "domestic" to {country} when a foreign country was actually involved (e.g. coding both sides of a bilateral meeting under the host country's code, losing the visiting country entirely).
+1. Read the article carefully.
+2. Decide whether GDELT's coding accurately reflects what the article is about.
+3. If the article is about something different (e.g., GDELT coded a sports match as a Fight, or an accident as a military confrontation), flag this as a misclassification.
+4. Identify EVERY country that is actually a real participant in the events the article describes — not just {country}. This matters because GDELT sometimes files an event as "domestic" to {country} when a foreign country was actually involved (e.g. coding both sides of a bilateral meeting under the host country's code, losing the visiting country entirely). This includes diaspora/expatriate-community stories — if a government official from Country A is actively promoting investment, engaging with, or courting that country's citizens/diaspora living in {country}, Country A counts as a real active participant, not just a mentioned nationality. A state or regional government official (e.g. "Andhra Pradesh Minister") represents their national government (India) for this purpose.
+
+Hard rules for "gdelt_match" — apply these strictly, do not give GDELT the benefit of the doubt:
+- A two-sided event needs BOTH "{actor1}" AND "{actor2}" (or an obvious synonym/demonym of each) to be genuine, real, active participants in what the article actually describes. One side matching is NOT sufficient — if either side is absent or is not a real participant, set gdelt_match to false, even if the present side's story is plausible on its own and even if the event category (Consultation, Cooperation, etc.) sounds generically right.
+- Only set gdelt_match to true if you can point to both named parties actually being described as involved in the article's real content.
 
 Return a JSON object with exactly these fields:
 {{
@@ -47,8 +51,8 @@ Return a JSON object with exactly these fields:
   "real_actor2": "actual identity of Actor 2 from the article, or keep '{actor2}' if correct",
   "location": "specific location from the article, or null",
   "key_detail": "one important detail that adds context",
-  "gdelt_match": true or false — does GDELT's coding accurately reflect the article content?,
-  "mismatch_reason": "if gdelt_match is false, explain in one sentence why the coding is wrong (e.g. 'This is a sports article, not a military conflict'). If gdelt_match is true, set to null.",
+  "gdelt_match": true or false,
+  "mismatch_reason": "if gdelt_match is false, explain in one sentence why the coding is wrong. If gdelt_match is true, set to null.",
   "countries_involved": ["list every country that is a real, active participant in the article's actual events — include {country} if it genuinely is one"],
   "is_actually_international": true or false — true if a country OTHER than {country} is a real active participant (not just mentioned in passing)
 }}
@@ -186,8 +190,103 @@ def _fetch_article(url: str, timeout: int = 8) -> dict:
     return {"headline": headline, "text": body, "domain": domain}
 
 
+# ── Gemini model selection ──────────────────────────────────────────────
+# Google retires model names (gemini-2.0-flash is gone), so the model is
+# no longer hardcoded: GEMINI_MODEL env override, else discovered once via
+# client.models.list(), else a fixed fallback list.
+_FALLBACK_MODELS = [
+    "gemini-3.8-flash", "gemini-3.7-flash", "gemini-3.6-flash",
+    "gemini-3.5-flash", "gemini-3.1-flash-lite",
+]
+_EXCLUDED_MODEL_WORDS = ("lite", "image", "live", "tts", "audio", "embedding", "thinking", "preview")
+_FLASH_RE = re.compile(r"^gemini-(\d+)\.(\d+)-flash")
+
+_model_name = None           # cached chosen model (read by /health)
+_discovered_models = None    # cached models.list() result (list of names), [] if it failed
+_fallback_index = 0          # next _FALLBACK_MODELS entry to use when discovery finds nothing
+_retired_models = set()      # models that returned not-found this process
+
+
+def get_cached_model_name():
+    """The model currently in use, or None if none chosen yet. No network."""
+    return _model_name
+
+
+def _pick_flash_model(names: list):
+    """Highest gemini-<major>.<minor>-flash, skipping lite/image/live/etc.
+    variants unless nothing else exists."""
+    candidates = []
+    for n in names:
+        m = _FLASH_RE.match(n)
+        if m:
+            candidates.append(((int(m.group(1)), int(m.group(2))), n))
+    if not candidates:
+        return None
+    clean = [c for c in candidates if not any(w in c[1] for w in _EXCLUDED_MODEL_WORDS)]
+    pool = clean or candidates
+    # Highest version; among equals, prefer the shortest (base) name.
+    return max(pool, key=lambda c: (c[0], -len(c[1])))[1]
+
+
+def _discover_models(client) -> list:
+    """Names of models supporting generateContent ("models/" prefix
+    stripped). Cached at module level; [] if listing fails."""
+    global _discovered_models
+    if _discovered_models is None:
+        try:
+            names = []
+            for m in client.models.list():
+                actions = getattr(m, "supported_actions", None) or []
+                if "generateContent" in actions:
+                    names.append((m.name or "").replace("models/", "", 1))
+            _discovered_models = names
+        except Exception as e:
+            print(f"[enricher] model discovery failed: {type(e).__name__}")
+            _discovered_models = []
+    return _discovered_models
+
+
+def get_model_name(client) -> str:
+    global _model_name, _fallback_index
+    if _model_name:
+        return _model_name
+    name = os.environ.get("GEMINI_MODEL", "").strip()
+    if name in _retired_models:
+        name = ""  # the override itself was not found — fall through once
+    if not name:
+        available = [n for n in _discover_models(client) if n not in _retired_models]
+        name = _pick_flash_model(available)
+    if not name:
+        remaining = [m for m in _FALLBACK_MODELS[_fallback_index:] if m not in _retired_models]
+        name = remaining[0] if remaining else _FALLBACK_MODELS[-1]
+        _fallback_index = _FALLBACK_MODELS.index(name) + 1
+    _model_name = name
+    print("[enricher] using Gemini model:", name)
+    return name
+
+
+def _is_model_unavailable(err: str) -> bool:
+    e = err.lower()
+    return ("404" in e or "not_found" in e or "not found" in e
+            or "no longer available" in e or "deprecated" in e)
+
+
+def _gen_config(with_thinking: bool) -> dict:
+    # 2000 tokens: newer models can spend part of the output budget on
+    # thinking, which truncated the JSON at the old 700 limit.
+    config = {
+        "max_output_tokens": 2000,
+        "temperature": 0.2,
+        "response_mime_type": "application/json",
+    }
+    if with_thinking:
+        config["thinking_config"] = {"thinking_budget": 0}
+    return config
+
+
 def _call_gemini(prompt: str) -> str:
     """Calls Gemini with a prompt, returns text response."""
+    global _model_name
     try:
         from google import genai
     except ImportError:
@@ -199,18 +298,33 @@ def _call_gemini(prompt: str) -> str:
 
     client = genai.Client(api_key=api_key)
 
-    # Retry once on rate limit
-    for attempt in range(2):
+    rate_retried = False
+    model_retried = False
+    thinking = True  # dropped once if a model rejects thinking_config
+    while True:
+        model = get_model_name(client)
         try:
             response = client.models.generate_content(
-                model="gemini-2.0-flash",
-                contents=prompt,
-                config={"max_output_tokens": 200, "temperature": 0.2},
+                model=model, contents=prompt, config=_gen_config(thinking),
             )
             return (response.text or "").strip()
         except Exception as e:
-            if "429" in str(e) and attempt == 0:
+            err = str(e)
+            # Retry once on rate limit
+            if "429" in err and not rate_retried:
+                rate_retried = True
                 time.sleep(35)
+                continue
+            # Some models don't accept a thinking budget — retry once without it.
+            if thinking and "thinking" in err.lower() and "400" in err:
+                thinking = False
+                continue
+            # Retired/unknown model: forget it, pick another once.
+            if _is_model_unavailable(err) and not model_retried:
+                model_retried = True
+                print(f"[enricher] model {model} unavailable, choosing another")
+                _retired_models.add(model)
+                _model_name = None
                 continue
             raise RuntimeError(f"Gemini error: {e}")
 
@@ -232,6 +346,10 @@ def enrich_event(
         "location": str | None,
         "key_detail": str,
         "source": "headline or domain used",
+        "gdelt_match": bool,
+        "mismatch_reason": str | None,
+        "countries_involved": list[str],
+        "is_actually_international": bool,
         "enriched": True
       }
     Or on failure:
@@ -247,14 +365,7 @@ def enrich_event(
 
     article_text = f"Headline: {article.get('headline', '')}\n\n{article.get('text', '')}"
 
-    # Step 2 — check if we actually need enrichment
-    # (if both actors are already resolved, just return the article summary)
-    needs_enrichment = any(
-        phrase in (actor1 + actor2).lower()
-        for phrase in ["unidentified", "unnamed", "unknown", "an actor"]
-    )
-
-    # Step 3 — call Gemini
+    # Step 2 — call Gemini
     try:
         prompt = ENRICH_PROMPT.format(
             actor1=actor1,
@@ -290,17 +401,36 @@ def enrich_event(
         }
 
     except Exception as e:
-        # Gemini failed — fall back to showing just the article headline
-        headline = article.get("headline", "")
-        if headline:
-            return {
-                "enriched": True,
-                "what_happened": headline,
-                "real_actor1": actor1,
-                "real_actor2": actor2,
-                "location": None,
-                "key_detail": "",
-                "source": article.get("domain", ""),
-                "fallback": True,
-            }
-        return {"enriched": False, "error": f"Enrichment failed: {e}"}
+        # Gemini's response failed to arrive or failed to parse as JSON —
+        # NEVER silently present this as a verified, trustworthy result.
+        # The old fallback here returned "enriched: True" with no
+        # gdelt_match field at all, which the frontend read as "nothing
+        # flagged" and displayed as a plain, confident "AI VERIFIED" —
+        # exactly backwards, since this is the one case where nothing was
+        # actually checked. Treat it the same as a fetch failure instead,
+        # so the UI correctly shows "unverified" rather than false
+        # confidence.
+        print(f"[enrich_event] Gemini call/parse failed: {e}")
+        # Short user-facing reason. "rate" is matched as a whole word since
+        # Gemini errors often mention "generateContent".
+        msg = str(e).lower()
+        if "429" in msg or "quota" in msg or re.search(r"\brate\b|\brate[-_ ]?limit", msg):
+            reason = "AI verification is rate-limited right now"
+        elif "404" in msg or "not found" in msg or "deprecated" in msg or "model" in msg:
+            reason = "AI model unavailable"
+        elif "json" in msg or "expecting" in msg:
+            reason = "AI returned an incomplete response"
+        else:
+            reason = "AI verification could not complete"
+        # "detail" is for debugging only (raw text, capped, key redacted);
+        # the frontend shows just "error".
+        detail = str(e)
+        key = os.environ.get("GEMINI_API_KEY")
+        if key:
+            detail = detail.replace(key, "***")
+        detail = re.sub(r"(key=)[^&\s'\"]+", r"\1***", detail)
+        return {
+            "enriched": False,
+            "error": reason,
+            "detail": detail[:200],
+        }

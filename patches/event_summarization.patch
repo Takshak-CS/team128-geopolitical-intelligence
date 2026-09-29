@@ -41,7 +41,7 @@
 +# After install: python -m spacy download en_core_web_sm
 --- a/src/api.py
 +++ b/src/api.py
-@@ -135,6 +135,9 @@
+@@ -136,6 +136,9 @@
      work = pd.DataFrame({"partner": partner_code, "goldstein": df["GoldsteinScale"]})
      work = work.dropna(subset=["partner"])
      work = work[work["partner"].str.match(r"^[A-Z]{3}$", na=False)]
@@ -51,9 +51,78 @@
      work = work[work["partner"] != cc.upper()]
  
      if work.empty:
+@@ -165,11 +168,19 @@
+ # pipeline only ever runs once per (date, country), regardless of which
+ # endpoint asks for it first.
+ # ---------------------------------------------------------------------------
++def _with_table_limit(payload: dict, limit: int) -> dict:
++    # Team 128 integration fix: the cache key is (date, country), so the cached
++    # payload keeps every table row and each request is cut to its own limit.
++    # Before, the first caller's limit applied to everyone after it.
++    table = payload["table"][:max(0, limit)]
++    return {**payload, "table": table, "table_rows_shown": len(table)}
++
++
+ def _build_or_get_analysis(date: str, country_code: str, limit: int = 300) -> dict:
+     cache_key = (date, country_code.upper())
+     cached = _cache_get(cache_key)
+     if cached is not None:
+-        return cached
++        return _with_table_limit(cached, limit)
+ 
+     df = preprocess(date, country_code)
+     if df.empty:
+@@ -193,7 +204,7 @@
+     if CLUSTER_AVAILABLE and "EventCluster" in df.columns:
+         table_cols += ["EventCluster"]
+ 
+-    table_records = df[table_cols].head(limit).to_dict(orient="records")
++    table_records = df[table_cols].to_dict(orient="records")
+ 
+     # Domestic vs international split (mirrors the WebSocket pipeline's
+     # payload shape) — both actors from the analyzed country = domestic.
+@@ -246,7 +257,7 @@
+ 
+     payload = _jsonable(payload)
+     _cache_set(cache_key, payload)
+-    return payload
++    return _with_table_limit(payload, limit)
+ 
+ 
+ # ---------------------------------------------------------------------------
+@@ -568,7 +579,7 @@
+             for stage, msg, pct in stages:
+                 await _send(websocket, stage, "done", msg, pct)
+                 await asyncio.sleep(0.12)
+-            await _send(websocket, "done", "done", "Complete (cached)", 100, payload=cached)
++            await _send(websocket, "done", "done", "Complete (cached)", 100, payload=_with_table_limit(cached, 300))
+             return
+ 
+         # ── Stage 1: Fetch ────────────────────────────────────────────
+@@ -687,8 +698,9 @@
+             "cluster_quality": df.attrs.get("cluster_quality") if CLUSTER_AVAILABLE else None,
+             "partners": partners,
+             "top5_events": top5,
+-            "table": df[table_cols].head(300).to_dict(orient="records"),
+-            "table_rows_shown": min(300, total),
++            # Team 128 integration fix: cache every row; this client gets 300.
++            "table": df[table_cols].to_dict(orient="records"),
++            "table_rows_shown": total,
+             "table_rows_total": total,
+             "narration_script": summary_text,
+         "domestic": {
+@@ -707,7 +719,7 @@
+         _cache_set(cache_key, payload)
+ 
+         await _send(websocket, "done", "done", f"Pipeline complete — {total:,} events", 100,
+-                    payload=payload)
++                    payload=_with_table_limit(payload, 300))
+ 
+     except WebSocketDisconnect:
+         pass
 --- a/src/preprocess.py
 +++ b/src/preprocess.py
-@@ -1073,7 +1073,8 @@
+@@ -1083,7 +1083,8 @@
          df[df["CountryRole"] == "Recipient"]["Actor1CountryCode"],
          df[df["CountryRole"] == "Both"]["Actor2CountryCode"],
      ]).dropna()
