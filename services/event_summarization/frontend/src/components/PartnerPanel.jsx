@@ -40,6 +40,11 @@ function inferSentence(row) {
     score >= 8  ? "GDELT's strongly cooperative category" :
     score >= 4  ? "a positive-diplomatic-step category" :
     score >= 1  ? "a cooperative-exchange category" : "a neutral-exchange category";
+  // Same actor on both sides ("Israel engaged in fighting with Israel")
+  // reads as nonsense — describe it as a domestic event instead.
+  if (a1.trim().toLowerCase() === a2.trim().toLowerCase()) {
+    return `Domestic event within ${a1.trim()} — ${severity}.`;
+  }
   return `GDELT classified this as ${severity}: ${a1} ${verb} ${a2}.`;
 }
 
@@ -106,7 +111,7 @@ function sourceDomain(url) {
     return host.length > 30 ? host.slice(0, 28) + "..." : host;
   } catch { return null; }
 }
-import { useState } from "react";
+import { useState, useCallback } from "react";
 
 function toneColor(score) {
   if (score >= 1)  return "#4fae8a";
@@ -141,6 +146,14 @@ export default function PartnerPanel({ partner, tableRows, date, countryCode, co
   const [running, setRunning]   = useState(false);
   const [partnerResult, setPartnerResult] = useState(null);
   const [error, setError]       = useState("");
+
+  // url -> relevance link reported by each card's ArticleScan; used to
+  // flag / optionally hide events whose article names neither actor.
+  const [links, setLinks] = useState({});
+  const [hideMistagged, setHideMistagged] = useState(false);
+  const onRelevance = useCallback((url, link) => {
+    setLinks((m) => (m[url] === link ? m : { ...m, [url]: link }));
+  }, []);
 
   // Filter table rows to events involving this partner
   const events = (tableRows || []).filter(
@@ -226,17 +239,33 @@ export default function PartnerPanel({ partner, tableRows, date, countryCode, co
             No detailed event records available for this pair.
           </p>
         ) : (
+          <>
+          {(() => {
+            const n = events.filter((r) => links[r.SOURCEURL] === "none").length;
+            if (n === 0) return null;
+            return (
+              <div className="mistag-summary">
+                {n} of {events.length} events look unrelated to this tag
+                <button className="relevance-more" onClick={() => setHideMistagged((h) => !h)}>
+                  {hideMistagged ? "Show them" : "Hide them"}
+                </button>
+              </div>
+            );
+          })()}
           <div className="dos-feed">
             {events.map((row, i) => {
               const score = parseFloat(row.GoldsteinScale) || 0;
               const tone  = score >= 1 ? "coop" : score <= -1 ? "conflict" : "neutral";
               const label = classification(score);
+              const mistagged = links[row.SOURCEURL] === "none";
+              if (mistagged && hideMistagged) return null;
               return (
-                <article key={row.SOURCEURL || `${row.Actor1Name}-${row.Actor2Name}-${row.SQLDATE}-${i}`} className={`dos-card ${tone}`}>
+                <article key={row.SOURCEURL || `${row.Actor1Name}-${row.Actor2Name}-${row.SQLDATE}-${i}`} className={`dos-card ${tone}${mistagged ? " dos-card-mistagged" : ""}`}>
                   <div className="dos-header">
                     <span className="dos-case">EVENT-{String(i + 1).padStart(3, "0")} · {row.SQLDATE}</span>
                     <span className={`dos-stamp ${tone}`}>{label}</span>
                     <span className="dos-tag">{row.EventType}</span>
+                    {mistagged && <span className="dos-tag mistag-badge">Likely mis-tagged by GDELT</span>}
                     <span className={`dos-score ${tone}`}>
                       {score >= 0 ? "+" : ""}{score.toFixed(1)}
                     </span>
@@ -258,6 +287,8 @@ export default function PartnerPanel({ partner, tableRows, date, countryCode, co
                       score={parseFloat(row.GoldsteinScale) || 0}
                       autoLoad={true}
                       loadDelay={i * 600}
+                      highlightTerm={partner.name}
+                      onRelevance={onRelevance}
                     />
                   )}
                   <div className="dos-meta">
@@ -273,6 +304,7 @@ export default function PartnerPanel({ partner, tableRows, date, countryCode, co
               );
             })}
           </div>
+          </>
         )}
 
         <div className="partner-panel-actions">

@@ -20,6 +20,7 @@ Phase 3 (/briefing) additionally needs:
 import json
 import math
 import asyncio
+import threading
 from collections import OrderedDict
 from contextlib import asynccontextmanager
 from typing import Optional
@@ -227,6 +228,7 @@ def _build_or_get_analysis(date: str, country_code: str, limit: int = 300) -> di
             df["EventCluster"].value_counts().to_dict()
             if CLUSTER_AVAILABLE and "EventCluster" in df.columns else {}
         ),
+        "cluster_quality": df.attrs.get("cluster_quality") if CLUSTER_AVAILABLE else None,
         "partners": partners,
         "top5_events": top5,
         "table": table_records,
@@ -278,7 +280,17 @@ def health():
             "clustering": CLUSTER_AVAILABLE,
         },
         "gge_database": gge_available(),
+        # Model chosen by the enricher so far (null until first AI call).
+        "gemini_model": _gemini_model_name(),
     }
+
+
+def _gemini_model_name():
+    try:
+        from src.enricher import get_cached_model_name
+        return get_cached_model_name()
+    except Exception:
+        return None
 
 
 @app.get("/dates")
@@ -387,6 +399,13 @@ class EnrichRequest(BaseModel):
     score: float
 
 
+# Successful /enrich-event results, so re-opening the same event card
+# doesn't spend Gemini quota again. Failures are never cached.
+_ENRICH_CACHE: "OrderedDict[tuple, dict]" = OrderedDict()
+_ENRICH_CACHE_MAX = 500
+_ENRICH_CACHE_LOCK = threading.Lock()
+
+
 @app.post("/enrich-event")
 def enrich_event_route(req: EnrichRequest):
     """
@@ -395,6 +414,11 @@ def enrich_event_route(req: EnrichRequest):
     to identify the real actors and summarise what happened.
     Only called when the user explicitly requests it (per-event button).
     """
+    cache_key = (req.url, req.actor1, req.actor2, req.event_type)
+    with _ENRICH_CACHE_LOCK:
+        if cache_key in _ENRICH_CACHE:
+            _ENRICH_CACHE.move_to_end(cache_key)
+            return _ENRICH_CACHE[cache_key]
     try:
         result = enrich_event(
             url=req.url,
@@ -404,6 +428,12 @@ def enrich_event_route(req: EnrichRequest):
             country=req.country,
             score=req.score,
         )
+        if isinstance(result, dict) and result.get("enriched"):
+            with _ENRICH_CACHE_LOCK:
+                _ENRICH_CACHE[cache_key] = result
+                _ENRICH_CACHE.move_to_end(cache_key)
+                while len(_ENRICH_CACHE) > _ENRICH_CACHE_MAX:
+                    _ENRICH_CACHE.popitem(last=False)
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -426,6 +456,43 @@ def article_headline(url: str = Query(...)):
         "headline": result.get("headline", ""),
         "domain": result.get("domain", ""),
     }
+
+
+@app.get("/article-context")
+def article_context(
+    url: str = Query(...),
+    term: str = Query(..., min_length=1, max_length=200),
+):
+    """
+    Returns the sentence(s) of the source article that mention `term`
+    (plus one sentence of context either side). No AI call — full-text
+    fetch + regex. See src/article_context.py.
+    """
+    from src.article_context import find_mentions
+    if not (url.startswith("http://") or url.startswith("https://")):
+        raise HTTPException(status_code=400, detail="Invalid URL")
+    return find_mentions(url, term)
+
+
+@app.get("/article-relevance")
+def article_relevance(
+    url: str = Query(...),
+    term1: str = Query("", max_length=200),
+    term2: str = Query("", max_length=200),
+    headline: Optional[str] = Query(None, max_length=1000),
+):
+    """
+    Judges from the full article text how well the source article supports
+    the event's two actors (prominence of each, co-occurrence, places and
+    main people/orgs named, a best_snippet sentence, and a link of
+    together/listed/one_sided/none/unavailable with a one-line verdict_text).
+    No AI call — see analyze_relevance in src/article_context.py, which
+    also rejects loopback/private hosts.
+    """
+    from src.article_context import analyze_relevance
+    if not (url.startswith("http://") or url.startswith("https://")):
+        raise HTTPException(status_code=400, detail="Invalid URL")
+    return analyze_relevance(url, term1, term2, headline)
 
 
 
@@ -620,6 +687,7 @@ async def pipeline_ws(websocket: WebSocket):
                 df["EventCluster"].value_counts().to_dict()
                 if CLUSTER_AVAILABLE and "EventCluster" in df.columns else {}
             ),
+            "cluster_quality": df.attrs.get("cluster_quality") if CLUSTER_AVAILABLE else None,
             "partners": partners,
             "top5_events": top5,
             "table": df[table_cols].head(300).to_dict(orient="records"),

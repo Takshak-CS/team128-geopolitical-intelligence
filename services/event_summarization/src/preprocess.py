@@ -689,6 +689,16 @@ def _cluster_events(df: pd.DataFrame, n_clusters: int = 4) -> pd.Series:
     km     = KMeans(n_clusters=k, random_state=42, n_init=10)
     labels = km.fit_predict(X_scaled)
 
+    # Validate this exact fit (same X_scaled + labels). Stored on df.attrs so
+    # api.py can add it to the payload without changing any return values.
+    try:
+        from src.cluster_quality import compute_cluster_quality
+        df.attrs["cluster_quality"] = compute_cluster_quality(
+            X_scaled, labels, {"n_clusters": k, "random_state": 42, "n_init": 10})
+    except Exception as e:
+        print(f"[cluster_quality] skipped: {e}")
+        df.attrs["cluster_quality"] = None
+
     cluster_names = {}
     for cid in range(k):
         mask = labels == cid

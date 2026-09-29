@@ -2121,3 +2121,194 @@ table.data-table tbody tr:hover td {
   border-radius: 6px;
   border-left: 2px solid var(--border-strong);
 }
+
+/* ── Article mentions: where the clicked actor appears in the source ── */
+.scan-mentions {
+  margin: 8px 0;
+  padding: 8px 12px;
+  background: var(--surface-2);
+  border-left: 2px solid var(--accent);
+  border-radius: 6px;
+}
+.scan-mentions-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+.scan-mentions-snippet {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin: 4px 0 0;
+}
+.scan-mentions-snippet mark {
+  background: var(--accent-100);
+  color: var(--accent-text);
+  border-radius: 2px;
+  padding: 0 2px;
+}
+.scan-mentions-empty {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+/* ── Article relevance (ArticleScan → /article-relevance) ────────────
+   Compact default: colored dot + one-line verdict, one quoted snippet,
+   and a "More detail" toggle that opens .scan-relevance (per-actor rows,
+   places, main topics). */
+.relevance-line {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin-top: 4px;
+}
+.relevance-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  transform: translateY(-1px);
+}
+.relevance-dot-together  { background: var(--coop); }
+.relevance-dot-listed    { background: var(--accent); }
+.relevance-dot-one_sided,
+.relevance-dot-none      { background: var(--conflict); }
+.relevance-snippet {
+  font-size: 12px;
+  font-style: italic;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin: 4px 0 0;
+}
+.relevance-snippet mark {
+  background: var(--accent-100);
+  color: var(--accent-text);
+  border-radius: 2px;
+  padding: 0 2px;
+  font-style: normal;
+}
+/* Muted text-button used for "More detail" and "Hide them". */
+.relevance-more {
+  background: none;
+  border: none;
+  padding: 0;
+  margin-top: 4px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  cursor: pointer;
+  text-decoration: underline dotted;
+}
+.relevance-more:hover { color: var(--text-secondary); }
+.scan-relevance {
+  margin: 8px 0;
+  padding: 8px 12px;
+  background: var(--surface-2);
+  border-left: 2px solid var(--accent);
+  border-radius: 6px;
+}
+.relevance-actor {
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid var(--border);
+}
+.relevance-actor-head {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.relevance-actor-name {
+  color: var(--text);
+  font-weight: 600;
+}
+.relevance-meta {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 6px;
+  line-height: 1.6;
+}
+.relevance-place-chip {
+  display: inline-block;
+  margin: 0 4px 2px 0;
+  padding: 0 6px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-secondary);
+}
+.scan-ai-error {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin: 6px 0 0;
+}
+
+/* ── Likely mis-tagged events (article names neither actor) ──────────
+   Dimmed card + badge; body collapsed to headline + verdict line. */
+.dos-card-mistagged { opacity: 0.65; }
+.dos-card-mistagged:hover { opacity: 0.85; }
+.dos-card-mistagged .dos-bar-track,
+.dos-card-mistagged .event-explanation { display: none; }
+.mistag-badge {
+  color: var(--conflict-text);
+  border-color: var(--conflict);
+}
+.mistag-summary {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 8px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.mistag-summary .relevance-more { margin-top: 0; }
+
+/* ── Cluster quality (KMeans validation line under the cluster donut) ── */
+
+.cq {
+  grid-column: 1 / -1;          /* full width row below the charts */
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.cq-line { margin: 0; }
+.cq-line strong { color: var(--text); font-family: var(--font-mono); }
+
+.cq-weak { margin: 4px 0 0; color: var(--text-muted); font-style: italic; }
+
+.cq-toggle {
+  margin-top: 4px;
+  padding: 0;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font: inherit;
+  font-size: 11px;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.cq-toggle:hover { color: var(--accent-text); }
+
+.cq-details {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 14px;
+  margin-top: 6px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.cq-chips { display: inline-flex; flex-wrap: wrap; gap: 4px; }
+.cq-chip {
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  padding: 1px 7px;
+}
+.cq-chip-best { border-color: var(--accent); color: var(--accent-text); }

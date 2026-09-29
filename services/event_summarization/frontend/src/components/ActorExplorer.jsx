@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import ArticleScan from "./ArticleScan.jsx";
 import InfoTip from "./InfoTip.jsx";
 
@@ -94,7 +94,12 @@ function buildExplanation(row, clickedActor, countryName) {
   // assault on China" reads as something that definitely happened when
   // it's really just raw, unverified GDELT coding (which is known to
   // miscode things like sports coverage as violent conflict).
-  const actionLine = `GDELT classified this as: ${a1} ${verb} ${a2}.`;
+  // Same actor on both sides ("Israel engaged in fighting with Israel")
+  // reads as nonsense — describe it as a domestic event instead.
+  const sameActor = a1.trim().toLowerCase() === a2.trim().toLowerCase();
+  const actionLine = sameActor
+    ? `Domestic event within ${a1.trim()}.`
+    : `GDELT classified this as: ${a1} ${verb} ${a2}.`;
 
   // What it means
   const meaningLine = `Category: "${type}" — ${scoreMeaning(score)} (Goldstein: ${score >= 0 ? "+" : ""}${score.toFixed(1)}).`;
@@ -156,6 +161,14 @@ const GENERIC_LABELS = new Set([
 // ── Component ─────────────────────────────────────────────────────────
 export default function ActorExplorer({ actor, tableRows, countryName, date, onClear }) {
   const [showAll, setShowAll] = useState(false);
+
+  // url -> relevance link reported by each card's ArticleScan; used to
+  // flag / optionally hide events whose article names neither actor.
+  const [links, setLinks] = useState({});
+  const [hideMistagged, setHideMistagged] = useState(false);
+  const onRelevance = useCallback((url, link) => {
+    setLinks((m) => (m[url] === link ? m : { ...m, [url]: link }));
+  }, []);
 
   if (!actor) {
     return (
@@ -230,6 +243,18 @@ export default function ActorExplorer({ actor, tableRows, countryName, date, onC
       </div>
 
       {/* Event cards */}
+      {(() => {
+        const n = displayed.filter((r) => links[r.SOURCEURL] === "none").length;
+        if (n === 0) return null;
+        return (
+          <div className="mistag-summary">
+            {n} of {displayed.length} events look unrelated to this tag
+            <button className="relevance-more" onClick={() => setHideMistagged((h) => !h)}>
+              {hideMistagged ? "Show them" : "Hide them"}
+            </button>
+          </div>
+        );
+      })()}
       <div className="dos-feed">
         {displayed.map((row, i) => {
           const score   = parseFloat(row.GoldsteinScale) || 0;
@@ -238,9 +263,11 @@ export default function ActorExplorer({ actor, tableRows, countryName, date, onC
           const url     = row.SOURCEURL?.startsWith("http") ? row.SOURCEURL : null;
           const domain  = url ? sourceDomain(url) : null;
           const explanation = buildExplanation(row, actor.id, countryName);
+          const mistagged = links[row.SOURCEURL] === "none";
+          if (mistagged && hideMistagged) return null;
 
           return (
-            <article key={row.SOURCEURL || `${row.Actor1Name}-${row.Actor2Name}-${row.SQLDATE}-${i}`} className={`dos-card ${tone}`}>
+            <article key={row.SOURCEURL || `${row.Actor1Name}-${row.Actor2Name}-${row.SQLDATE}-${i}`} className={`dos-card ${tone}${mistagged ? " dos-card-mistagged" : ""}`}>
               {/* Header */}
               <div className="dos-header">
                 <span className="dos-case">EVENT-{String(i+1).padStart(3,"0")} · {row.SQLDATE}</span>
@@ -249,6 +276,7 @@ export default function ActorExplorer({ actor, tableRows, countryName, date, onC
                 {parseInt(row.NumArticles) > 0 && (
                   <span className="dos-tag">{row.NumArticles} articles</span>
                 )}
+                {mistagged && <span className="dos-tag mistag-badge">Likely mis-tagged by GDELT</span>}
                 <span className={`dos-score ${tone}`}>
                   {score >= 0 ? "+" : ""}{score.toFixed(1)}
                 </span>
@@ -281,6 +309,8 @@ export default function ActorExplorer({ actor, tableRows, countryName, date, onC
                   cluster={row.EventCluster || ""}
                   autoLoad={true}
                   loadDelay={i * 600}
+                  highlightTerm={actor.id}
+                  onRelevance={onRelevance}
                 />
               )}
 

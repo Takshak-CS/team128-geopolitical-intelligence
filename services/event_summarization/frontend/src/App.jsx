@@ -182,6 +182,7 @@ export default function App() {
               toneCounts={result.tone_counts}
               sentimentCounts={result.sentiment_counts}
               clusterCounts={result.cluster_counts}
+              clusterQuality={result.cluster_quality}
             />
 
             <NetworkGraph
