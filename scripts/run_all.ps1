@@ -55,5 +55,8 @@ while ($pending.Count -gt 0 -and (Get-Date) -lt $deadline) {
     if ($pending.Count -gt 0) { Start-Sleep -Seconds 3 }
 }
 if ($pending.Count -gt 0) { Write-Host ("Still starting: {0}. Check .run\logs." -f ($pending -join ", ")) }
+Write-Host "`nStarting module dashboards..."
+& "$PSScriptRoot\run_dashboards.ps1"
+
 Write-Host "`nBriefing UI:  http://127.0.0.1:8000"
 Write-Host "API docs:     http://127.0.0.1:8000/docs"

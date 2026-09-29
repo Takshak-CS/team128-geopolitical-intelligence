@@ -28,4 +28,7 @@ start orchestrator 8000 orchestrator app.main:app
 echo "Waiting for the orchestrator..."
 for _ in $(seq 1 60); do curl -sf http://127.0.0.1:8000/health >/dev/null && break; sleep 2; done
 curl -s http://127.0.0.1:8000/health; echo
-echo "Briefing UI: http://127.0.0.1:8000   (Policy Stance may still be building; see .run/logs)"
+echo "Starting module dashboards..."
+bash "$ROOT/scripts/run_dashboards.sh" 2>/dev/null || true
+
+echo "Briefing UI: http://127.0.0.1:8000"
