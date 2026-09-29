@@ -186,6 +186,14 @@ class PolicyStanceAdapter(AgentAdapter):
             names = [self._module_name(code, gw_names) for code in targets]
             if all(names):
                 insights.extend(await self._compare(targets, names))
+
+        # Louvain-discovered blocs — supplement the anchor-based bloc assignments
+        # with unsupervised community detection so the briefing can note when the
+        # two methods agree or disagree.
+        if targets:
+            year = plan.time.year if plan.time.mode == "year" else result.context.get("bloc_year") or 2024
+            insights.extend(await self._bloc_discovery_insights(targets, bloc_by_iso3, gw_names, int(year)))
+
         return insights, metadata
 
     async def _blocs(self, plan: QueryPlan, result: AgentResult) -> tuple[dict, str, dict]:
@@ -309,6 +317,83 @@ class PolicyStanceAdapter(AgentAdapter):
                     "agreement over resolutions both voted on; limited to partners linked in the conflict/agreement graph",
                     {"partners": resolved},
                     facet="diplomatic_partners",
+                )
+            )
+        return out
+
+    async def _bloc_discovery_insights(self, iso3s: list[str], anchor_blocs: dict[str, str], gw_names: dict[int, str], year: int) -> list[dict]:
+        """Call /bloc-discovery and produce one diplomatic_blocs insight per country.
+
+        Compares Louvain-discovered clusters (no pre-labelled anchors) against
+        the anchor-similarity blocs already in anchor_blocs. When they agree the
+        confidence in the diplomatic alignment claim is higher; when they diverge
+        it is surfaced as a caveat for fusion to flag.
+        """
+        disc = await try_call(self.cached_get(f"/bloc-discovery/{year}", ttl_s=600), None)
+        if not isinstance(disc, dict) or "country_to_cluster" not in disc:
+            return []
+        c2c: dict[str, int] = disc.get("country_to_cluster", {})
+        clusters: list[dict] = disc.get("clusters", [])
+        if not c2c or not clusters:
+            return []
+
+        # Build cluster-id → set of ISO3 so we can name cluster members
+        cluster_iso3s: dict[int, list[str]] = {}
+        name_to_iso3 = self._name_to_iso3(gw_names)
+        for module_name, cid in c2c.items():
+            m_iso3 = name_to_iso3.get(module_name)
+            if m_iso3:
+                cluster_iso3s.setdefault(cid, []).append(m_iso3)
+
+        out: list[dict] = []
+        for iso3 in iso3s:
+            module_name = self._module_name(iso3, gw_names)
+            if not module_name or module_name not in c2c:
+                continue
+            cid = c2c[module_name]
+            cluster_members_iso3 = cluster_iso3s.get(cid, [])
+            anchor_bloc = anchor_blocs.get(iso3, "Unknown")
+
+            # What anchor-labelled blocs appear most in this cluster?
+            bloc_votes: dict[str, int] = {}
+            for m in cluster_members_iso3:
+                b = anchor_blocs.get(m)
+                if b:
+                    bloc_votes[b] = bloc_votes.get(b, 0) + 1
+            dominant_bloc = max(bloc_votes, key=bloc_votes.get) if bloc_votes else "Unknown"
+            agrees = dominant_bloc == anchor_bloc
+
+            sample = [countries.name_of(m) for m in sorted(cluster_members_iso3) if m != iso3][:5]
+            name = countries.name_of(iso3)
+            claim = (
+                f"Louvain community detection (no pre-set labels) places {name} in cluster {cid} "
+                f"({len(cluster_members_iso3)} members), which aligns with the {dominant_bloc} "
+                f"({'consistent with' if agrees else 'diverging from'} the anchor-similarity assignment)."
+            )
+            caveat = None if agrees else (
+                f"Louvain cluster {cid} is dominated by the {dominant_bloc} label, but the "
+                f"anchor-similarity method places {name} in the {anchor_bloc}. "
+                f"Fusion should treat this as a methodological disagreement, not a factual one."
+            )
+            out.append(
+                insight(
+                    iso3,
+                    claim,
+                    len(cluster_members_iso3) / max(1, disc.get("countries", 1)),
+                    0.60 if agrees else 0.45,
+                    f"Louvain on {year - 7}-{year} vote-similarity network; no manual overrides applied",
+                    {
+                        "cluster_id": cid,
+                        "cluster_size": len(cluster_members_iso3),
+                        "cluster_members_sample": sample,
+                        "dominant_bloc_in_cluster": dominant_bloc,
+                        "anchor_bloc": anchor_bloc,
+                        "method_agrees": agrees,
+                        "total_clusters": len(clusters),
+                        "discovery_year": year,
+                    },
+                    facet="diplomatic_blocs",
+                    caveat=caveat,
                 )
             )
         return out

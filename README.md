@@ -22,8 +22,8 @@ flowchart LR
 
 | Agent | Owner | Data | Answers |
 |---|---|---|---|
-| Soft Power Index | Anushree | 10 open datasets → 23 KPIs, PCA weights, Kalman smoothing | influence level, trend, 5-year forecast, drivers, peers |
-| Policy Stance | Santhosh | UN GA voting (1989-2025), UCDP conflict data | UN-voting blocs, conflict record, diplomatic partners, pairwise alignment |
+| Soft Power Index | Anushree | 10 open datasets → 23 KPIs, PCA weights, Kalman smoothing, XGBoost | influence level, trend, 5-year Kalman forecast, SHAP drivers, peer comparison |
+| Policy Stance | Santhosh | UN GA voting 544,453 votes / 198 countries (1989-2025), UCDP Dyadic + GED + Non-state + One-sided conflict datasets | UN-voting blocs (anchor-similarity + Louvain discovery), conflict exposure, diplomatic partners, pairwise alignment, 5-year conflict forecast |
 | Trade Intelligence | Takshak | CEPII BACI HS92, 1995-2024 | structural risk, trading blocs, leverage, sector fragility, shock propagation, forecasts |
 | Event Summarization | Shreyas | GDELT V1 daily events, GGE 1990-2024 | today's activity, tone and counterparts vs the long-run baseline; validated themes; domestic vs international split; top events checked against their source articles |
 
@@ -84,6 +84,77 @@ dashboard" links in the briefing UI expect. See the list below.
    it. The UI then shows each agent in the same panel: headline numbers,
    views drawn from the evidence behind its claims, and every claim with its
    confidence and caveat.
+
+## Policy Stance module — what it contributes to the combined briefing
+
+The Policy Stance module (`services/policy_stance/`, port 8102) is Santhosh's
+module. It is the only agent that reasons about **geopolitical alignment** from
+first principles — not news, not trade flows, but how 198 countries actually
+voted in the UN General Assembly across 36 years and what conflicts they were
+party to in the UCDP data.
+
+### Data
+- **UN GA voting**: 544,453 vote records across 198 countries (1989-2025),
+  loaded from the UN Digital Library export. Each resolution carries a topic
+  label so the module can surface issue-specific stances.
+- **UCDP conflict data** (four datasets combined): Dyadic, GED, Non-state,
+  One-sided violence — linked to countries via Gleditsch-Ward codes with a
+  202-entry ISO3→GW crosswalk.
+
+### Endpoints the orchestrator uses
+
+| Endpoint | What the combined briefing gets from it |
+|---|---|
+| `GET /health` | Liveness check; orchestrator marks the agent `ok` or `not_ready` before asking a question |
+| `GET /capabilities` | Module self-description pulled into the orchestrator's `/capabilities` route |
+| `GET /countries` | GW-code → country-name lookup; the orchestrator uses this to map ISO3 safely across the API boundary |
+| `GET /country/{name}` | Full profile — conflict timeline, centrality, top partners, UN vote distribution — powers the `conflict_exposure` and `diplomatic_partners` insights |
+| `GET /blocs-by-year/{year}` | Anchor-similarity bloc assignment for a rolling 7-year window; powers `diplomatic_alignment` insights |
+| `GET /alliance-blocs` | Full 1989-2025 bloc assignment; fallback when no specific year is requested |
+| `GET /bloc-discovery/{year}` | **Louvain community detection** on the vote-similarity network; no anchor countries, no manual overrides — produces a separate `diplomatic_blocs` insight that the fuser compares against the anchor-similarity result |
+| `GET /compare-insight` | Bilateral similarity, vote match rate, drift, bloc membership; powers the `bilateral_diplomacy` insight on paired-country questions |
+| `GET /forecast` | Linear conflict-trend extrapolation; powers the `conflict_outlook` insight on forecast questions |
+
+### What Louvain discovery adds
+
+`/blocs-by-year` assigns countries by cosine similarity to hand-picked anchor
+countries (USA, Russia, China, India, …). `/bloc-discovery` runs Louvain
+community detection on the same vote-similarity graph with **no labels at all**
+and returns the clusters the data finds. The orchestrator calls both and
+generates a `diplomatic_blocs` insight that notes whether the methods **agree**
+(higher confidence) or **disagree** (shown as a caveat for the fusion layer to
+flag). This is the diplomatic equivalent of the trade-vs-UN divergence the
+project highlights — a methodological cross-check inside the Policy Stance
+agent itself.
+
+### Facets in the fused briefing
+
+| Facet | Produced by |
+|---|---|
+| `diplomatic_alignment` | Anchor-similarity bloc assignment; confidence follows provenance (`vote_model`, `anchor`, `manual_override`, `fallback_rule`) |
+| `diplomatic_blocs` | Louvain discovery result; cross-checked against `diplomatic_alignment` in fusion |
+| `conflict_exposure` | UCDP conflict records and deaths from the timeline (not the graph-node summary) |
+| `conflict_outlook` | 5-year linear extrapolation of yearly conflict counts |
+| `diplomatic_partners` | Top UN-vote agreement partners from the conflict/agreement graph |
+| `bilateral_diplomacy` | Pairwise similarity, vote match rate, temporal drift for country-pair questions |
+
+### Running standalone
+
+```powershell
+cd services\policy_stance
+..\..\scripts\run_dashboards.ps1   # starts the module on :8102 with its own React dashboard at :5175
+```
+
+Or directly:
+
+```powershell
+cd services\policy_stance
+python -m uvicorn backend.main:app --port 8102 --reload
+```
+
+The dashboard is at `http://localhost:5175`. The API is at
+`http://localhost:8102` — try `/health`, `/countries`, `/alliance-blocs`, and
+`/bloc-discovery/2024`.
 
 ## Repository layout
 
