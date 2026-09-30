@@ -157,6 +157,79 @@ The dashboard is at `http://localhost:5175`. The API is at
 `http://localhost:8102` — try `/health`, `/countries`, `/alliance-blocs`, and
 `/bloc-discovery/2024`.
 
+
+## Soft Power module: what it contributes to the combined briefing
+
+The Soft Power module (`services/soft_power/`, port 8101) is Anushree's
+module. It is the only agent that measures **attractive influence**: how much
+pull a country has through its culture, institutions, education, diplomacy
+and reputation. Trade flows and UN votes don't capture this.
+
+### Data and method
+- **10 open datasets → 23 KPIs** across 5 dimensions: <dimension 1>, <dimension 2>, … 
+  (sources: <e.g. World Bank WDI, UNESCO, Freedom House, …>).
+- **PCA weights.** Indicator weights come from principal component analysis
+  instead of being chosen by hand, giving a 0-100 composite score, 2000-2024.
+- **Kalman smoothing.** Yearly scores are smoothed with a Kalman filter, which
+  also gives 95% intervals and a 5-year forecast
+  (see `services/soft_power/KALMAN_FILTER_RATIONALE.md`).
+- **XGBoost + SHAP.** An ensemble model predicts the score, and SHAP values
+  show which indicators drive each country's result.
+- **FAISS peers.** Nearest-neighbour search on the standardised indicator
+  embedding finds countries with similar soft-power profiles.
+- Model artifacts are committed in `services/soft_power/output/`, so this
+  agent needs no data download.
+
+### Endpoints the orchestrator uses
+
+| Endpoint | What the combined briefing gets from it |
+|---|---|
+| `GET /health` | Liveness check |
+| `GET /api/latest` | Leaderboard: score, 95% interval, rank, stability class. Powers `influence` and ranking questions |
+| `GET /api/timeseries` | Yearly score and rank over the last decade. Powers `influence_trend` and past-year questions |
+| `GET /api/drivers/{iso3}` | Top SHAP-attributed indicators. Powers `influence_drivers` |
+| `GET /api/forecast/{iso3}` | 5-year Kalman forecast with 95% interval. Powers `influence_outlook` |
+| `GET /api/peers/{iso3}` | Nearest countries in the embedding space. Powers `influence_peers` |
+
+### How confidence is assigned
+The module publishes uncertainty (Kalman intervals) but not a per-claim
+confidence. The adapter turns the **width of the 95% interval** into a
+confidence score: a narrower interval gives higher confidence, and an interval
+30 or more points wide counts as uninformative. The basis is recorded in each
+claim's `evidence.confidence_basis`. In head-to-head comparisons, if two
+countries' intervals overlap, the briefing says the ordering is not decisive.
+
+### Facets in the fused briefing
+
+| Facet | Produced by |
+|---|---|
+| `influence` | Current (or requested-year) score and rank, with 95% interval |
+| `influence_trend` | Score and rank change over the last decade (rising / flat / falling) |
+| `influence_outlook` | 5-year Kalman forecast |
+| `influence_drivers` | Top 3 SHAP indicator drivers; the model's own lagged-score and time terms are reported as a share, not listed as drivers |
+| `influence_peers` | Most similar countries by cosine similarity |
+| `bilateral_influence` | Score gap between two countries and whether their intervals overlap |
+
+### Cross-check in fusion
+`fusion.py` compares soft-power momentum (`influence_outlook` or
+`influence_trend`) with the Trade agent's `trade_outlook`. If both move the
+same way, the briefing reports a **corroboration**. If they move in opposite
+directions, it reports a **divergence** ("Economic and soft-power momentum
+diverge").
+
+### Running standalone
+
+```powershell
+cd services\soft_power\dash\backend
+$env:DATA_SOURCE = "files"
+python -m uvicorn app.main:app --port 8101 --reload
+```
+
+The dashboard (`services/soft_power/dash/frontend`, `npm install; npm run dev`)
+is at `http://localhost:5174`. Try `/health`, `/api/latest` and
+`/api/forecast/IND`.
+
+
 ## Repository layout
 
 ```
