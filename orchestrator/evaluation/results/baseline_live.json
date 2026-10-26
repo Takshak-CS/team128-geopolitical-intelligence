@@ -1,0 +1,7673 @@
+{
+  "label": "baseline_live",
+  "created_at": "2026-10-26T11:01:57+00:00",
+  "git": {
+    "commit": "08fcc90",
+    "branch": "eval/query-benchmark",
+    "dirty": true
+  },
+  "reference_date": "2026-10-26",
+  "questions_version": 1,
+  "live": true,
+  "summary": {
+    "all": {
+      "questions": 90,
+      "intent_accuracy": 0.7222222222222222,
+      "intent_macro_f1": 0.748645404107589,
+      "entity_precision": 1.0,
+      "entity_recall": 0.8085106382978723,
+      "entity_f1": 0.8941176470588235,
+      "subject_accuracy": 0.8111111111111111,
+      "fallback_rate": 0.1643835616438356,
+      "time_accuracy": 0.9444444444444444,
+      "sector_accuracy": 1.0,
+      "severity_accuracy": 0.6363636363636364,
+      "metric_accuracy": 1.0,
+      "trade_query_accuracy": 0.8333333333333334,
+      "agent_precision": 0.9571428571428572,
+      "agent_recall": 0.9710144927536232,
+      "plan_exact": 0.6777777777777778,
+      "paraphrase_consistency": 0.5972222222222222,
+      "answered_questions": 90,
+      "request_errors": 0,
+      "answer_rate": 1.0,
+      "facet_recall": 0.7148148148148148,
+      "facet_hit_rate": 0.7666666666666667,
+      "cross_agent_yield": 2.3,
+      "attribution_rate": 1.0,
+      "top5_confidence": 0.7178,
+      "latency_p50_ms": 389.9,
+      "latency_p95_ms": 859.9
+    },
+    "dev": {
+      "questions": 56,
+      "intent_accuracy": 0.75,
+      "intent_macro_f1": 0.7888614253130382,
+      "entity_precision": 1.0,
+      "entity_recall": 0.7755102040816326,
+      "entity_f1": 0.8735632183908045,
+      "subject_accuracy": 0.8035714285714286,
+      "fallback_rate": 0.22727272727272727,
+      "time_accuracy": 0.9642857142857143,
+      "sector_accuracy": 1.0,
+      "severity_accuracy": 0.8333333333333334,
+      "metric_accuracy": 1.0,
+      "trade_query_accuracy": 0.8333333333333334,
+      "agent_precision": 0.9642857142857143,
+      "agent_recall": 0.9642857142857143,
+      "plan_exact": 0.6964285714285714,
+      "paraphrase_consistency": 0.6222222222222222,
+      "answered_questions": 56,
+      "request_errors": 0,
+      "answer_rate": 1.0,
+      "facet_recall": 0.7380952380952381,
+      "facet_hit_rate": 0.8214285714285714,
+      "cross_agent_yield": 1.6607142857142858,
+      "attribution_rate": 1.0,
+      "top5_confidence": 0.7577428571428572,
+      "latency_p50_ms": 289.9,
+      "latency_p95_ms": 831.8
+    },
+    "test": {
+      "questions": 34,
+      "intent_accuracy": 0.6764705882352942,
+      "intent_macro_f1": 0.6238977072310405,
+      "entity_precision": 1.0,
+      "entity_recall": 0.8444444444444444,
+      "entity_f1": 0.9156626506024096,
+      "subject_accuracy": 0.8235294117647058,
+      "fallback_rate": 0.06896551724137931,
+      "time_accuracy": 0.9117647058823529,
+      "sector_accuracy": 1.0,
+      "severity_accuracy": 0.4,
+      "metric_accuracy": 1.0,
+      "trade_query_accuracy": null,
+      "agent_precision": 0.9464285714285714,
+      "agent_recall": 0.9814814814814815,
+      "plan_exact": 0.6470588235294118,
+      "paraphrase_consistency": 0.5555555555555556,
+      "answered_questions": 34,
+      "request_errors": 0,
+      "answer_rate": 1.0,
+      "facet_recall": 0.6764705882352942,
+      "facet_hit_rate": 0.6764705882352942,
+      "cross_agent_yield": 3.3529411764705883,
+      "attribution_rate": 1.0,
+      "top5_confidence": 0.6520117647058824,
+      "latency_p50_ms": 431.6,
+      "latency_p95_ms": 868.5
+    }
+  },
+  "by_kind": {
+    "alias": {
+      "questions": 18,
+      "intent_accuracy": 0.6111111111111112,
+      "intent_macro_f1": 0.6444444444444444,
+      "entity_precision": 1.0,
+      "entity_recall": 0.7083333333333334,
+      "entity_f1": 0.8292682926829268,
+      "subject_accuracy": 0.6111111111111112,
+      "fallback_rate": 0.2222222222222222,
+      "time_accuracy": 1.0,
+      "sector_accuracy": 1.0,
+      "severity_accuracy": 1.0,
+      "metric_accuracy": null,
+      "trade_query_accuracy": 1.0,
+      "agent_precision": 0.984375,
+      "agent_recall": 0.9692307692307692,
+      "plan_exact": 0.5555555555555556,
+      "paraphrase_consistency": 0.5555555555555556,
+      "answered_questions": 18,
+      "request_errors": 0,
+      "answer_rate": 1.0,
+      "facet_recall": 0.662037037037037,
+      "facet_hit_rate": 0.7222222222222222,
+      "cross_agent_yield": 2.9444444444444446,
+      "attribution_rate": 1.0,
+      "top5_confidence": 0.6900333333333334,
+      "latency_p50_ms": 628.6,
+      "latency_p95_ms": 1212.0
+    },
+    "casual": {
+      "questions": 13,
+      "intent_accuracy": 0.7692307692307693,
+      "intent_macro_f1": 0.6761904761904762,
+      "entity_precision": 1.0,
+      "entity_recall": 1.0,
+      "entity_f1": 1.0,
+      "subject_accuracy": 1.0,
+      "fallback_rate": 0.0,
+      "time_accuracy": 0.9230769230769231,
+      "sector_accuracy": 1.0,
+      "severity_accuracy": 0.5,
+      "metric_accuracy": 1.0,
+      "trade_query_accuracy": 0.6666666666666666,
+      "agent_precision": 0.925,
+      "agent_recall": 1.0,
+      "plan_exact": 0.7692307692307693,
+      "paraphrase_consistency": 0.7692307692307693,
+      "answered_questions": 13,
+      "request_errors": 0,
+      "answer_rate": 1.0,
+      "facet_recall": 0.8076923076923077,
+      "facet_hit_rate": 0.8461538461538461,
+      "cross_agent_yield": 2.769230769230769,
+      "attribution_rate": 1.0,
+      "top5_confidence": 0.6882769230769231,
+      "latency_p50_ms": 444.4,
+      "latency_p95_ms": 868.5
+    },
+    "numeric": {
+      "questions": 4,
+      "intent_accuracy": 0.5,
+      "intent_macro_f1": 0.4444444444444444,
+      "entity_precision": 1.0,
+      "entity_recall": 1.0,
+      "entity_f1": 1.0,
+      "subject_accuracy": 1.0,
+      "fallback_rate": 0.0,
+      "time_accuracy": 0.5,
+      "sector_accuracy": 1.0,
+      "severity_accuracy": 0.5,
+      "metric_accuracy": 1.0,
+      "trade_query_accuracy": null,
+      "agent_precision": 0.8571428571428571,
+      "agent_recall": 1.0,
+      "plan_exact": 0.25,
+      "paraphrase_consistency": 0.25,
+      "answered_questions": 4,
+      "request_errors": 0,
+      "answer_rate": 1.0,
+      "facet_recall": 0.5,
+      "facet_hit_rate": 0.5,
+      "cross_agent_yield": 3.5,
+      "attribution_rate": 1.0,
+      "top5_confidence": 0.57275,
+      "latency_p50_ms": 411.4,
+      "latency_p95_ms": 660.4
+    },
+    "original": {
+      "questions": 18,
+      "intent_accuracy": 1.0,
+      "intent_macro_f1": 1.0,
+      "entity_precision": 1.0,
+      "entity_recall": 1.0,
+      "entity_f1": 1.0,
+      "subject_accuracy": 1.0,
+      "fallback_rate": 0.0,
+      "time_accuracy": 1.0,
+      "sector_accuracy": 1.0,
+      "severity_accuracy": 1.0,
+      "metric_accuracy": 1.0,
+      "trade_query_accuracy": 1.0,
+      "agent_precision": 1.0,
+      "agent_recall": 1.0,
+      "plan_exact": 1.0,
+      "paraphrase_consistency": null,
+      "answered_questions": 18,
+      "request_errors": 0,
+      "answer_rate": 1.0,
+      "facet_recall": 0.9722222222222222,
+      "facet_hit_rate": 1.0,
+      "cross_agent_yield": 2.2777777777777777,
+      "attribution_rate": 1.0,
+      "top5_confidence": 0.7167555555555556,
+      "latency_p50_ms": 413.1,
+      "latency_p95_ms": 1026.7
+    },
+    "reworded": {
+      "questions": 24,
+      "intent_accuracy": 0.9166666666666666,
+      "intent_macro_f1": 0.8571428571428571,
+      "entity_precision": 1.0,
+      "entity_recall": 1.0,
+      "entity_f1": 1.0,
+      "subject_accuracy": 1.0,
+      "fallback_rate": 0.0,
+      "time_accuracy": 0.9583333333333334,
+      "sector_accuracy": 1.0,
+      "severity_accuracy": 0.5,
+      "metric_accuracy": 1.0,
+      "trade_query_accuracy": 0.875,
+      "agent_precision": 0.9692307692307692,
+      "agent_recall": 1.0,
+      "plan_exact": 0.875,
+      "paraphrase_consistency": 0.875,
+      "answered_questions": 24,
+      "request_errors": 0,
+      "answer_rate": 1.0,
+      "facet_recall": 0.8541666666666666,
+      "facet_hit_rate": 0.875,
+      "cross_agent_yield": 1.875,
+      "attribution_rate": 1.0,
+      "top5_confidence": 0.7300666666666666,
+      "latency_p50_ms": 280.4,
+      "latency_p95_ms": 794.1
+    },
+    "typo": {
+      "questions": 13,
+      "intent_accuracy": 0.15384615384615385,
+      "intent_macro_f1": 0.15238095238095237,
+      "entity_precision": 1.0,
+      "entity_recall": 0.3125,
+      "entity_f1": 0.47619047619047616,
+      "subject_accuracy": 0.23076923076923078,
+      "fallback_rate": 0.6666666666666666,
+      "time_accuracy": 0.9230769230769231,
+      "sector_accuracy": 1.0,
+      "severity_accuracy": 0.0,
+      "metric_accuracy": 1.0,
+      "trade_query_accuracy": 0.5,
+      "agent_precision": 0.9069767441860465,
+      "agent_recall": 0.8666666666666667,
+      "plan_exact": 0.07692307692307693,
+      "paraphrase_consistency": 0.07692307692307693,
+      "answered_questions": 13,
+      "request_errors": 0,
+      "answer_rate": 1.0,
+      "facet_recall": 0.14743589743589744,
+      "facet_hit_rate": 0.3076923076923077,
+      "cross_agent_yield": 1.3846153846153846,
+      "attribution_rate": 1.0,
+      "top5_confidence": 0.8092,
+      "latency_p50_ms": 126.8,
+      "latency_p95_ms": 700.2
+    }
+  },
+  "records": [
+    {
+      "group": "india_profile",
+      "split": "dev",
+      "kind": "original",
+      "question": "How exposed is India right now?",
+      "gold": {
+        "intent": "country_profile",
+        "countries": [
+          "IND"
+        ],
+        "time": {
+          "mode": "latest"
+        },
+        "sector": "all",
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "facets": [
+        "influence",
+        "diplomatic_alignment",
+        "trade_exposure",
+        "event_activity"
+      ],
+      "predicted": {
+        "intent": "country_profile",
+        "countries": [
+          "IND"
+        ],
+        "time": {
+          "mode": "latest",
+          "year": null,
+          "date": null,
+          "horizon_year": null
+        },
+        "sector": "all",
+        "severity": null,
+        "metric": "exports",
+        "trade_query": null,
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "score": {
+        "slots": {
+          "intent": true,
+          "countries": true,
+          "time": true,
+          "sector": true,
+          "agents": true
+        },
+        "plan_exact": true,
+        "subject": true,
+        "fallback": false
+      },
+      "consistent": true,
+      "answer": {
+        "agents_asked": 4,
+        "agents_answered": 4,
+        "agent_status": {
+          "soft_power": "ok",
+          "policy_stance": "ok",
+          "trade_intelligence": "ok",
+          "event_summarization": "ok"
+        },
+        "answer_rate": 1.0,
+        "facets_found": [
+          "diplomatic_alignment",
+          "event_activity",
+          "influence",
+          "trade_exposure"
+        ],
+        "facet_recall": 1.0,
+        "cross_agent_findings": 4,
+        "findings": 30,
+        "top5_confidence": 0.735,
+        "cited_lines": 35,
+        "claim_lines": 35,
+        "latency_ms": 665.2,
+        "headline": "India: trade and diplomacy point the same way",
+        "live_plan_matches_offline": true
+      }
+    },
+    {
+      "group": "india_profile",
+      "split": "dev",
+      "kind": "reworded",
+      "question": "How vulnerable is India at the moment?",
+      "gold": {
+        "intent": "country_profile",
+        "countries": [
+          "IND"
+        ],
+        "time": {
+          "mode": "latest"
+        },
+        "sector": "all",
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "facets": [
+        "influence",
+        "diplomatic_alignment",
+        "trade_exposure",
+        "event_activity"
+      ],
+      "predicted": {
+        "intent": "country_profile",
+        "countries": [
+          "IND"
+        ],
+        "time": {
+          "mode": "latest",
+          "year": null,
+          "date": null,
+          "horizon_year": null
+        },
+        "sector": "all",
+        "severity": null,
+        "metric": "exports",
+        "trade_query": null,
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "score": {
+        "slots": {
+          "intent": true,
+          "countries": true,
+          "time": true,
+          "sector": true,
+          "agents": true
+        },
+        "plan_exact": true,
+        "subject": true,
+        "fallback": false
+      },
+      "consistent": true,
+      "answer": {
+        "agents_asked": 4,
+        "agents_answered": 4,
+        "agent_status": {
+          "soft_power": "ok",
+          "policy_stance": "ok",
+          "trade_intelligence": "ok",
+          "event_summarization": "ok"
+        },
+        "answer_rate": 1.0,
+        "facets_found": [
+          "diplomatic_alignment",
+          "event_activity",
+          "influence",
+          "trade_exposure"
+        ],
+        "facet_recall": 1.0,
+        "cross_agent_findings": 4,
+        "findings": 30,
+        "top5_confidence": 0.735,
+        "cited_lines": 35,
+        "claim_lines": 35,
+        "latency_ms": 625.3,
+        "headline": "India: trade and diplomacy point the same way",
+        "live_plan_matches_offline": true
+      }
+    },
+    {
+      "group": "india_profile",
+      "split": "dev",
+      "kind": "alias",
+      "question": "What's New Delhi's risk position?",
+      "gold": {
+        "intent": "country_profile",
+        "countries": [
+          "IND"
+        ],
+        "time": {
+          "mode": "latest"
+        },
+        "sector": "all",
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "facets": [
+        "influence",
+        "diplomatic_alignment",
+        "trade_exposure",
+        "event_activity"
+      ],
+      "predicted": {
+        "intent": "country_profile",
+        "countries": [
+          "IND"
+        ],
+        "time": {
+          "mode": "latest",
+          "year": null,
+          "date": null,
+          "horizon_year": null
+        },
+        "sector": "all",
+        "severity": null,
+        "metric": "exports",
+        "trade_query": null,
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "score": {
+        "slots": {
+          "intent": true,
+          "countries": true,
+          "time": true,
+          "sector": true,
+          "agents": true
+        },
+        "plan_exact": true,
+        "subject": true,
+        "fallback": false
+      },
+      "consistent": true,
+      "answer": {
+        "agents_asked": 4,
+        "agents_answered": 4,
+        "agent_status": {
+          "soft_power": "ok",
+          "policy_stance": "ok",
+          "trade_intelligence": "ok",
+          "event_summarization": "ok"
+        },
+        "answer_rate": 1.0,
+        "facets_found": [
+          "diplomatic_alignment",
+          "event_activity",
+          "influence",
+          "trade_exposure"
+        ],
+        "facet_recall": 1.0,
+        "cross_agent_findings": 4,
+        "findings": 30,
+        "top5_confidence": 0.735,
+        "cited_lines": 35,
+        "claim_lines": 35,
+        "latency_ms": 628.6,
+        "headline": "India: trade and diplomacy point the same way",
+        "live_plan_matches_offline": true
+      }
+    },
+    {
+      "group": "india_profile",
+      "split": "dev",
+      "kind": "alias",
+      "question": "How vulnerable is Bharat at the moment?",
+      "gold": {
+        "intent": "country_profile",
+        "countries": [
+          "IND"
+        ],
+        "time": {
+          "mode": "latest"
+        },
+        "sector": "all",
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "facets": [
+        "influence",
+        "diplomatic_alignment",
+        "trade_exposure",
+        "event_activity"
+      ],
+      "predicted": {
+        "intent": "ranking",
+        "countries": [],
+        "time": {
+          "mode": "latest",
+          "year": null,
+          "date": null,
+          "horizon_year": null
+        },
+        "sector": "all",
+        "severity": null,
+        "metric": "exports",
+        "trade_query": "risk",
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence"
+        ]
+      },
+      "score": {
+        "slots": {
+          "intent": false,
+          "countries": false,
+          "time": true,
+          "sector": true,
+          "agents": false
+        },
+        "plan_exact": false,
+        "subject": false,
+        "fallback": true
+      },
+      "consistent": false,
+      "answer": {
+        "agents_asked": 3,
+        "agents_answered": 3,
+        "agent_status": {
+          "soft_power": "ok",
+          "policy_stance": "ok",
+          "trade_intelligence": "ok"
+        },
+        "answer_rate": 1.0,
+        "facets_found": [],
+        "facet_recall": 0.0,
+        "cross_agent_findings": 0,
+        "findings": 21,
+        "top5_confidence": 0.9166000000000001,
+        "cited_lines": 24,
+        "claim_lines": 24,
+        "latency_ms": 105.8,
+        "headline": "Global overview",
+        "live_plan_matches_offline": true
+      }
+    },
+    {
+      "group": "india_profile",
+      "split": "dev",
+      "kind": "typo",
+      "question": "Indai exposure",
+      "gold": {
+        "intent": "country_profile",
+        "countries": [
+          "IND"
+        ],
+        "time": {
+          "mode": "latest"
+        },
+        "sector": "all",
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "facets": [
+        "influence",
+        "diplomatic_alignment",
+        "trade_exposure",
+        "event_activity"
+      ],
+      "predicted": {
+        "intent": "ranking",
+        "countries": [],
+        "time": {
+          "mode": "latest",
+          "year": null,
+          "date": null,
+          "horizon_year": null
+        },
+        "sector": "all",
+        "severity": null,
+        "metric": "exports",
+        "trade_query": "risk",
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence"
+        ]
+      },
+      "score": {
+        "slots": {
+          "intent": false,
+          "countries": false,
+          "time": true,
+          "sector": true,
+          "agents": false
+        },
+        "plan_exact": false,
+        "subject": false,
+        "fallback": true
+      },
+      "consistent": false,
+      "answer": {
+        "agents_asked": 3,
+        "agents_answered": 3,
+        "agent_status": {
+          "soft_power": "ok",
+          "policy_stance": "ok",
+          "trade_intelligence": "ok"
+        },
+        "answer_rate": 1.0,
+        "facets_found": [],
+        "facet_recall": 0.0,
+        "cross_agent_findings": 0,
+        "findings": 21,
+        "top5_confidence": 0.9166000000000001,
+        "cited_lines": 24,
+        "claim_lines": 24,
+        "latency_ms": 110.5,
+        "headline": "Global overview",
+        "live_plan_matches_offline": true
+      }
+    },
+    {
+      "group": "india_profile",
+      "split": "dev",
+      "kind": "casual",
+      "question": "give me the overall picture on india",
+      "gold": {
+        "intent": "country_profile",
+        "countries": [
+          "IND"
+        ],
+        "time": {
+          "mode": "latest"
+        },
+        "sector": "all",
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "facets": [
+        "influence",
+        "diplomatic_alignment",
+        "trade_exposure",
+        "event_activity"
+      ],
+      "predicted": {
+        "intent": "country_profile",
+        "countries": [
+          "IND"
+        ],
+        "time": {
+          "mode": "latest",
+          "year": null,
+          "date": null,
+          "horizon_year": null
+        },
+        "sector": "all",
+        "severity": null,
+        "metric": "exports",
+        "trade_query": null,
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "score": {
+        "slots": {
+          "intent": true,
+          "countries": true,
+          "time": true,
+          "sector": true,
+          "agents": true
+        },
+        "plan_exact": true,
+        "subject": true,
+        "fallback": false
+      },
+      "consistent": true,
+      "answer": {
+        "agents_asked": 4,
+        "agents_answered": 4,
+        "agent_status": {
+          "soft_power": "ok",
+          "policy_stance": "ok",
+          "trade_intelligence": "ok",
+          "event_summarization": "ok"
+        },
+        "answer_rate": 1.0,
+        "facets_found": [
+          "diplomatic_alignment",
+          "event_activity",
+          "influence",
+          "trade_exposure"
+        ],
+        "facet_recall": 1.0,
+        "cross_agent_findings": 4,
+        "findings": 30,
+        "top5_confidence": 0.735,
+        "cited_lines": 35,
+        "claim_lines": 35,
+        "latency_ms": 629.8,
+        "headline": "India: trade and diplomacy point the same way",
+        "live_plan_matches_offline": true
+      }
+    },
+    {
+      "group": "uk_profile",
+      "split": "dev",
+      "kind": "original",
+      "question": "How exposed is the United Kingdom right now?",
+      "gold": {
+        "intent": "country_profile",
+        "countries": [
+          "GBR"
+        ],
+        "time": {
+          "mode": "latest"
+        },
+        "sector": "all",
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "facets": [
+        "influence",
+        "diplomatic_alignment",
+        "trade_exposure",
+        "event_activity"
+      ],
+      "predicted": {
+        "intent": "country_profile",
+        "countries": [
+          "GBR"
+        ],
+        "time": {
+          "mode": "latest",
+          "year": null,
+          "date": null,
+          "horizon_year": null
+        },
+        "sector": "all",
+        "severity": null,
+        "metric": "exports",
+        "trade_query": null,
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "score": {
+        "slots": {
+          "intent": true,
+          "countries": true,
+          "time": true,
+          "sector": true,
+          "agents": true
+        },
+        "plan_exact": true,
+        "subject": true,
+        "fallback": false
+      },
+      "consistent": true,
+      "answer": {
+        "agents_asked": 4,
+        "agents_answered": 4,
+        "agent_status": {
+          "soft_power": "ok",
+          "policy_stance": "ok",
+          "trade_intelligence": "ok",
+          "event_summarization": "ok"
+        },
+        "answer_rate": 1.0,
+        "facets_found": [
+          "diplomatic_alignment",
+          "event_activity",
+          "influence",
+          "trade_exposure"
+        ],
+        "facet_recall": 1.0,
+        "cross_agent_findings": 4,
+        "findings": 30,
+        "top5_confidence": 0.6146,
+        "cited_lines": 35,
+        "claim_lines": 35,
+        "latency_ms": 831.8,
+        "headline": "United Kingdom: trade and diplomacy point the same way",
+        "live_plan_matches_offline": true
+      }
+    },
+    {
+      "group": "uk_profile",
+      "split": "dev",
+      "kind": "alias",
+      "question": "How exposed is Britain right now?",
+      "gold": {
+        "intent": "country_profile",
+        "countries": [
+          "GBR"
+        ],
+        "time": {
+          "mode": "latest"
+        },
+        "sector": "all",
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "facets": [
+        "influence",
+        "diplomatic_alignment",
+        "trade_exposure",
+        "event_activity"
+      ],
+      "predicted": {
+        "intent": "country_profile",
+        "countries": [
+          "GBR"
+        ],
+        "time": {
+          "mode": "latest",
+          "year": null,
+          "date": null,
+          "horizon_year": null
+        },
+        "sector": "all",
+        "severity": null,
+        "metric": "exports",
+        "trade_query": null,
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "score": {
+        "slots": {
+          "intent": true,
+          "countries": true,
+          "time": true,
+          "sector": true,
+          "agents": true
+        },
+        "plan_exact": true,
+        "subject": true,
+        "fallback": false
+      },
+      "consistent": true,
+      "answer": {
+        "agents_asked": 4,
+        "agents_answered": 4,
+        "agent_status": {
+          "soft_power": "ok",
+          "policy_stance": "ok",
+          "trade_intelligence": "ok",
+          "event_summarization": "ok"
+        },
+        "answer_rate": 1.0,
+        "facets_found": [
+          "diplomatic_alignment",
+          "event_activity",
+          "influence",
+          "trade_exposure"
+        ],
+        "facet_recall": 1.0,
+        "cross_agent_findings": 4,
+        "findings": 30,
+        "top5_confidence": 0.6146,
+        "cited_lines": 35,
+        "claim_lines": 35,
+        "latency_ms": 929.6,
+        "headline": "United Kingdom: trade and diplomacy point the same way",
+        "live_plan_matches_offline": true
+      }
+    },
+    {
+      "group": "uk_profile",
+      "split": "dev",
+      "kind": "alias",
+      "question": "UK exposure",
+      "gold": {
+        "intent": "country_profile",
+        "countries": [
+          "GBR"
+        ],
+        "time": {
+          "mode": "latest"
+        },
+        "sector": "all",
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "facets": [
+        "influence",
+        "diplomatic_alignment",
+        "trade_exposure",
+        "event_activity"
+      ],
+      "predicted": {
+        "intent": "country_profile",
+        "countries": [
+          "GBR"
+        ],
+        "time": {
+          "mode": "latest",
+          "year": null,
+          "date": null,
+          "horizon_year": null
+        },
+        "sector": "all",
+        "severity": null,
+        "metric": "exports",
+        "trade_query": null,
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "score": {
+        "slots": {
+          "intent": true,
+          "countries": true,
+          "time": true,
+          "sector": true,
+          "agents": true
+        },
+        "plan_exact": true,
+        "subject": true,
+        "fallback": false
+      },
+      "consistent": true,
+      "answer": {
+        "agents_asked": 4,
+        "agents_answered": 4,
+        "agent_status": {
+          "soft_power": "ok",
+          "policy_stance": "ok",
+          "trade_intelligence": "ok",
+          "event_summarization": "ok"
+        },
+        "answer_rate": 1.0,
+        "facets_found": [
+          "diplomatic_alignment",
+          "event_activity",
+          "influence",
+          "trade_exposure"
+        ],
+        "facet_recall": 1.0,
+        "cross_agent_findings": 4,
+        "findings": 30,
+        "top5_confidence": 0.6146,
+        "cited_lines": 35,
+        "claim_lines": 35,
+        "latency_ms": 1212.0,
+        "headline": "United Kingdom: trade and diplomacy point the same way",
+        "live_plan_matches_offline": true
+      }
+    },
+    {
+      "group": "uk_profile",
+      "split": "dev",
+      "kind": "alias",
+      "question": "Where does London stand overall?",
+      "gold": {
+        "intent": "country_profile",
+        "countries": [
+          "GBR"
+        ],
+        "time": {
+          "mode": "latest"
+        },
+        "sector": "all",
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "facets": [
+        "influence",
+        "diplomatic_alignment",
+        "trade_exposure",
+        "event_activity"
+      ],
+      "predicted": {
+        "intent": "ranking",
+        "countries": [],
+        "time": {
+          "mode": "latest",
+          "year": null,
+          "date": null,
+          "horizon_year": null
+        },
+        "sector": "all",
+        "severity": null,
+        "metric": "exports",
+        "trade_query": "risk",
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence"
+        ]
+      },
+      "score": {
+        "slots": {
+          "intent": false,
+          "countries": false,
+          "time": true,
+          "sector": true,
+          "agents": false
+        },
+        "plan_exact": false,
+        "subject": false,
+        "fallback": true
+      },
+      "consistent": false,
+      "answer": {
+        "agents_asked": 3,
+        "agents_answered": 3,
+        "agent_status": {
+          "soft_power": "ok",
+          "policy_stance": "ok",
+          "trade_intelligence": "ok"
+        },
+        "answer_rate": 1.0,
+        "facets_found": [
+          "influence"
+        ],
+        "facet_recall": 0.25,
+        "cross_agent_findings": 0,
+        "findings": 21,
+        "top5_confidence": 0.9166000000000001,
+        "cited_lines": 24,
+        "claim_lines": 24,
+        "latency_ms": 111.1,
+        "headline": "Global overview",
+        "live_plan_matches_offline": true
+      }
+    },
+    {
+      "group": "uk_profile",
+      "split": "dev",
+      "kind": "typo",
+      "question": "how exposed is the untied kingdom",
+      "gold": {
+        "intent": "country_profile",
+        "countries": [
+          "GBR"
+        ],
+        "time": {
+          "mode": "latest"
+        },
+        "sector": "all",
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "facets": [
+        "influence",
+        "diplomatic_alignment",
+        "trade_exposure",
+        "event_activity"
+      ],
+      "predicted": {
+        "intent": "ranking",
+        "countries": [],
+        "time": {
+          "mode": "latest",
+          "year": null,
+          "date": null,
+          "horizon_year": null
+        },
+        "sector": "all",
+        "severity": null,
+        "metric": "exports",
+        "trade_query": "risk",
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence"
+        ]
+      },
+      "score": {
+        "slots": {
+          "intent": false,
+          "countries": false,
+          "time": true,
+          "sector": true,
+          "agents": false
+        },
+        "plan_exact": false,
+        "subject": false,
+        "fallback": true
+      },
+      "consistent": false,
+      "answer": {
+        "agents_asked": 3,
+        "agents_answered": 3,
+        "agent_status": {
+          "soft_power": "ok",
+          "policy_stance": "ok",
+          "trade_intelligence": "ok"
+        },
+        "answer_rate": 1.0,
+        "facets_found": [
+          "influence"
+        ],
+        "facet_recall": 0.25,
+        "cross_agent_findings": 0,
+        "findings": 21,
+        "top5_confidence": 0.9166000000000001,
+        "cited_lines": 24,
+        "claim_lines": 24,
+        "latency_ms": 116.0,
+        "headline": "Global overview",
+        "live_plan_matches_offline": true
+      }
+    },
+    {
+      "group": "germany_2020_profile",
+      "split": "dev",
+      "kind": "original",
+      "question": "Germany's position in 2020",
+      "gold": {
+        "intent": "country_profile",
+        "countries": [
+          "DEU"
+        ],
+        "time": {
+          "mode": "year",
+          "year": 2020
+        },
+        "sector": "all",
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence"
+        ]
+      },
+      "facets": [
+        "influence",
+        "diplomatic_alignment",
+        "trade_exposure"
+      ],
+      "predicted": {
+        "intent": "country_profile",
+        "countries": [
+          "DEU"
+        ],
+        "time": {
+          "mode": "year",
+          "year": 2020,
+          "date": null,
+          "horizon_year": null
+        },
+        "sector": "all",
+        "severity": null,
+        "metric": "exports",
+        "trade_query": null,
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence"
+        ]
+      },
+      "score": {
+        "slots": {
+          "intent": true,
+          "countries": true,
+          "time": true,
+          "sector": true,
+          "agents": true
+        },
+        "plan_exact": true,
+        "subject": true,
+        "fallback": false
+      },
+      "consistent": true,
+      "answer": {
+        "agents_asked": 3,
+        "agents_answered": 3,
+        "agent_status": {
+          "soft_power": "ok",
+          "policy_stance": "ok",
+          "trade_intelligence": "ok"
+        },
+        "answer_rate": 1.0,
+        "facets_found": [
+          "diplomatic_alignment",
+          "influence",
+          "trade_exposure"
+        ],
+        "facet_recall": 1.0,
+        "cross_agent_findings": 2,
+        "findings": 19,
+        "top5_confidence": 0.681,
+        "cited_lines": 24,
+        "claim_lines": 24,
+        "latency_ms": 730.5,
+        "headline": "Germany: critical trade partner across the bloc line",
+        "live_plan_matches_offline": true
+      }
+    },
+    {
+      "group": "germany_2020_profile",
+      "split": "dev",
+      "kind": "reworded",
+      "question": "How did Germany look in 2020?",
+      "gold": {
+        "intent": "country_profile",
+        "countries": [
+          "DEU"
+        ],
+        "time": {
+          "mode": "year",
+          "year": 2020
+        },
+        "sector": "all",
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence"
+        ]
+      },
+      "facets": [
+        "influence",
+        "diplomatic_alignment",
+        "trade_exposure"
+      ],
+      "predicted": {
+        "intent": "country_profile",
+        "countries": [
+          "DEU"
+        ],
+        "time": {
+          "mode": "year",
+          "year": 2020,
+          "date": null,
+          "horizon_year": null
+        },
+        "sector": "all",
+        "severity": null,
+        "metric": "exports",
+        "trade_query": null,
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence"
+        ]
+      },
+      "score": {
+        "slots": {
+          "intent": true,
+          "countries": true,
+          "time": true,
+          "sector": true,
+          "agents": true
+        },
+        "plan_exact": true,
+        "subject": true,
+        "fallback": false
+      },
+      "consistent": true,
+      "answer": {
+        "agents_asked": 3,
+        "agents_answered": 3,
+        "agent_status": {
+          "soft_power": "ok",
+          "policy_stance": "ok",
+          "trade_intelligence": "ok"
+        },
+        "answer_rate": 1.0,
+        "facets_found": [
+          "diplomatic_alignment",
+          "influence",
+          "trade_exposure"
+        ],
+        "facet_recall": 1.0,
+        "cross_agent_findings": 2,
+        "findings": 19,
+        "top5_confidence": 0.681,
+        "cited_lines": 24,
+        "claim_lines": 24,
+        "latency_ms": 712.1,
+        "headline": "Germany: critical trade partner across the bloc line",
+        "live_plan_matches_offline": true
+      }
+    },
+    {
+      "group": "germany_2020_profile",
+      "split": "dev",
+      "kind": "alias",
+      "question": "Deutschland in 2020",
+      "gold": {
+        "intent": "country_profile",
+        "countries": [
+          "DEU"
+        ],
+        "time": {
+          "mode": "year",
+          "year": 2020
+        },
+        "sector": "all",
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence"
+        ]
+      },
+      "facets": [
+        "influence",
+        "diplomatic_alignment",
+        "trade_exposure"
+      ],
+      "predicted": {
+        "intent": "ranking",
+        "countries": [],
+        "time": {
+          "mode": "year",
+          "year": 2020,
+          "date": null,
+          "horizon_year": null
+        },
+        "sector": "all",
+        "severity": null,
+        "metric": "exports",
+        "trade_query": "risk",
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence"
+        ]
+      },
+      "score": {
+        "slots": {
+          "intent": false,
+          "countries": false,
+          "time": true,
+          "sector": true,
+          "agents": true
+        },
+        "plan_exact": false,
+        "subject": false,
+        "fallback": true
+      },
+      "consistent": false,
+      "answer": {
+        "agents_asked": 3,
+        "agents_answered": 3,
+        "agent_status": {
+          "soft_power": "ok",
+          "policy_stance": "ok",
+          "trade_intelligence": "ok"
+        },
+        "answer_rate": 1.0,
+        "facets_found": [
+          "influence",
+          "trade_exposure"
+        ],
+        "facet_recall": 0.6666666666666666,
+        "cross_agent_findings": 0,
+        "findings": 21,
+        "top5_confidence": 0.932,
+        "cited_lines": 24,
+        "claim_lines": 24,
+        "latency_ms": 117.6,
+        "headline": "Global overview",
+        "live_plan_matches_offline": true
+      }
+    },
+    {
+      "group": "germany_2020_profile",
+      "split": "dev",
+      "kind": "alias",
+      "question": "The German picture in 2020",
+      "gold": {
+        "intent": "country_profile",
+        "countries": [
+          "DEU"
+        ],
+        "time": {
+          "mode": "year",
+          "year": 2020
+        },
+        "sector": "all",
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence"
+        ]
+      },
+      "facets": [
+        "influence",
+        "diplomatic_alignment",
+        "trade_exposure"
+      ],
+      "predicted": {
+        "intent": "country_profile",
+        "countries": [
+          "DEU"
+        ],
+        "time": {
+          "mode": "year",
+          "year": 2020,
+          "date": null,
+          "horizon_year": null
+        },
+        "sector": "all",
+        "severity": null,
+        "metric": "exports",
+        "trade_query": null,
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence"
+        ]
+      },
+      "score": {
+        "slots": {
+          "intent": true,
+          "countries": true,
+          "time": true,
+          "sector": true,
+          "agents": true
+        },
+        "plan_exact": true,
+        "subject": true,
+        "fallback": false
+      },
+      "consistent": true,
+      "answer": {
+        "agents_asked": 3,
+        "agents_answered": 3,
+        "agent_status": {
+          "soft_power": "ok",
+          "policy_stance": "ok",
+          "trade_intelligence": "ok"
+        },
+        "answer_rate": 1.0,
+        "facets_found": [
+          "diplomatic_alignment",
+          "influence",
+          "trade_exposure"
+        ],
+        "facet_recall": 1.0,
+        "cross_agent_findings": 2,
+        "findings": 19,
+        "top5_confidence": 0.681,
+        "cited_lines": 24,
+        "claim_lines": 24,
+        "latency_ms": 706.6,
+        "headline": "Germany: critical trade partner across the bloc line",
+        "live_plan_matches_offline": true
+      }
+    },
+    {
+      "group": "germany_2020_profile",
+      "split": "dev",
+      "kind": "typo",
+      "question": "germnay in 2020",
+      "gold": {
+        "intent": "country_profile",
+        "countries": [
+          "DEU"
+        ],
+        "time": {
+          "mode": "year",
+          "year": 2020
+        },
+        "sector": "all",
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence"
+        ]
+      },
+      "facets": [
+        "influence",
+        "diplomatic_alignment",
+        "trade_exposure"
+      ],
+      "predicted": {
+        "intent": "ranking",
+        "countries": [],
+        "time": {
+          "mode": "year",
+          "year": 2020,
+          "date": null,
+          "horizon_year": null
+        },
+        "sector": "all",
+        "severity": null,
+        "metric": "exports",
+        "trade_query": "risk",
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence"
+        ]
+      },
+      "score": {
+        "slots": {
+          "intent": false,
+          "countries": false,
+          "time": true,
+          "sector": true,
+          "agents": true
+        },
+        "plan_exact": false,
+        "subject": false,
+        "fallback": true
+      },
+      "consistent": false,
+      "answer": {
+        "agents_asked": 3,
+        "agents_answered": 3,
+        "agent_status": {
+          "soft_power": "ok",
+          "policy_stance": "ok",
+          "trade_intelligence": "ok"
+        },
+        "answer_rate": 1.0,
+        "facets_found": [
+          "influence",
+          "trade_exposure"
+        ],
+        "facet_recall": 0.6666666666666666,
+        "cross_agent_findings": 0,
+        "findings": 21,
+        "top5_confidence": 0.932,
+        "cited_lines": 24,
+        "claim_lines": 24,
+        "latency_ms": 126.9,
+        "headline": "Global overview",
+        "live_plan_matches_offline": true
+      }
+    },
+    {
+      "group": "vietnam_blocs",
+      "split": "dev",
+      "kind": "original",
+      "question": "Which bloc is Vietnam in?",
+      "gold": {
+        "intent": "blocs",
+        "countries": [
+          "VNM"
+        ],
+        "time": {
+          "mode": "latest"
+        },
+        "sector": "all",
+        "trade_query": "blocs",
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence"
+        ]
+      },
+      "facets": [
+        "trade_alignment",
+        "diplomatic_alignment",
+        "diplomatic_blocs"
+      ],
+      "predicted": {
+        "intent": "blocs",
+        "countries": [
+          "VNM"
+        ],
+        "time": {
+          "mode": "latest",
+          "year": null,
+          "date": null,
+          "horizon_year": null
+        },
+        "sector": "all",
+        "severity": null,
+        "metric": "exports",
+        "trade_query": "blocs",
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence"
+        ]
+      },
+      "score": {
+        "slots": {
+          "intent": true,
+          "countries": true,
+          "time": true,
+          "sector": true,
+          "trade_query": true,
+          "agents": true
+        },
+        "plan_exact": true,
+        "subject": true,
+        "fallback": false
+      },
+      "consistent": true,
+      "answer": {
+        "agents_asked": 3,
+        "agents_answered": 3,
+        "agent_status": {
+          "soft_power": "ok",
+          "policy_stance": "ok",
+          "trade_intelligence": "ok"
+        },
+        "answer_rate": 1.0,
+        "facets_found": [
+          "diplomatic_alignment",
+          "diplomatic_blocs",
+          "trade_alignment"
+        ],
+        "facet_recall": 1.0,
+        "cross_agent_findings": 1,
+        "findings": 10,
+        "top5_confidence": 0.7312,
+        "cited_lines": 14,
+        "claim_lines": 14,
+        "latency_ms": 273.7,
+        "headline": "Vietnam: economic and diplomatic alignment diverge",
+        "live_plan_matches_offline": true
+      }
+    },
+    {
+      "group": "vietnam_blocs",
+      "split": "dev",
+      "kind": "reworded",
+      "question": "Who does Vietnam side with?",
+      "gold": {
+        "intent": "blocs",
+        "countries": [
+          "VNM"
+        ],
+        "time": {
+          "mode": "latest"
+        },
+        "sector": "all",
+        "trade_query": "blocs",
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence"
+        ]
+      },
+      "facets": [
+        "trade_alignment",
+        "diplomatic_alignment",
+        "diplomatic_blocs"
+      ],
+      "predicted": {
+        "intent": "blocs",
+        "countries": [
+          "VNM"
+        ],
+        "time": {
+          "mode": "latest",
+          "year": null,
+          "date": null,
+          "horizon_year": null
+        },
+        "sector": "all",
+        "severity": null,
+        "metric": "exports",
+        "trade_query": "blocs",
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence"
+        ]
+      },
+      "score": {
+        "slots": {
+          "intent": true,
+          "countries": true,
+          "time": true,
+          "sector": true,
+          "trade_query": true,
+          "agents": true
+        },
+        "plan_exact": true,
+        "subject": true,
+        "fallback": false
+      },
+      "consistent": true,
+      "answer": {
+        "agents_asked": 3,
+        "agents_answered": 3,
+        "agent_status": {
+          "soft_power": "ok",
+          "policy_stance": "ok",
+          "trade_intelligence": "ok"
+        },
+        "answer_rate": 1.0,
+        "facets_found": [
+          "diplomatic_alignment",
+          "diplomatic_blocs",
+          "trade_alignment"
+        ],
+        "facet_recall": 1.0,
+        "cross_agent_findings": 1,
+        "findings": 10,
+        "top5_confidence": 0.7312,
+        "cited_lines": 14,
+        "claim_lines": 14,
+        "latency_ms": 276.5,
+        "headline": "Vietnam: economic and diplomatic alignment diverge",
+        "live_plan_matches_offline": true
+      }
+    },
+    {
+      "group": "vietnam_blocs",
+      "split": "dev",
+      "kind": "reworded",
+      "question": "Is Vietnam aligned with any bloc?",
+      "gold": {
+        "intent": "blocs",
+        "countries": [
+          "VNM"
+        ],
+        "time": {
+          "mode": "latest"
+        },
+        "sector": "all",
+        "trade_query": "blocs",
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence"
+        ]
+      },
+      "facets": [
+        "trade_alignment",
+        "diplomatic_alignment",
+        "diplomatic_blocs"
+      ],
+      "predicted": {
+        "intent": "blocs",
+        "countries": [
+          "VNM"
+        ],
+        "time": {
+          "mode": "latest",
+          "year": null,
+          "date": null,
+          "horizon_year": null
+        },
+        "sector": "all",
+        "severity": null,
+        "metric": "exports",
+        "trade_query": "blocs",
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence"
+        ]
+      },
+      "score": {
+        "slots": {
+          "intent": true,
+          "countries": true,
+          "time": true,
+          "sector": true,
+          "trade_query": true,
+          "agents": true
+        },
+        "plan_exact": true,
+        "subject": true,
+        "fallback": false
+      },
+      "consistent": true,
+      "answer": {
+        "agents_asked": 3,
+        "agents_answered": 3,
+        "agent_status": {
+          "soft_power": "ok",
+          "policy_stance": "ok",
+          "trade_intelligence": "ok"
+        },
+        "answer_rate": 1.0,
+        "facets_found": [
+          "diplomatic_alignment",
+          "diplomatic_blocs",
+          "trade_alignment"
+        ],
+        "facet_recall": 1.0,
+        "cross_agent_findings": 1,
+        "findings": 10,
+        "top5_confidence": 0.7312,
+        "cited_lines": 14,
+        "claim_lines": 14,
+        "latency_ms": 303.4,
+        "headline": "Vietnam: economic and diplomatic alignment diverge",
+        "live_plan_matches_offline": true
+      }
+    },
+    {
+      "group": "vietnam_blocs",
+      "split": "dev",
+      "kind": "alias",
+      "question": "Which camp does Hanoi belong to?",
+      "gold": {
+        "intent": "blocs",
+        "countries": [
+          "VNM"
+        ],
+        "time": {
+          "mode": "latest"
+        },
+        "sector": "all",
+        "trade_query": "blocs",
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence"
+        ]
+      },
+      "facets": [
+        "trade_alignment",
+        "diplomatic_alignment",
+        "diplomatic_blocs"
+      ],
+      "predicted": {
+        "intent": "blocs",
+        "countries": [],
+        "time": {
+          "mode": "latest",
+          "year": null,
+          "date": null,
+          "horizon_year": null
+        },
+        "sector": "all",
+        "severity": null,
+        "metric": "exports",
+        "trade_query": "blocs",
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence"
+        ]
+      },
+      "score": {
+        "slots": {
+          "intent": true,
+          "countries": false,
+          "time": true,
+          "sector": true,
+          "trade_query": true,
+          "agents": true
+        },
+        "plan_exact": false,
+        "subject": false,
+        "fallback": true
+      },
+      "consistent": false,
+      "answer": {
+        "agents_asked": 3,
+        "agents_answered": 3,
+        "agent_status": {
+          "soft_power": "ok",
+          "policy_stance": "ok",
+          "trade_intelligence": "ok"
+        },
+        "answer_rate": 1.0,
+        "facets_found": [],
+        "facet_recall": 0.0,
+        "cross_agent_findings": 0,
+        "findings": 9,
+        "top5_confidence": 0.8952,
+        "cited_lines": 12,
+        "claim_lines": 12,
+        "latency_ms": 275.6,
+        "headline": "Global overview",
+        "live_plan_matches_offline": true
+      }
+    },
+    {
+      "group": "vietnam_blocs",
+      "split": "dev",
+      "kind": "typo",
+      "question": "which bloc is vietnma in",
+      "gold": {
+        "intent": "blocs",
+        "countries": [
+          "VNM"
+        ],
+        "time": {
+          "mode": "latest"
+        },
+        "sector": "all",
+        "trade_query": "blocs",
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence"
+        ]
+      },
+      "facets": [
+        "trade_alignment",
+        "diplomatic_alignment",
+        "diplomatic_blocs"
+      ],
+      "predicted": {
+        "intent": "blocs",
+        "countries": [],
+        "time": {
+          "mode": "latest",
+          "year": null,
+          "date": null,
+          "horizon_year": null
+        },
+        "sector": "all",
+        "severity": null,
+        "metric": "exports",
+        "trade_query": "blocs",
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence"
+        ]
+      },
+      "score": {
+        "slots": {
+          "intent": true,
+          "countries": false,
+          "time": true,
+          "sector": true,
+          "trade_query": true,
+          "agents": true
+        },
+        "plan_exact": false,
+        "subject": false,
+        "fallback": true
+      },
+      "consistent": false,
+      "answer": {
+        "agents_asked": 3,
+        "agents_answered": 3,
+        "agent_status": {
+          "soft_power": "ok",
+          "policy_stance": "ok",
+          "trade_intelligence": "ok"
+        },
+        "answer_rate": 1.0,
+        "facets_found": [],
+        "facet_recall": 0.0,
+        "cross_agent_findings": 0,
+        "findings": 9,
+        "top5_confidence": 0.845,
+        "cited_lines": 12,
+        "claim_lines": 12,
+        "latency_ms": 280.6,
+        "headline": "Global overview",
+        "live_plan_matches_offline": true
+      }
+    },
+    {
+      "group": "vietnam_blocs",
+      "split": "dev",
+      "kind": "casual",
+      "question": "vietnam - which side is it on",
+      "gold": {
+        "intent": "blocs",
+        "countries": [
+          "VNM"
+        ],
+        "time": {
+          "mode": "latest"
+        },
+        "sector": "all",
+        "trade_query": "blocs",
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence"
+        ]
+      },
+      "facets": [
+        "trade_alignment",
+        "diplomatic_alignment",
+        "diplomatic_blocs"
+      ],
+      "predicted": {
+        "intent": "country_profile",
+        "countries": [
+          "VNM"
+        ],
+        "time": {
+          "mode": "latest",
+          "year": null,
+          "date": null,
+          "horizon_year": null
+        },
+        "sector": "all",
+        "severity": null,
+        "metric": "exports",
+        "trade_query": null,
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "score": {
+        "slots": {
+          "intent": false,
+          "countries": true,
+          "time": true,
+          "sector": true,
+          "trade_query": false,
+          "agents": false
+        },
+        "plan_exact": false,
+        "subject": true,
+        "fallback": false
+      },
+      "consistent": false,
+      "answer": {
+        "agents_asked": 4,
+        "agents_answered": 4,
+        "agent_status": {
+          "soft_power": "ok",
+          "policy_stance": "ok",
+          "trade_intelligence": "ok",
+          "event_summarization": "ok"
+        },
+        "answer_rate": 1.0,
+        "facets_found": [
+          "diplomatic_alignment",
+          "diplomatic_blocs",
+          "trade_alignment"
+        ],
+        "facet_recall": 1.0,
+        "cross_agent_findings": 3,
+        "findings": 28,
+        "top5_confidence": 0.7624,
+        "cited_lines": 33,
+        "claim_lines": 33,
+        "latency_ms": 677.2,
+        "headline": "Vietnam: economic and diplomatic alignment diverge",
+        "live_plan_matches_offline": true
+      }
+    },
+    {
+      "group": "global_blocs",
+      "split": "dev",
+      "kind": "original",
+      "question": "What are the main trading blocs?",
+      "gold": {
+        "intent": "blocs",
+        "countries": [],
+        "time": {
+          "mode": "latest"
+        },
+        "sector": "all",
+        "trade_query": "blocs",
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence"
+        ]
+      },
+      "facets": [
+        "trade_alignment",
+        "diplomatic_blocs"
+      ],
+      "predicted": {
+        "intent": "blocs",
+        "countries": [],
+        "time": {
+          "mode": "latest",
+          "year": null,
+          "date": null,
+          "horizon_year": null
+        },
+        "sector": "all",
+        "severity": null,
+        "metric": "exports",
+        "trade_query": "blocs",
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence"
+        ]
+      },
+      "score": {
+        "slots": {
+          "intent": true,
+          "countries": true,
+          "time": true,
+          "sector": true,
+          "trade_query": true,
+          "agents": true
+        },
+        "plan_exact": true,
+        "subject": true,
+        "fallback": false
+      },
+      "consistent": true,
+      "answer": {
+        "agents_asked": 3,
+        "agents_answered": 3,
+        "agent_status": {
+          "soft_power": "ok",
+          "policy_stance": "ok",
+          "trade_intelligence": "ok"
+        },
+        "answer_rate": 1.0,
+        "facets_found": [
+          "diplomatic_blocs",
+          "trade_alignment"
+        ],
+        "facet_recall": 1.0,
+        "cross_agent_findings": 0,
+        "findings": 9,
+        "top5_confidence": 0.845,
+        "cited_lines": 12,
+        "claim_lines": 12,
+        "latency_ms": 272.7,
+        "headline": "Global overview",
+        "live_plan_matches_offline": true
+      }
+    },
+    {
+      "group": "global_blocs",
+      "split": "dev",
+      "kind": "reworded",
+      "question": "Show me the world's alliance blocs",
+      "gold": {
+        "intent": "blocs",
+        "countries": [],
+        "time": {
+          "mode": "latest"
+        },
+        "sector": "all",
+        "trade_query": "blocs",
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence"
+        ]
+      },
+      "facets": [
+        "trade_alignment",
+        "diplomatic_blocs"
+      ],
+      "predicted": {
+        "intent": "blocs",
+        "countries": [],
+        "time": {
+          "mode": "latest",
+          "year": null,
+          "date": null,
+          "horizon_year": null
+        },
+        "sector": "all",
+        "severity": null,
+        "metric": "exports",
+        "trade_query": "blocs",
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence"
+        ]
+      },
+      "score": {
+        "slots": {
+          "intent": true,
+          "countries": true,
+          "time": true,
+          "sector": true,
+          "trade_query": true,
+          "agents": true
+        },
+        "plan_exact": true,
+        "subject": true,
+        "fallback": false
+      },
+      "consistent": true,
+      "answer": {
+        "agents_asked": 3,
+        "agents_answered": 3,
+        "agent_status": {
+          "soft_power": "ok",
+          "policy_stance": "ok",
+          "trade_intelligence": "ok"
+        },
+        "answer_rate": 1.0,
+        "facets_found": [
+          "diplomatic_blocs",
+          "trade_alignment"
+        ],
+        "facet_recall": 1.0,
+        "cross_agent_findings": 0,
+        "findings": 9,
+        "top5_confidence": 0.845,
+        "cited_lines": 12,
+        "claim_lines": 12,
+        "latency_ms": 276.9,
+        "headline": "Global overview",
+        "live_plan_matches_offline": true
+      }
+    },
+    {
+      "group": "global_blocs",
+      "split": "dev",
+      "kind": "reworded",
+      "question": "How is the world divided into camps?",
+      "gold": {
+        "intent": "blocs",
+        "countries": [],
+        "time": {
+          "mode": "latest"
+        },
+        "sector": "all",
+        "trade_query": "blocs",
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence"
+        ]
+      },
+      "facets": [
+        "trade_alignment",
+        "diplomatic_blocs"
+      ],
+      "predicted": {
+        "intent": "blocs",
+        "countries": [],
+        "time": {
+          "mode": "latest",
+          "year": null,
+          "date": null,
+          "horizon_year": null
+        },
+        "sector": "all",
+        "severity": null,
+        "metric": "exports",
+        "trade_query": "blocs",
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence"
+        ]
+      },
+      "score": {
+        "slots": {
+          "intent": true,
+          "countries": true,
+          "time": true,
+          "sector": true,
+          "trade_query": true,
+          "agents": true
+        },
+        "plan_exact": true,
+        "subject": true,
+        "fallback": false
+      },
+      "consistent": true,
+      "answer": {
+        "agents_asked": 3,
+        "agents_answered": 3,
+        "agent_status": {
+          "soft_power": "ok",
+          "policy_stance": "ok",
+          "trade_intelligence": "ok"
+        },
+        "answer_rate": 1.0,
+        "facets_found": [
+          "diplomatic_blocs",
+          "trade_alignment"
+        ],
+        "facet_recall": 1.0,
+        "cross_agent_findings": 0,
+        "findings": 9,
+        "top5_confidence": 0.8952,
+        "cited_lines": 12,
+        "claim_lines": 12,
+        "latency_ms": 280.4,
+        "headline": "Global overview",
+        "live_plan_matches_offline": true
+      }
+    },
+    {
+      "group": "global_blocs",
+      "split": "dev",
+      "kind": "typo",
+      "question": "what blocks exist",
+      "gold": {
+        "intent": "blocs",
+        "countries": [],
+        "time": {
+          "mode": "latest"
+        },
+        "sector": "all",
+        "trade_query": "blocs",
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence"
+        ]
+      },
+      "facets": [
+        "trade_alignment",
+        "diplomatic_blocs"
+      ],
+      "predicted": {
+        "intent": "ranking",
+        "countries": [],
+        "time": {
+          "mode": "latest",
+          "year": null,
+          "date": null,
+          "horizon_year": null
+        },
+        "sector": "all",
+        "severity": null,
+        "metric": "exports",
+        "trade_query": "risk",
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence"
+        ]
+      },
+      "score": {
+        "slots": {
+          "intent": false,
+          "countries": true,
+          "time": true,
+          "sector": true,
+          "trade_query": false,
+          "agents": true
+        },
+        "plan_exact": false,
+        "subject": true,
+        "fallback": false
+      },
+      "consistent": false,
+      "answer": {
+        "agents_asked": 3,
+        "agents_answered": 3,
+        "agent_status": {
+          "soft_power": "ok",
+          "policy_stance": "ok",
+          "trade_intelligence": "ok"
+        },
+        "answer_rate": 1.0,
+        "facets_found": [
+          "diplomatic_blocs"
+        ],
+        "facet_recall": 0.5,
+        "cross_agent_findings": 0,
+        "findings": 21,
+        "top5_confidence": 0.9166000000000001,
+        "cited_lines": 24,
+        "claim_lines": 24,
+        "latency_ms": 106.5,
+        "headline": "Global overview",
+        "live_plan_matches_offline": true
+      }
+    },
+    {
+      "group": "iran_events",
+      "split": "dev",
+      "kind": "original",
+      "question": "What is happening in Iran?",
+      "gold": {
+        "intent": "events",
+        "countries": [
+          "IRN"
+        ],
+        "time": {
+          "mode": "latest"
+        },
+        "sector": "all",
+        "agents": [
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "facets": [
+        "event_activity",
+        "event_headline"
+      ],
+      "predicted": {
+        "intent": "events",
+        "countries": [
+          "IRN"
+        ],
+        "time": {
+          "mode": "latest",
+          "year": null,
+          "date": null,
+          "horizon_year": null
+        },
+        "sector": "all",
+        "severity": null,
+        "metric": "exports",
+        "trade_query": null,
+        "agents": [
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "score": {
+        "slots": {
+          "intent": true,
+          "countries": true,
+          "time": true,
+          "sector": true,
+          "agents": true
+        },
+        "plan_exact": true,
+        "subject": true,
+        "fallback": false
+      },
+      "consistent": true,
+      "answer": {
+        "agents_asked": 3,
+        "agents_answered": 3,
+        "agent_status": {
+          "policy_stance": "ok",
+          "trade_intelligence": "ok",
+          "event_summarization": "ok"
+        },
+        "answer_rate": 1.0,
+        "facets_found": [
+          "event_activity",
+          "event_headline"
+        ],
+        "facet_recall": 1.0,
+        "cross_agent_findings": 1,
+        "findings": 17,
+        "top5_confidence": 0.7574,
+        "cited_lines": 21,
+        "claim_lines": 21,
+        "latency_ms": 289.4,
+        "headline": "Iran: what the news shows on 2026-10-25",
+        "live_plan_matches_offline": true
+      }
+    },
+    {
+      "group": "iran_events",
+      "split": "dev",
+      "kind": "reworded",
+      "question": "What's in the news about Iran today?",
+      "gold": {
+        "intent": "events",
+        "countries": [
+          "IRN"
+        ],
+        "time": {
+          "mode": "latest"
+        },
+        "sector": "all",
+        "agents": [
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "facets": [
+        "event_activity",
+        "event_headline"
+      ],
+      "predicted": {
+        "intent": "events",
+        "countries": [
+          "IRN"
+        ],
+        "time": {
+          "mode": "latest",
+          "year": null,
+          "date": null,
+          "horizon_year": null
+        },
+        "sector": "all",
+        "severity": null,
+        "metric": "exports",
+        "trade_query": null,
+        "agents": [
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "score": {
+        "slots": {
+          "intent": true,
+          "countries": true,
+          "time": true,
+          "sector": true,
+          "agents": true
+        },
+        "plan_exact": true,
+        "subject": true,
+        "fallback": false
+      },
+      "consistent": true,
+      "answer": {
+        "agents_asked": 3,
+        "agents_answered": 3,
+        "agent_status": {
+          "policy_stance": "ok",
+          "trade_intelligence": "ok",
+          "event_summarization": "ok"
+        },
+        "answer_rate": 1.0,
+        "facets_found": [
+          "event_activity",
+          "event_headline"
+        ],
+        "facet_recall": 1.0,
+        "cross_agent_findings": 1,
+        "findings": 17,
+        "top5_confidence": 0.7574,
+        "cited_lines": 21,
+        "claim_lines": 21,
+        "latency_ms": 257.9,
+        "headline": "Iran: what the news shows on 2026-10-25",
+        "live_plan_matches_offline": true
+      }
+    },
+    {
+      "group": "iran_events",
+      "split": "dev",
+      "kind": "alias",
+      "question": "Latest on Tehran",
+      "gold": {
+        "intent": "events",
+        "countries": [
+          "IRN"
+        ],
+        "time": {
+          "mode": "latest"
+        },
+        "sector": "all",
+        "agents": [
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "facets": [
+        "event_activity",
+        "event_headline"
+      ],
+      "predicted": {
+        "intent": "country_profile",
+        "countries": [
+          "IRN"
+        ],
+        "time": {
+          "mode": "latest",
+          "year": null,
+          "date": null,
+          "horizon_year": null
+        },
+        "sector": "all",
+        "severity": null,
+        "metric": "exports",
+        "trade_query": null,
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "score": {
+        "slots": {
+          "intent": false,
+          "countries": true,
+          "time": true,
+          "sector": true,
+          "agents": false
+        },
+        "plan_exact": false,
+        "subject": true,
+        "fallback": false
+      },
+      "consistent": false,
+      "answer": {
+        "agents_asked": 4,
+        "agents_answered": 4,
+        "agent_status": {
+          "soft_power": "ok",
+          "policy_stance": "ok",
+          "trade_intelligence": "ok",
+          "event_summarization": "ok"
+        },
+        "answer_rate": 1.0,
+        "facets_found": [
+          "event_activity",
+          "event_headline"
+        ],
+        "facet_recall": 1.0,
+        "cross_agent_findings": 3,
+        "findings": 29,
+        "top5_confidence": 0.8049999999999999,
+        "cited_lines": 34,
+        "claim_lines": 34,
+        "latency_ms": 733.6,
+        "headline": "Iran: trade and diplomacy point the same way",
+        "live_plan_matches_offline": true
+      }
+    },
+    {
+      "group": "iran_events",
+      "split": "dev",
+      "kind": "reworded",
+      "question": "Any headlines from Iran this week?",
+      "gold": {
+        "intent": "events",
+        "countries": [
+          "IRN"
+        ],
+        "time": {
+          "mode": "latest"
+        },
+        "sector": "all",
+        "agents": [
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "facets": [
+        "event_activity",
+        "event_headline"
+      ],
+      "predicted": {
+        "intent": "events",
+        "countries": [
+          "IRN"
+        ],
+        "time": {
+          "mode": "latest",
+          "year": null,
+          "date": null,
+          "horizon_year": null
+        },
+        "sector": "all",
+        "severity": null,
+        "metric": "exports",
+        "trade_query": null,
+        "agents": [
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "score": {
+        "slots": {
+          "intent": true,
+          "countries": true,
+          "time": true,
+          "sector": true,
+          "agents": true
+        },
+        "plan_exact": true,
+        "subject": true,
+        "fallback": false
+      },
+      "consistent": true,
+      "answer": {
+        "agents_asked": 3,
+        "agents_answered": 3,
+        "agent_status": {
+          "policy_stance": "ok",
+          "trade_intelligence": "ok",
+          "event_summarization": "ok"
+        },
+        "answer_rate": 1.0,
+        "facets_found": [
+          "event_activity",
+          "event_headline"
+        ],
+        "facet_recall": 1.0,
+        "cross_agent_findings": 1,
+        "findings": 17,
+        "top5_confidence": 0.7574,
+        "cited_lines": 21,
+        "claim_lines": 21,
+        "latency_ms": 289.9,
+        "headline": "Iran: what the news shows on 2026-10-25",
+        "live_plan_matches_offline": true
+      }
+    },
+    {
+      "group": "iran_events",
+      "split": "dev",
+      "kind": "typo",
+      "question": "whats happening in iarn",
+      "gold": {
+        "intent": "events",
+        "countries": [
+          "IRN"
+        ],
+        "time": {
+          "mode": "latest"
+        },
+        "sector": "all",
+        "agents": [
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "facets": [
+        "event_activity",
+        "event_headline"
+      ],
+      "predicted": {
+        "intent": "ranking",
+        "countries": [],
+        "time": {
+          "mode": "latest",
+          "year": null,
+          "date": null,
+          "horizon_year": null
+        },
+        "sector": "all",
+        "severity": null,
+        "metric": "exports",
+        "trade_query": "risk",
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence"
+        ]
+      },
+      "score": {
+        "slots": {
+          "intent": false,
+          "countries": false,
+          "time": true,
+          "sector": true,
+          "agents": false
+        },
+        "plan_exact": false,
+        "subject": false,
+        "fallback": true
+      },
+      "consistent": false,
+      "answer": {
+        "agents_asked": 3,
+        "agents_answered": 3,
+        "agent_status": {
+          "soft_power": "ok",
+          "policy_stance": "ok",
+          "trade_intelligence": "ok"
+        },
+        "answer_rate": 1.0,
+        "facets_found": [],
+        "facet_recall": 0.0,
+        "cross_agent_findings": 0,
+        "findings": 21,
+        "top5_confidence": 0.9166000000000001,
+        "cited_lines": 24,
+        "claim_lines": 24,
+        "latency_ms": 99.7,
+        "headline": "Global overview",
+        "live_plan_matches_offline": true
+      }
+    },
+    {
+      "group": "iran_events",
+      "split": "dev",
+      "kind": "casual",
+      "question": "iran news",
+      "gold": {
+        "intent": "events",
+        "countries": [
+          "IRN"
+        ],
+        "time": {
+          "mode": "latest"
+        },
+        "sector": "all",
+        "agents": [
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "facets": [
+        "event_activity",
+        "event_headline"
+      ],
+      "predicted": {
+        "intent": "events",
+        "countries": [
+          "IRN"
+        ],
+        "time": {
+          "mode": "latest",
+          "year": null,
+          "date": null,
+          "horizon_year": null
+        },
+        "sector": "all",
+        "severity": null,
+        "metric": "exports",
+        "trade_query": null,
+        "agents": [
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "score": {
+        "slots": {
+          "intent": true,
+          "countries": true,
+          "time": true,
+          "sector": true,
+          "agents": true
+        },
+        "plan_exact": true,
+        "subject": true,
+        "fallback": false
+      },
+      "consistent": true,
+      "answer": {
+        "agents_asked": 3,
+        "agents_answered": 3,
+        "agent_status": {
+          "policy_stance": "ok",
+          "trade_intelligence": "ok",
+          "event_summarization": "ok"
+        },
+        "answer_rate": 1.0,
+        "facets_found": [
+          "event_activity",
+          "event_headline"
+        ],
+        "facet_recall": 1.0,
+        "cross_agent_findings": 1,
+        "findings": 17,
+        "top5_confidence": 0.7574,
+        "cited_lines": 21,
+        "claim_lines": 21,
+        "latency_ms": 277.4,
+        "headline": "Iran: what the news shows on 2026-10-25",
+        "live_plan_matches_offline": true
+      }
+    },
+    {
+      "group": "china_electronics_shock",
+      "split": "dev",
+      "kind": "original",
+      "question": "What if China stops exporting electronics?",
+      "gold": {
+        "intent": "shock",
+        "countries": [
+          "CHN"
+        ],
+        "time": {
+          "mode": "latest"
+        },
+        "sector": "electronics",
+        "severity": 1.0,
+        "agents": [
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "facets": [
+        "shock_impact"
+      ],
+      "predicted": {
+        "intent": "shock",
+        "countries": [
+          "CHN"
+        ],
+        "time": {
+          "mode": "latest",
+          "year": null,
+          "date": null,
+          "horizon_year": null
+        },
+        "sector": "electronics",
+        "severity": 1.0,
+        "metric": "exports",
+        "trade_query": null,
+        "agents": [
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "score": {
+        "slots": {
+          "intent": true,
+          "countries": true,
+          "time": true,
+          "sector": true,
+          "severity": true,
+          "agents": true
+        },
+        "plan_exact": true,
+        "subject": true,
+        "fallback": false
+      },
+      "consistent": true,
+      "answer": {
+        "agents_asked": 3,
+        "agents_answered": 3,
+        "agent_status": {
+          "policy_stance": "ok",
+          "trade_intelligence": "ok",
+          "event_summarization": "ok"
+        },
+        "answer_rate": 1.0,
+        "facets_found": [
+          "shock_impact"
+        ],
+        "facet_recall": 1.0,
+        "cross_agent_findings": 2,
+        "findings": 24,
+        "top5_confidence": 0.6406000000000001,
+        "cited_lines": 29,
+        "claim_lines": 29,
+        "latency_ms": 467.1,
+        "headline": "What a 100% cut in China's electronics exports would do",
+        "live_plan_matches_offline": true
+      }
+    },
+    {
+      "group": "china_electronics_shock",
+      "split": "dev",
+      "kind": "alias",
+      "question": "Suppose Beijing halts all chip shipments",
+      "gold": {
+        "intent": "shock",
+        "countries": [
+          "CHN"
+        ],
+        "time": {
+          "mode": "latest"
+        },
+        "sector": "electronics",
+        "severity": 1.0,
+        "agents": [
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "facets": [
+        "shock_impact"
+      ],
+      "predicted": {
+        "intent": "shock",
+        "countries": [
+          "CHN"
+        ],
+        "time": {
+          "mode": "latest",
+          "year": null,
+          "date": null,
+          "horizon_year": null
+        },
+        "sector": "electronics",
+        "severity": 1.0,
+        "metric": "exports",
+        "trade_query": null,
+        "agents": [
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "score": {
+        "slots": {
+          "intent": true,
+          "countries": true,
+          "time": true,
+          "sector": true,
+          "severity": true,
+          "agents": true
+        },
+        "plan_exact": true,
+        "subject": true,
+        "fallback": false
+      },
+      "consistent": true,
+      "answer": {
+        "agents_asked": 3,
+        "agents_answered": 3,
+        "agent_status": {
+          "policy_stance": "ok",
+          "trade_intelligence": "ok",
+          "event_summarization": "ok"
+        },
+        "answer_rate": 1.0,
+        "facets_found": [
+          "shock_impact"
+        ],
+        "facet_recall": 1.0,
+        "cross_agent_findings": 2,
+        "findings": 24,
+        "top5_confidence": 0.6406000000000001,
+        "cited_lines": 29,
+        "claim_lines": 29,
+        "latency_ms": 459.9,
+        "headline": "What a 100% cut in China's electronics exports would do",
+        "live_plan_matches_offline": true
+      }
+    },
+    {
+      "group": "china_electronics_shock",
+      "split": "dev",
+      "kind": "reworded",
+      "question": "Impact of a total Chinese embargo on semiconductors",
+      "gold": {
+        "intent": "shock",
+        "countries": [
+          "CHN"
+        ],
+        "time": {
+          "mode": "latest"
+        },
+        "sector": "electronics",
+        "severity": 1.0,
+        "agents": [
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "facets": [
+        "shock_impact"
+      ],
+      "predicted": {
+        "intent": "shock",
+        "countries": [
+          "CHN"
+        ],
+        "time": {
+          "mode": "latest",
+          "year": null,
+          "date": null,
+          "horizon_year": null
+        },
+        "sector": "electronics",
+        "severity": 1.0,
+        "metric": "exports",
+        "trade_query": null,
+        "agents": [
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "score": {
+        "slots": {
+          "intent": true,
+          "countries": true,
+          "time": true,
+          "sector": true,
+          "severity": true,
+          "agents": true
+        },
+        "plan_exact": true,
+        "subject": true,
+        "fallback": false
+      },
+      "consistent": true,
+      "answer": {
+        "agents_asked": 3,
+        "agents_answered": 3,
+        "agent_status": {
+          "policy_stance": "ok",
+          "trade_intelligence": "ok",
+          "event_summarization": "ok"
+        },
+        "answer_rate": 1.0,
+        "facets_found": [
+          "shock_impact"
+        ],
+        "facet_recall": 1.0,
+        "cross_agent_findings": 2,
+        "findings": 24,
+        "top5_confidence": 0.6406000000000001,
+        "cited_lines": 29,
+        "claim_lines": 29,
+        "latency_ms": 463.0,
+        "headline": "What a 100% cut in China's electronics exports would do",
+        "live_plan_matches_offline": true
+      }
+    },
+    {
+      "group": "china_electronics_shock",
+      "split": "dev",
+      "kind": "alias",
+      "question": "What happens if the PRC cuts off electronics exports?",
+      "gold": {
+        "intent": "shock",
+        "countries": [
+          "CHN"
+        ],
+        "time": {
+          "mode": "latest"
+        },
+        "sector": "electronics",
+        "severity": 1.0,
+        "agents": [
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "facets": [
+        "shock_impact"
+      ],
+      "predicted": {
+        "intent": "shock",
+        "countries": [
+          "CHN"
+        ],
+        "time": {
+          "mode": "latest",
+          "year": null,
+          "date": null,
+          "horizon_year": null
+        },
+        "sector": "electronics",
+        "severity": 1.0,
+        "metric": "exports",
+        "trade_query": null,
+        "agents": [
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "score": {
+        "slots": {
+          "intent": true,
+          "countries": true,
+          "time": true,
+          "sector": true,
+          "severity": true,
+          "agents": true
+        },
+        "plan_exact": true,
+        "subject": true,
+        "fallback": false
+      },
+      "consistent": true,
+      "answer": {
+        "agents_asked": 3,
+        "agents_answered": 3,
+        "agent_status": {
+          "policy_stance": "ok",
+          "trade_intelligence": "ok",
+          "event_summarization": "ok"
+        },
+        "answer_rate": 1.0,
+        "facets_found": [
+          "shock_impact"
+        ],
+        "facet_recall": 1.0,
+        "cross_agent_findings": 2,
+        "findings": 24,
+        "top5_confidence": 0.6406000000000001,
+        "cited_lines": 29,
+        "claim_lines": 29,
+        "latency_ms": 472.9,
+        "headline": "What a 100% cut in China's electronics exports would do",
+        "live_plan_matches_offline": true
+      }
+    },
+    {
+      "group": "china_electronics_shock",
+      "split": "dev",
+      "kind": "casual",
+      "question": "china stops selling electronics, who gets hurt?",
+      "gold": {
+        "intent": "shock",
+        "countries": [
+          "CHN"
+        ],
+        "time": {
+          "mode": "latest"
+        },
+        "sector": "electronics",
+        "severity": 1.0,
+        "agents": [
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "facets": [
+        "shock_impact"
+      ],
+      "predicted": {
+        "intent": "shock",
+        "countries": [
+          "CHN"
+        ],
+        "time": {
+          "mode": "latest",
+          "year": null,
+          "date": null,
+          "horizon_year": null
+        },
+        "sector": "electronics",
+        "severity": 1.0,
+        "metric": "exports",
+        "trade_query": null,
+        "agents": [
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "score": {
+        "slots": {
+          "intent": true,
+          "countries": true,
+          "time": true,
+          "sector": true,
+          "severity": true,
+          "agents": true
+        },
+        "plan_exact": true,
+        "subject": true,
+        "fallback": false
+      },
+      "consistent": true,
+      "answer": {
+        "agents_asked": 3,
+        "agents_answered": 3,
+        "agent_status": {
+          "policy_stance": "ok",
+          "trade_intelligence": "ok",
+          "event_summarization": "ok"
+        },
+        "answer_rate": 1.0,
+        "facets_found": [
+          "shock_impact"
+        ],
+        "facet_recall": 1.0,
+        "cross_agent_findings": 2,
+        "findings": 24,
+        "top5_confidence": 0.6406000000000001,
+        "cited_lines": 29,
+        "claim_lines": 29,
+        "latency_ms": 444.4,
+        "headline": "What a 100% cut in China's electronics exports would do",
+        "live_plan_matches_offline": true
+      }
+    },
+    {
+      "group": "china_electronics_shock",
+      "split": "dev",
+      "kind": "typo",
+      "question": "what if chna stops exporting electronics",
+      "gold": {
+        "intent": "shock",
+        "countries": [
+          "CHN"
+        ],
+        "time": {
+          "mode": "latest"
+        },
+        "sector": "electronics",
+        "severity": 1.0,
+        "agents": [
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "facets": [
+        "shock_impact"
+      ],
+      "predicted": {
+        "intent": "ranking",
+        "countries": [],
+        "time": {
+          "mode": "latest",
+          "year": null,
+          "date": null,
+          "horizon_year": null
+        },
+        "sector": "electronics",
+        "severity": null,
+        "metric": "exports",
+        "trade_query": "risk",
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence"
+        ]
+      },
+      "score": {
+        "slots": {
+          "intent": false,
+          "countries": false,
+          "time": true,
+          "sector": true,
+          "severity": false,
+          "agents": false
+        },
+        "plan_exact": false,
+        "subject": false,
+        "fallback": true
+      },
+      "consistent": false,
+      "answer": {
+        "agents_asked": 3,
+        "agents_answered": 3,
+        "agent_status": {
+          "soft_power": "ok",
+          "policy_stance": "ok",
+          "trade_intelligence": "ok"
+        },
+        "answer_rate": 1.0,
+        "facets_found": [],
+        "facet_recall": 0.0,
+        "cross_agent_findings": 0,
+        "findings": 21,
+        "top5_confidence": 0.8964,
+        "cited_lines": 24,
+        "claim_lines": 24,
+        "latency_ms": 101.0,
+        "headline": "Global overview",
+        "live_plan_matches_offline": true
+      }
+    },
+    {
+      "group": "brazil_forecast",
+      "split": "dev",
+      "kind": "original",
+      "question": "Forecast Brazil exports to 2030",
+      "gold": {
+        "intent": "forecast",
+        "countries": [
+          "BRA"
+        ],
+        "time": {
+          "mode": "latest",
+          "horizon_year": 2030
+        },
+        "sector": "all",
+        "metric": "exports",
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence"
+        ]
+      },
+      "facets": [
+        "trade_outlook"
+      ],
+      "predicted": {
+        "intent": "forecast",
+        "countries": [
+          "BRA"
+        ],
+        "time": {
+          "mode": "latest",
+          "year": null,
+          "date": null,
+          "horizon_year": 2030
+        },
+        "sector": "all",
+        "severity": null,
+        "metric": "exports",
+        "trade_query": null,
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence"
+        ]
+      },
+      "score": {
+        "slots": {
+          "intent": true,
+          "countries": true,
+          "time": true,
+          "sector": true,
+          "metric": true,
+          "agents": true
+        },
+        "plan_exact": true,
+        "subject": true,
+        "fallback": false
+      },
+      "consistent": true,
+      "answer": {
+        "agents_asked": 3,
+        "agents_answered": 3,
+        "agent_status": {
+          "soft_power": "ok",
+          "policy_stance": "ok",
+          "trade_intelligence": "ok"
+        },
+        "answer_rate": 1.0,
+        "facets_found": [
+          "trade_outlook"
+        ],
+        "facet_recall": 1.0,
+        "cross_agent_findings": 0,
+        "findings": 11,
+        "top5_confidence": 0.8412,
+        "cited_lines": 14,
+        "claim_lines": 14,
+        "latency_ms": 587.2,
+        "headline": "Brazil: fused briefing",
+        "live_plan_matches_offline": true
+      }
+    },
+    {
+      "group": "brazil_forecast",
+      "split": "dev",
+      "kind": "reworded",
+      "question": "Project Brazil's exports through 2030",
+      "gold": {
+        "intent": "forecast",
+        "countries": [
+          "BRA"
+        ],
+        "time": {
+          "mode": "latest",
+          "horizon_year": 2030
+        },
+        "sector": "all",
+        "metric": "exports",
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence"
+        ]
+      },
+      "facets": [
+        "trade_outlook"
+      ],
+      "predicted": {
+        "intent": "forecast",
+        "countries": [
+          "BRA"
+        ],
+        "time": {
+          "mode": "latest",
+          "year": null,
+          "date": null,
+          "horizon_year": 2030
+        },
+        "sector": "all",
+        "severity": null,
+        "metric": "exports",
+        "trade_query": null,
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence"
+        ]
+      },
+      "score": {
+        "slots": {
+          "intent": true,
+          "countries": true,
+          "time": true,
+          "sector": true,
+          "metric": true,
+          "agents": true
+        },
+        "plan_exact": true,
+        "subject": true,
+        "fallback": false
+      },
+      "consistent": true,
+      "answer": {
+        "agents_asked": 3,
+        "agents_answered": 3,
+        "agent_status": {
+          "soft_power": "ok",
+          "policy_stance": "ok",
+          "trade_intelligence": "ok"
+        },
+        "answer_rate": 1.0,
+        "facets_found": [
+          "trade_outlook"
+        ],
+        "facet_recall": 1.0,
+        "cross_agent_findings": 0,
+        "findings": 11,
+        "top5_confidence": 0.8412,
+        "cited_lines": 14,
+        "claim_lines": 14,
+        "latency_ms": 596.4,
+        "headline": "Brazil: fused briefing",
+        "live_plan_matches_offline": true
+      }
+    },
+    {
+      "group": "brazil_forecast",
+      "split": "dev",
+      "kind": "reworded",
+      "question": "What will Brazil's exports look like in 2030?",
+      "gold": {
+        "intent": "forecast",
+        "countries": [
+          "BRA"
+        ],
+        "time": {
+          "mode": "latest",
+          "horizon_year": 2030
+        },
+        "sector": "all",
+        "metric": "exports",
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence"
+        ]
+      },
+      "facets": [
+        "trade_outlook"
+      ],
+      "predicted": {
+        "intent": "country_profile",
+        "countries": [
+          "BRA"
+        ],
+        "time": {
+          "mode": "latest",
+          "year": null,
+          "date": null,
+          "horizon_year": null
+        },
+        "sector": "all",
+        "severity": null,
+        "metric": "exports",
+        "trade_query": null,
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "score": {
+        "slots": {
+          "intent": false,
+          "countries": true,
+          "time": false,
+          "sector": true,
+          "metric": true,
+          "agents": false
+        },
+        "plan_exact": false,
+        "subject": true,
+        "fallback": false
+      },
+      "consistent": false,
+      "answer": {
+        "agents_asked": 4,
+        "agents_answered": 4,
+        "agent_status": {
+          "soft_power": "ok",
+          "policy_stance": "ok",
+          "trade_intelligence": "ok",
+          "event_summarization": "ok"
+        },
+        "answer_rate": 1.0,
+        "facets_found": [],
+        "facet_recall": 0.0,
+        "cross_agent_findings": 5,
+        "findings": 31,
+        "top5_confidence": 0.3436,
+        "cited_lines": 36,
+        "claim_lines": 36,
+        "latency_ms": 690.7,
+        "headline": "Brazil: today is out of character for the relationship",
+        "live_plan_matches_offline": true
+      }
+    },
+    {
+      "group": "brazil_forecast",
+      "split": "dev",
+      "kind": "casual",
+      "question": "brazil exports outlook to 2030",
+      "gold": {
+        "intent": "forecast",
+        "countries": [
+          "BRA"
+        ],
+        "time": {
+          "mode": "latest",
+          "horizon_year": 2030
+        },
+        "sector": "all",
+        "metric": "exports",
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence"
+        ]
+      },
+      "facets": [
+        "trade_outlook"
+      ],
+      "predicted": {
+        "intent": "forecast",
+        "countries": [
+          "BRA"
+        ],
+        "time": {
+          "mode": "latest",
+          "year": null,
+          "date": null,
+          "horizon_year": 2030
+        },
+        "sector": "all",
+        "severity": null,
+        "metric": "exports",
+        "trade_query": null,
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence"
+        ]
+      },
+      "score": {
+        "slots": {
+          "intent": true,
+          "countries": true,
+          "time": true,
+          "sector": true,
+          "metric": true,
+          "agents": true
+        },
+        "plan_exact": true,
+        "subject": true,
+        "fallback": false
+      },
+      "consistent": true,
+      "answer": {
+        "agents_asked": 3,
+        "agents_answered": 3,
+        "agent_status": {
+          "soft_power": "ok",
+          "policy_stance": "ok",
+          "trade_intelligence": "ok"
+        },
+        "answer_rate": 1.0,
+        "facets_found": [
+          "trade_outlook"
+        ],
+        "facet_recall": 1.0,
+        "cross_agent_findings": 0,
+        "findings": 11,
+        "top5_confidence": 0.8412,
+        "cited_lines": 14,
+        "claim_lines": 14,
+        "latency_ms": 566.3,
+        "headline": "Brazil: fused briefing",
+        "live_plan_matches_offline": true
+      }
+    },
+    {
+      "group": "brazil_forecast",
+      "split": "dev",
+      "kind": "typo",
+      "question": "forcast brazil exports to 2030",
+      "gold": {
+        "intent": "forecast",
+        "countries": [
+          "BRA"
+        ],
+        "time": {
+          "mode": "latest",
+          "horizon_year": 2030
+        },
+        "sector": "all",
+        "metric": "exports",
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence"
+        ]
+      },
+      "facets": [
+        "trade_outlook"
+      ],
+      "predicted": {
+        "intent": "country_profile",
+        "countries": [
+          "BRA"
+        ],
+        "time": {
+          "mode": "latest",
+          "year": null,
+          "date": null,
+          "horizon_year": null
+        },
+        "sector": "all",
+        "severity": null,
+        "metric": "exports",
+        "trade_query": null,
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "score": {
+        "slots": {
+          "intent": false,
+          "countries": true,
+          "time": false,
+          "sector": true,
+          "metric": true,
+          "agents": false
+        },
+        "plan_exact": false,
+        "subject": true,
+        "fallback": false
+      },
+      "consistent": false,
+      "answer": {
+        "agents_asked": 4,
+        "agents_answered": 4,
+        "agent_status": {
+          "soft_power": "ok",
+          "policy_stance": "ok",
+          "trade_intelligence": "ok",
+          "event_summarization": "ok"
+        },
+        "answer_rate": 1.0,
+        "facets_found": [],
+        "facet_recall": 0.0,
+        "cross_agent_findings": 5,
+        "findings": 31,
+        "top5_confidence": 0.3436,
+        "cited_lines": 36,
+        "claim_lines": 36,
+        "latency_ms": 636.8,
+        "headline": "Brazil: today is out of character for the relationship",
+        "live_plan_matches_offline": true
+      }
+    },
+    {
+      "group": "germany_russia_energy",
+      "split": "dev",
+      "kind": "original",
+      "question": "How dependent is Germany on Russian energy?",
+      "gold": {
+        "intent": "bilateral",
+        "countries": [
+          "DEU",
+          "RUS"
+        ],
+        "time": {
+          "mode": "latest"
+        },
+        "sector": "energy",
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "facets": [
+        "bilateral_trade_dependence",
+        "bilateral_diplomacy"
+      ],
+      "predicted": {
+        "intent": "bilateral",
+        "countries": [
+          "DEU",
+          "RUS"
+        ],
+        "time": {
+          "mode": "latest",
+          "year": null,
+          "date": null,
+          "horizon_year": null
+        },
+        "sector": "energy",
+        "severity": null,
+        "metric": "exports",
+        "trade_query": null,
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "score": {
+        "slots": {
+          "intent": true,
+          "countries": true,
+          "time": true,
+          "sector": true,
+          "agents": true
+        },
+        "plan_exact": true,
+        "subject": true,
+        "fallback": false
+      },
+      "consistent": true,
+      "answer": {
+        "agents_asked": 4,
+        "agents_answered": 4,
+        "agent_status": {
+          "soft_power": "ok",
+          "policy_stance": "ok",
+          "trade_intelligence": "ok",
+          "event_summarization": "ok"
+        },
+        "answer_rate": 1.0,
+        "facets_found": [
+          "bilateral_diplomacy"
+        ],
+        "facet_recall": 0.5,
+        "cross_agent_findings": 5,
+        "findings": 34,
+        "top5_confidence": 0.5504,
+        "cited_lines": 37,
+        "claim_lines": 37,
+        "latency_ms": 426.4,
+        "headline": "Germany and Russia: trade and diplomacy agree",
+        "live_plan_matches_offline": true
+      }
+    },
+    {
+      "group": "germany_russia_energy",
+      "split": "dev",
+      "kind": "reworded",
+      "question": "Germany's energy dependence on Russia",
+      "gold": {
+        "intent": "bilateral",
+        "countries": [
+          "DEU",
+          "RUS"
+        ],
+        "time": {
+          "mode": "latest"
+        },
+        "sector": "energy",
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "facets": [
+        "bilateral_trade_dependence",
+        "bilateral_diplomacy"
+      ],
+      "predicted": {
+        "intent": "bilateral",
+        "countries": [
+          "DEU",
+          "RUS"
+        ],
+        "time": {
+          "mode": "latest",
+          "year": null,
+          "date": null,
+          "horizon_year": null
+        },
+        "sector": "energy",
+        "severity": null,
+        "metric": "exports",
+        "trade_query": null,
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "score": {
+        "slots": {
+          "intent": true,
+          "countries": true,
+          "time": true,
+          "sector": true,
+          "agents": true
+        },
+        "plan_exact": true,
+        "subject": true,
+        "fallback": false
+      },
+      "consistent": true,
+      "answer": {
+        "agents_asked": 4,
+        "agents_answered": 4,
+        "agent_status": {
+          "soft_power": "ok",
+          "policy_stance": "ok",
+          "trade_intelligence": "ok",
+          "event_summarization": "ok"
+        },
+        "answer_rate": 1.0,
+        "facets_found": [
+          "bilateral_diplomacy"
+        ],
+        "facet_recall": 0.5,
+        "cross_agent_findings": 5,
+        "findings": 34,
+        "top5_confidence": 0.5504,
+        "cited_lines": 37,
+        "claim_lines": 37,
+        "latency_ms": 389.9,
+        "headline": "Germany and Russia: trade and diplomacy agree",
+        "live_plan_matches_offline": true
+      }
+    },
+    {
+      "group": "germany_russia_energy",
+      "split": "dev",
+      "kind": "alias",
+      "question": "Berlin's reliance on Moscow for gas",
+      "gold": {
+        "intent": "bilateral",
+        "countries": [
+          "DEU",
+          "RUS"
+        ],
+        "time": {
+          "mode": "latest"
+        },
+        "sector": "energy",
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "facets": [
+        "bilateral_trade_dependence",
+        "bilateral_diplomacy"
+      ],
+      "predicted": {
+        "intent": "country_profile",
+        "countries": [
+          "RUS"
+        ],
+        "time": {
+          "mode": "latest",
+          "year": null,
+          "date": null,
+          "horizon_year": null
+        },
+        "sector": "energy",
+        "severity": null,
+        "metric": "exports",
+        "trade_query": null,
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "score": {
+        "slots": {
+          "intent": false,
+          "countries": false,
+          "time": true,
+          "sector": true,
+          "agents": true
+        },
+        "plan_exact": false,
+        "subject": false,
+        "fallback": false
+      },
+      "consistent": false,
+      "answer": {
+        "agents_asked": 4,
+        "agents_answered": 4,
+        "agent_status": {
+          "soft_power": "ok",
+          "policy_stance": "ok",
+          "trade_intelligence": "ok",
+          "event_summarization": "ok"
+        },
+        "answer_rate": 1.0,
+        "facets_found": [],
+        "facet_recall": 0.0,
+        "cross_agent_findings": 6,
+        "findings": 32,
+        "top5_confidence": 0.40240000000000004,
+        "cited_lines": 37,
+        "claim_lines": 37,
+        "latency_ms": 386.4,
+        "headline": "Russia: cooperative coverage with a critical trade partner",
+        "live_plan_matches_offline": true
+      }
+    },
+    {
+      "group": "germany_russia_energy",
+      "split": "dev",
+      "kind": "casual",
+      "question": "germany russia gas dependence",
+      "gold": {
+        "intent": "bilateral",
+        "countries": [
+          "DEU",
+          "RUS"
+        ],
+        "time": {
+          "mode": "latest"
+        },
+        "sector": "energy",
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "facets": [
+        "bilateral_trade_dependence",
+        "bilateral_diplomacy"
+      ],
+      "predicted": {
+        "intent": "bilateral",
+        "countries": [
+          "DEU",
+          "RUS"
+        ],
+        "time": {
+          "mode": "latest",
+          "year": null,
+          "date": null,
+          "horizon_year": null
+        },
+        "sector": "energy",
+        "severity": null,
+        "metric": "exports",
+        "trade_query": null,
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "score": {
+        "slots": {
+          "intent": true,
+          "countries": true,
+          "time": true,
+          "sector": true,
+          "agents": true
+        },
+        "plan_exact": true,
+        "subject": true,
+        "fallback": false
+      },
+      "consistent": true,
+      "answer": {
+        "agents_asked": 4,
+        "agents_answered": 4,
+        "agent_status": {
+          "soft_power": "ok",
+          "policy_stance": "ok",
+          "trade_intelligence": "ok",
+          "event_summarization": "ok"
+        },
+        "answer_rate": 1.0,
+        "facets_found": [
+          "bilateral_diplomacy"
+        ],
+        "facet_recall": 0.5,
+        "cross_agent_findings": 5,
+        "findings": 34,
+        "top5_confidence": 0.5504,
+        "cited_lines": 37,
+        "claim_lines": 37,
+        "latency_ms": 382.0,
+        "headline": "Germany and Russia: trade and diplomacy agree",
+        "live_plan_matches_offline": true
+      }
+    },
+    {
+      "group": "germany_russia_energy",
+      "split": "dev",
+      "kind": "typo",
+      "question": "how dependant is germany on russian energy",
+      "gold": {
+        "intent": "bilateral",
+        "countries": [
+          "DEU",
+          "RUS"
+        ],
+        "time": {
+          "mode": "latest"
+        },
+        "sector": "energy",
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "facets": [
+        "bilateral_trade_dependence",
+        "bilateral_diplomacy"
+      ],
+      "predicted": {
+        "intent": "bilateral",
+        "countries": [
+          "DEU",
+          "RUS"
+        ],
+        "time": {
+          "mode": "latest",
+          "year": null,
+          "date": null,
+          "horizon_year": null
+        },
+        "sector": "energy",
+        "severity": null,
+        "metric": "exports",
+        "trade_query": null,
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "score": {
+        "slots": {
+          "intent": true,
+          "countries": true,
+          "time": true,
+          "sector": true,
+          "agents": true
+        },
+        "plan_exact": true,
+        "subject": true,
+        "fallback": false
+      },
+      "consistent": true,
+      "answer": {
+        "agents_asked": 4,
+        "agents_answered": 4,
+        "agent_status": {
+          "soft_power": "ok",
+          "policy_stance": "ok",
+          "trade_intelligence": "ok",
+          "event_summarization": "ok"
+        },
+        "answer_rate": 1.0,
+        "facets_found": [
+          "bilateral_diplomacy"
+        ],
+        "facet_recall": 0.5,
+        "cross_agent_findings": 5,
+        "findings": 34,
+        "top5_confidence": 0.5504,
+        "cited_lines": 37,
+        "claim_lines": 37,
+        "latency_ms": 384.6,
+        "headline": "Germany and Russia: trade and diplomacy agree",
+        "live_plan_matches_offline": true
+      }
+    },
+    {
+      "group": "trade_dependence_ranking",
+      "split": "dev",
+      "kind": "original",
+      "question": "Which countries are most dependent on trade?",
+      "gold": {
+        "intent": "ranking",
+        "countries": [],
+        "time": {
+          "mode": "latest"
+        },
+        "sector": "all",
+        "trade_query": "leverage",
+        "agents": [
+          "trade_intelligence"
+        ]
+      },
+      "facets": [
+        "trade_dependence"
+      ],
+      "predicted": {
+        "intent": "ranking",
+        "countries": [],
+        "time": {
+          "mode": "latest",
+          "year": null,
+          "date": null,
+          "horizon_year": null
+        },
+        "sector": "all",
+        "severity": null,
+        "metric": "exports",
+        "trade_query": "leverage",
+        "agents": [
+          "trade_intelligence"
+        ]
+      },
+      "score": {
+        "slots": {
+          "intent": true,
+          "countries": true,
+          "time": true,
+          "sector": true,
+          "trade_query": true,
+          "agents": true
+        },
+        "plan_exact": true,
+        "subject": true,
+        "fallback": false
+      },
+      "consistent": true,
+      "answer": {
+        "agents_asked": 1,
+        "agents_answered": 1,
+        "agent_status": {
+          "trade_intelligence": "ok"
+        },
+        "answer_rate": 1.0,
+        "facets_found": [
+          "trade_dependence"
+        ],
+        "facet_recall": 1.0,
+        "cross_agent_findings": 0,
+        "findings": 10,
+        "top5_confidence": 0.8338,
+        "cited_lines": 11,
+        "claim_lines": 11,
+        "latency_ms": 79.9,
+        "headline": "Global overview",
+        "live_plan_matches_offline": true
+      }
+    },
+    {
+      "group": "trade_dependence_ranking",
+      "split": "dev",
+      "kind": "reworded",
+      "question": "Who relies most heavily on a single trade partner?",
+      "gold": {
+        "intent": "ranking",
+        "countries": [],
+        "time": {
+          "mode": "latest"
+        },
+        "sector": "all",
+        "trade_query": "leverage",
+        "agents": [
+          "trade_intelligence"
+        ]
+      },
+      "facets": [
+        "trade_dependence"
+      ],
+      "predicted": {
+        "intent": "ranking",
+        "countries": [],
+        "time": {
+          "mode": "latest",
+          "year": null,
+          "date": null,
+          "horizon_year": null
+        },
+        "sector": "all",
+        "severity": null,
+        "metric": "exports",
+        "trade_query": "risk",
+        "agents": [
+          "trade_intelligence"
+        ]
+      },
+      "score": {
+        "slots": {
+          "intent": true,
+          "countries": true,
+          "time": true,
+          "sector": true,
+          "trade_query": false,
+          "agents": true
+        },
+        "plan_exact": false,
+        "subject": true,
+        "fallback": false
+      },
+      "consistent": false,
+      "answer": {
+        "agents_asked": 1,
+        "agents_answered": 1,
+        "agent_status": {
+          "trade_intelligence": "ok"
+        },
+        "answer_rate": 1.0,
+        "facets_found": [],
+        "facet_recall": 0.0,
+        "cross_agent_findings": 0,
+        "findings": 10,
+        "top5_confidence": 0.9116000000000001,
+        "cited_lines": 11,
+        "claim_lines": 11,
+        "latency_ms": 102.4,
+        "headline": "Global overview",
+        "live_plan_matches_offline": true
+      }
+    },
+    {
+      "group": "trade_dependence_ranking",
+      "split": "dev",
+      "kind": "reworded",
+      "question": "Top 10 most trade-dependent economies",
+      "gold": {
+        "intent": "ranking",
+        "countries": [],
+        "time": {
+          "mode": "latest"
+        },
+        "sector": "all",
+        "trade_query": "leverage",
+        "agents": [
+          "trade_intelligence"
+        ]
+      },
+      "facets": [
+        "trade_dependence"
+      ],
+      "predicted": {
+        "intent": "ranking",
+        "countries": [],
+        "time": {
+          "mode": "latest",
+          "year": null,
+          "date": null,
+          "horizon_year": null
+        },
+        "sector": "all",
+        "severity": null,
+        "metric": "exports",
+        "trade_query": "leverage",
+        "agents": [
+          "trade_intelligence"
+        ]
+      },
+      "score": {
+        "slots": {
+          "intent": true,
+          "countries": true,
+          "time": true,
+          "sector": true,
+          "trade_query": true,
+          "agents": true
+        },
+        "plan_exact": true,
+        "subject": true,
+        "fallback": false
+      },
+      "consistent": true,
+      "answer": {
+        "agents_asked": 1,
+        "agents_answered": 1,
+        "agent_status": {
+          "trade_intelligence": "ok"
+        },
+        "answer_rate": 1.0,
+        "facets_found": [
+          "trade_dependence"
+        ],
+        "facet_recall": 1.0,
+        "cross_agent_findings": 0,
+        "findings": 10,
+        "top5_confidence": 0.8338,
+        "cited_lines": 11,
+        "claim_lines": 11,
+        "latency_ms": 79.9,
+        "headline": "Global overview",
+        "live_plan_matches_offline": true
+      }
+    },
+    {
+      "group": "trade_dependence_ranking",
+      "split": "dev",
+      "kind": "casual",
+      "question": "most dependent countries trade-wise",
+      "gold": {
+        "intent": "ranking",
+        "countries": [],
+        "time": {
+          "mode": "latest"
+        },
+        "sector": "all",
+        "trade_query": "leverage",
+        "agents": [
+          "trade_intelligence"
+        ]
+      },
+      "facets": [
+        "trade_dependence"
+      ],
+      "predicted": {
+        "intent": "ranking",
+        "countries": [],
+        "time": {
+          "mode": "latest",
+          "year": null,
+          "date": null,
+          "horizon_year": null
+        },
+        "sector": "all",
+        "severity": null,
+        "metric": "exports",
+        "trade_query": "leverage",
+        "agents": [
+          "trade_intelligence"
+        ]
+      },
+      "score": {
+        "slots": {
+          "intent": true,
+          "countries": true,
+          "time": true,
+          "sector": true,
+          "trade_query": true,
+          "agents": true
+        },
+        "plan_exact": true,
+        "subject": true,
+        "fallback": false
+      },
+      "consistent": true,
+      "answer": {
+        "agents_asked": 1,
+        "agents_answered": 1,
+        "agent_status": {
+          "trade_intelligence": "ok"
+        },
+        "answer_rate": 1.0,
+        "facets_found": [
+          "trade_dependence"
+        ],
+        "facet_recall": 1.0,
+        "cross_agent_findings": 0,
+        "findings": 10,
+        "top5_confidence": 0.8338,
+        "cited_lines": 11,
+        "claim_lines": 11,
+        "latency_ms": 74.0,
+        "headline": "Global overview",
+        "live_plan_matches_offline": true
+      }
+    },
+    {
+      "group": "fragility_ranking",
+      "split": "dev",
+      "kind": "original",
+      "question": "Which countries have the most fragile supply chains?",
+      "gold": {
+        "intent": "ranking",
+        "countries": [],
+        "time": {
+          "mode": "latest"
+        },
+        "sector": "all",
+        "trade_query": "fragility",
+        "agents": [
+          "trade_intelligence"
+        ]
+      },
+      "facets": [
+        "supply_fragility"
+      ],
+      "predicted": {
+        "intent": "ranking",
+        "countries": [],
+        "time": {
+          "mode": "latest",
+          "year": null,
+          "date": null,
+          "horizon_year": null
+        },
+        "sector": "all",
+        "severity": null,
+        "metric": "exports",
+        "trade_query": "fragility",
+        "agents": [
+          "trade_intelligence"
+        ]
+      },
+      "score": {
+        "slots": {
+          "intent": true,
+          "countries": true,
+          "time": true,
+          "sector": true,
+          "trade_query": true,
+          "agents": true
+        },
+        "plan_exact": true,
+        "subject": true,
+        "fallback": false
+      },
+      "consistent": true,
+      "answer": {
+        "agents_asked": 1,
+        "agents_answered": 1,
+        "agent_status": {
+          "trade_intelligence": "ok"
+        },
+        "answer_rate": 1.0,
+        "facets_found": [
+          "supply_fragility"
+        ],
+        "facet_recall": 1.0,
+        "cross_agent_findings": 0,
+        "findings": 10,
+        "top5_confidence": 0.95,
+        "cited_lines": 11,
+        "claim_lines": 11,
+        "latency_ms": 189.7,
+        "headline": "Global overview",
+        "live_plan_matches_offline": true
+      }
+    },
+    {
+      "group": "fragility_ranking",
+      "split": "dev",
+      "kind": "reworded",
+      "question": "Where are imports hardest to substitute?",
+      "gold": {
+        "intent": "ranking",
+        "countries": [],
+        "time": {
+          "mode": "latest"
+        },
+        "sector": "all",
+        "trade_query": "fragility",
+        "agents": [
+          "trade_intelligence"
+        ]
+      },
+      "facets": [
+        "supply_fragility"
+      ],
+      "predicted": {
+        "intent": "ranking",
+        "countries": [],
+        "time": {
+          "mode": "latest",
+          "year": null,
+          "date": null,
+          "horizon_year": null
+        },
+        "sector": "all",
+        "severity": null,
+        "metric": "imports",
+        "trade_query": "fragility",
+        "agents": [
+          "trade_intelligence"
+        ]
+      },
+      "score": {
+        "slots": {
+          "intent": true,
+          "countries": true,
+          "time": true,
+          "sector": true,
+          "trade_query": true,
+          "agents": true
+        },
+        "plan_exact": true,
+        "subject": true,
+        "fallback": false
+      },
+      "consistent": true,
+      "answer": {
+        "agents_asked": 1,
+        "agents_answered": 1,
+        "agent_status": {
+          "trade_intelligence": "ok"
+        },
+        "answer_rate": 1.0,
+        "facets_found": [
+          "supply_fragility"
+        ],
+        "facet_recall": 1.0,
+        "cross_agent_findings": 0,
+        "findings": 10,
+        "top5_confidence": 0.95,
+        "cited_lines": 11,
+        "claim_lines": 11,
+        "latency_ms": 186.4,
+        "headline": "Global overview",
+        "live_plan_matches_offline": true
+      }
+    },
+    {
+      "group": "fragility_ranking",
+      "split": "dev",
+      "kind": "reworded",
+      "question": "Rank economies by how brittle their supply is",
+      "gold": {
+        "intent": "ranking",
+        "countries": [],
+        "time": {
+          "mode": "latest"
+        },
+        "sector": "all",
+        "trade_query": "fragility",
+        "agents": [
+          "trade_intelligence"
+        ]
+      },
+      "facets": [
+        "supply_fragility"
+      ],
+      "predicted": {
+        "intent": "ranking",
+        "countries": [],
+        "time": {
+          "mode": "latest",
+          "year": null,
+          "date": null,
+          "horizon_year": null
+        },
+        "sector": "all",
+        "severity": null,
+        "metric": "exports",
+        "trade_query": "fragility",
+        "agents": [
+          "trade_intelligence"
+        ]
+      },
+      "score": {
+        "slots": {
+          "intent": true,
+          "countries": true,
+          "time": true,
+          "sector": true,
+          "trade_query": true,
+          "agents": true
+        },
+        "plan_exact": true,
+        "subject": true,
+        "fallback": false
+      },
+      "consistent": true,
+      "answer": {
+        "agents_asked": 1,
+        "agents_answered": 1,
+        "agent_status": {
+          "trade_intelligence": "ok"
+        },
+        "answer_rate": 1.0,
+        "facets_found": [
+          "supply_fragility"
+        ],
+        "facet_recall": 1.0,
+        "cross_agent_findings": 0,
+        "findings": 10,
+        "top5_confidence": 0.95,
+        "cited_lines": 11,
+        "claim_lines": 11,
+        "latency_ms": 187.5,
+        "headline": "Global overview",
+        "live_plan_matches_offline": true
+      }
+    },
+    {
+      "group": "fragility_ranking",
+      "split": "dev",
+      "kind": "casual",
+      "question": "most fragile supply chains",
+      "gold": {
+        "intent": "ranking",
+        "countries": [],
+        "time": {
+          "mode": "latest"
+        },
+        "sector": "all",
+        "trade_query": "fragility",
+        "agents": [
+          "trade_intelligence"
+        ]
+      },
+      "facets": [
+        "supply_fragility"
+      ],
+      "predicted": {
+        "intent": "ranking",
+        "countries": [],
+        "time": {
+          "mode": "latest",
+          "year": null,
+          "date": null,
+          "horizon_year": null
+        },
+        "sector": "all",
+        "severity": null,
+        "metric": "exports",
+        "trade_query": "fragility",
+        "agents": [
+          "trade_intelligence"
+        ]
+      },
+      "score": {
+        "slots": {
+          "intent": true,
+          "countries": true,
+          "time": true,
+          "sector": true,
+          "trade_query": true,
+          "agents": true
+        },
+        "plan_exact": true,
+        "subject": true,
+        "fallback": false
+      },
+      "consistent": true,
+      "answer": {
+        "agents_asked": 1,
+        "agents_answered": 1,
+        "agent_status": {
+          "trade_intelligence": "ok"
+        },
+        "answer_rate": 1.0,
+        "facets_found": [
+          "supply_fragility"
+        ],
+        "facet_recall": 1.0,
+        "cross_agent_findings": 0,
+        "findings": 10,
+        "top5_confidence": 0.95,
+        "cited_lines": 11,
+        "claim_lines": 11,
+        "latency_ms": 223.5,
+        "headline": "Global overview",
+        "live_plan_matches_offline": true
+      }
+    },
+    {
+      "group": "india_china_bilateral",
+      "split": "test",
+      "kind": "original",
+      "question": "India and China relations",
+      "gold": {
+        "intent": "bilateral",
+        "countries": [
+          "IND",
+          "CHN"
+        ],
+        "time": {
+          "mode": "latest"
+        },
+        "sector": "all",
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "facets": [
+        "bilateral_trade_bloc",
+        "bilateral_diplomacy",
+        "bilateral_events"
+      ],
+      "predicted": {
+        "intent": "bilateral",
+        "countries": [
+          "IND",
+          "CHN"
+        ],
+        "time": {
+          "mode": "latest",
+          "year": null,
+          "date": null,
+          "horizon_year": null
+        },
+        "sector": "all",
+        "severity": null,
+        "metric": "exports",
+        "trade_query": null,
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "score": {
+        "slots": {
+          "intent": true,
+          "countries": true,
+          "time": true,
+          "sector": true,
+          "agents": true
+        },
+        "plan_exact": true,
+        "subject": true,
+        "fallback": false
+      },
+      "consistent": true,
+      "answer": {
+        "agents_asked": 4,
+        "agents_answered": 4,
+        "agent_status": {
+          "soft_power": "ok",
+          "policy_stance": "ok",
+          "trade_intelligence": "ok",
+          "event_summarization": "ok"
+        },
+        "answer_rate": 1.0,
+        "facets_found": [
+          "bilateral_diplomacy",
+          "bilateral_events",
+          "bilateral_trade_bloc"
+        ],
+        "facet_recall": 1.0,
+        "cross_agent_findings": 6,
+        "findings": 36,
+        "top5_confidence": 0.7046,
+        "cited_lines": 39,
+        "claim_lines": 39,
+        "latency_ms": 1026.7,
+        "headline": "India and China: trade and diplomacy agree",
+        "live_plan_matches_offline": true
+      }
+    },
+    {
+      "group": "india_china_bilateral",
+      "split": "test",
+      "kind": "alias",
+      "question": "How do New Delhi and Beijing get along?",
+      "gold": {
+        "intent": "bilateral",
+        "countries": [
+          "IND",
+          "CHN"
+        ],
+        "time": {
+          "mode": "latest"
+        },
+        "sector": "all",
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "facets": [
+        "bilateral_trade_bloc",
+        "bilateral_diplomacy",
+        "bilateral_events"
+      ],
+      "predicted": {
+        "intent": "bilateral",
+        "countries": [
+          "IND",
+          "CHN"
+        ],
+        "time": {
+          "mode": "latest",
+          "year": null,
+          "date": null,
+          "horizon_year": null
+        },
+        "sector": "all",
+        "severity": null,
+        "metric": "exports",
+        "trade_query": null,
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "score": {
+        "slots": {
+          "intent": true,
+          "countries": true,
+          "time": true,
+          "sector": true,
+          "agents": true
+        },
+        "plan_exact": true,
+        "subject": true,
+        "fallback": false
+      },
+      "consistent": true,
+      "answer": {
+        "agents_asked": 4,
+        "agents_answered": 4,
+        "agent_status": {
+          "soft_power": "ok",
+          "policy_stance": "ok",
+          "trade_intelligence": "ok",
+          "event_summarization": "ok"
+        },
+        "answer_rate": 1.0,
+        "facets_found": [
+          "bilateral_diplomacy",
+          "bilateral_events",
+          "bilateral_trade_bloc"
+        ],
+        "facet_recall": 1.0,
+        "cross_agent_findings": 6,
+        "findings": 36,
+        "top5_confidence": 0.7046,
+        "cited_lines": 39,
+        "claim_lines": 39,
+        "latency_ms": 771.2,
+        "headline": "India and China: trade and diplomacy agree",
+        "live_plan_matches_offline": true
+      }
+    },
+    {
+      "group": "india_china_bilateral",
+      "split": "test",
+      "kind": "reworded",
+      "question": "What is the relationship between China and India like?",
+      "gold": {
+        "intent": "bilateral",
+        "countries": [
+          "IND",
+          "CHN"
+        ],
+        "time": {
+          "mode": "latest"
+        },
+        "sector": "all",
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "facets": [
+        "bilateral_trade_bloc",
+        "bilateral_diplomacy",
+        "bilateral_events"
+      ],
+      "predicted": {
+        "intent": "bilateral",
+        "countries": [
+          "CHN",
+          "IND"
+        ],
+        "time": {
+          "mode": "latest",
+          "year": null,
+          "date": null,
+          "horizon_year": null
+        },
+        "sector": "all",
+        "severity": null,
+        "metric": "exports",
+        "trade_query": null,
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "score": {
+        "slots": {
+          "intent": true,
+          "countries": true,
+          "time": true,
+          "sector": true,
+          "agents": true
+        },
+        "plan_exact": true,
+        "subject": true,
+        "fallback": false
+      },
+      "consistent": true,
+      "answer": {
+        "agents_asked": 4,
+        "agents_answered": 4,
+        "agent_status": {
+          "soft_power": "ok",
+          "policy_stance": "ok",
+          "trade_intelligence": "ok",
+          "event_summarization": "ok"
+        },
+        "answer_rate": 1.0,
+        "facets_found": [
+          "bilateral_diplomacy",
+          "bilateral_events",
+          "bilateral_trade_bloc"
+        ],
+        "facet_recall": 1.0,
+        "cross_agent_findings": 5,
+        "findings": 35,
+        "top5_confidence": 0.6245999999999999,
+        "cited_lines": 38,
+        "claim_lines": 38,
+        "latency_ms": 794.1,
+        "headline": "China and India: trade and diplomacy agree",
+        "live_plan_matches_offline": true
+      }
+    },
+    {
+      "group": "india_china_bilateral",
+      "split": "test",
+      "kind": "alias",
+      "question": "Sino-Indian relations",
+      "gold": {
+        "intent": "bilateral",
+        "countries": [
+          "IND",
+          "CHN"
+        ],
+        "time": {
+          "mode": "latest"
+        },
+        "sector": "all",
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "facets": [
+        "bilateral_trade_bloc",
+        "bilateral_diplomacy",
+        "bilateral_events"
+      ],
+      "predicted": {
+        "intent": "country_profile",
+        "countries": [
+          "IND"
+        ],
+        "time": {
+          "mode": "latest",
+          "year": null,
+          "date": null,
+          "horizon_year": null
+        },
+        "sector": "all",
+        "severity": null,
+        "metric": "exports",
+        "trade_query": null,
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "score": {
+        "slots": {
+          "intent": false,
+          "countries": false,
+          "time": true,
+          "sector": true,
+          "agents": true
+        },
+        "plan_exact": false,
+        "subject": false,
+        "fallback": false
+      },
+      "consistent": false,
+      "answer": {
+        "agents_asked": 4,
+        "agents_answered": 4,
+        "agent_status": {
+          "soft_power": "ok",
+          "policy_stance": "ok",
+          "trade_intelligence": "ok",
+          "event_summarization": "ok"
+        },
+        "answer_rate": 1.0,
+        "facets_found": [],
+        "facet_recall": 0.0,
+        "cross_agent_findings": 4,
+        "findings": 30,
+        "top5_confidence": 0.735,
+        "cited_lines": 35,
+        "claim_lines": 35,
+        "latency_ms": 652.4,
+        "headline": "India: trade and diplomacy point the same way",
+        "live_plan_matches_offline": true
+      }
+    },
+    {
+      "group": "india_china_bilateral",
+      "split": "test",
+      "kind": "typo",
+      "question": "india chian ties",
+      "gold": {
+        "intent": "bilateral",
+        "countries": [
+          "IND",
+          "CHN"
+        ],
+        "time": {
+          "mode": "latest"
+        },
+        "sector": "all",
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "facets": [
+        "bilateral_trade_bloc",
+        "bilateral_diplomacy",
+        "bilateral_events"
+      ],
+      "predicted": {
+        "intent": "country_profile",
+        "countries": [
+          "IND"
+        ],
+        "time": {
+          "mode": "latest",
+          "year": null,
+          "date": null,
+          "horizon_year": null
+        },
+        "sector": "all",
+        "severity": null,
+        "metric": "exports",
+        "trade_query": null,
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "score": {
+        "slots": {
+          "intent": false,
+          "countries": false,
+          "time": true,
+          "sector": true,
+          "agents": true
+        },
+        "plan_exact": false,
+        "subject": false,
+        "fallback": false
+      },
+      "consistent": false,
+      "answer": {
+        "agents_asked": 4,
+        "agents_answered": 4,
+        "agent_status": {
+          "soft_power": "ok",
+          "policy_stance": "ok",
+          "trade_intelligence": "ok",
+          "event_summarization": "ok"
+        },
+        "answer_rate": 1.0,
+        "facets_found": [],
+        "facet_recall": 0.0,
+        "cross_agent_findings": 4,
+        "findings": 30,
+        "top5_confidence": 0.735,
+        "cited_lines": 35,
+        "claim_lines": 35,
+        "latency_ms": 695.1,
+        "headline": "India: trade and diplomacy point the same way",
+        "live_plan_matches_offline": true
+      }
+    },
+    {
+      "group": "india_china_bilateral",
+      "split": "test",
+      "kind": "casual",
+      "question": "india vs china - where do things stand",
+      "gold": {
+        "intent": "bilateral",
+        "countries": [
+          "IND",
+          "CHN"
+        ],
+        "time": {
+          "mode": "latest"
+        },
+        "sector": "all",
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "facets": [
+        "bilateral_trade_bloc",
+        "bilateral_diplomacy",
+        "bilateral_events"
+      ],
+      "predicted": {
+        "intent": "bilateral",
+        "countries": [
+          "IND",
+          "CHN"
+        ],
+        "time": {
+          "mode": "latest",
+          "year": null,
+          "date": null,
+          "horizon_year": null
+        },
+        "sector": "all",
+        "severity": null,
+        "metric": "exports",
+        "trade_query": null,
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "score": {
+        "slots": {
+          "intent": true,
+          "countries": true,
+          "time": true,
+          "sector": true,
+          "agents": true
+        },
+        "plan_exact": true,
+        "subject": true,
+        "fallback": false
+      },
+      "consistent": true,
+      "answer": {
+        "agents_asked": 4,
+        "agents_answered": 4,
+        "agent_status": {
+          "soft_power": "ok",
+          "policy_stance": "ok",
+          "trade_intelligence": "ok",
+          "event_summarization": "ok"
+        },
+        "answer_rate": 1.0,
+        "facets_found": [
+          "bilateral_diplomacy",
+          "bilateral_events",
+          "bilateral_trade_bloc"
+        ],
+        "facet_recall": 1.0,
+        "cross_agent_findings": 6,
+        "findings": 36,
+        "top5_confidence": 0.7046,
+        "cited_lines": 39,
+        "claim_lines": 39,
+        "latency_ms": 800.8,
+        "headline": "India and China: trade and diplomacy agree",
+        "live_plan_matches_offline": true
+      }
+    },
+    {
+      "group": "korea_japan_bilateral",
+      "split": "test",
+      "kind": "original",
+      "question": "South Korea and Japan relations",
+      "gold": {
+        "intent": "bilateral",
+        "countries": [
+          "KOR",
+          "JPN"
+        ],
+        "time": {
+          "mode": "latest"
+        },
+        "sector": "all",
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "facets": [
+        "bilateral_trade_bloc",
+        "bilateral_diplomacy",
+        "bilateral_events"
+      ],
+      "predicted": {
+        "intent": "bilateral",
+        "countries": [
+          "KOR",
+          "JPN"
+        ],
+        "time": {
+          "mode": "latest",
+          "year": null,
+          "date": null,
+          "horizon_year": null
+        },
+        "sector": "all",
+        "severity": null,
+        "metric": "exports",
+        "trade_query": null,
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "score": {
+        "slots": {
+          "intent": true,
+          "countries": true,
+          "time": true,
+          "sector": true,
+          "agents": true
+        },
+        "plan_exact": true,
+        "subject": true,
+        "fallback": false
+      },
+      "consistent": true,
+      "answer": {
+        "agents_asked": 4,
+        "agents_answered": 4,
+        "agent_status": {
+          "soft_power": "ok",
+          "policy_stance": "ok",
+          "trade_intelligence": "ok",
+          "event_summarization": "ok"
+        },
+        "answer_rate": 1.0,
+        "facets_found": [
+          "bilateral_diplomacy",
+          "bilateral_events",
+          "bilateral_trade_bloc"
+        ],
+        "facet_recall": 1.0,
+        "cross_agent_findings": 5,
+        "findings": 35,
+        "top5_confidence": 0.591,
+        "cited_lines": 38,
+        "claim_lines": 38,
+        "latency_ms": 787.9,
+        "headline": "South Korea and Japan: trade and diplomacy agree",
+        "live_plan_matches_offline": true
+      }
+    },
+    {
+      "group": "korea_japan_bilateral",
+      "split": "test",
+      "kind": "alias",
+      "question": "Seoul-Tokyo ties",
+      "gold": {
+        "intent": "bilateral",
+        "countries": [
+          "KOR",
+          "JPN"
+        ],
+        "time": {
+          "mode": "latest"
+        },
+        "sector": "all",
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "facets": [
+        "bilateral_trade_bloc",
+        "bilateral_diplomacy",
+        "bilateral_events"
+      ],
+      "predicted": {
+        "intent": "bilateral",
+        "countries": [
+          "KOR",
+          "JPN"
+        ],
+        "time": {
+          "mode": "latest",
+          "year": null,
+          "date": null,
+          "horizon_year": null
+        },
+        "sector": "all",
+        "severity": null,
+        "metric": "exports",
+        "trade_query": null,
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "score": {
+        "slots": {
+          "intent": true,
+          "countries": true,
+          "time": true,
+          "sector": true,
+          "agents": true
+        },
+        "plan_exact": true,
+        "subject": true,
+        "fallback": false
+      },
+      "consistent": true,
+      "answer": {
+        "agents_asked": 4,
+        "agents_answered": 4,
+        "agent_status": {
+          "soft_power": "ok",
+          "policy_stance": "ok",
+          "trade_intelligence": "ok",
+          "event_summarization": "ok"
+        },
+        "answer_rate": 1.0,
+        "facets_found": [
+          "bilateral_diplomacy",
+          "bilateral_events",
+          "bilateral_trade_bloc"
+        ],
+        "facet_recall": 1.0,
+        "cross_agent_findings": 5,
+        "findings": 35,
+        "top5_confidence": 0.591,
+        "cited_lines": 38,
+        "claim_lines": 38,
+        "latency_ms": 859.9,
+        "headline": "South Korea and Japan: trade and diplomacy agree",
+        "live_plan_matches_offline": true
+      }
+    },
+    {
+      "group": "korea_japan_bilateral",
+      "split": "test",
+      "kind": "alias",
+      "question": "ROK and Japan relations",
+      "gold": {
+        "intent": "bilateral",
+        "countries": [
+          "KOR",
+          "JPN"
+        ],
+        "time": {
+          "mode": "latest"
+        },
+        "sector": "all",
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "facets": [
+        "bilateral_trade_bloc",
+        "bilateral_diplomacy",
+        "bilateral_events"
+      ],
+      "predicted": {
+        "intent": "country_profile",
+        "countries": [
+          "JPN"
+        ],
+        "time": {
+          "mode": "latest",
+          "year": null,
+          "date": null,
+          "horizon_year": null
+        },
+        "sector": "all",
+        "severity": null,
+        "metric": "exports",
+        "trade_query": null,
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "score": {
+        "slots": {
+          "intent": false,
+          "countries": false,
+          "time": true,
+          "sector": true,
+          "agents": true
+        },
+        "plan_exact": false,
+        "subject": false,
+        "fallback": false
+      },
+      "consistent": false,
+      "answer": {
+        "agents_asked": 4,
+        "agents_answered": 4,
+        "agent_status": {
+          "soft_power": "ok",
+          "policy_stance": "ok",
+          "trade_intelligence": "ok",
+          "event_summarization": "ok"
+        },
+        "answer_rate": 1.0,
+        "facets_found": [],
+        "facet_recall": 0.0,
+        "cross_agent_findings": 4,
+        "findings": 30,
+        "top5_confidence": 0.4658,
+        "cited_lines": 35,
+        "claim_lines": 35,
+        "latency_ms": 646.3,
+        "headline": "Japan: cooperative coverage with a critical trade partner",
+        "live_plan_matches_offline": true
+      }
+    },
+    {
+      "group": "korea_japan_bilateral",
+      "split": "test",
+      "kind": "reworded",
+      "question": "How do South Korea and Japan get along?",
+      "gold": {
+        "intent": "bilateral",
+        "countries": [
+          "KOR",
+          "JPN"
+        ],
+        "time": {
+          "mode": "latest"
+        },
+        "sector": "all",
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "facets": [
+        "bilateral_trade_bloc",
+        "bilateral_diplomacy",
+        "bilateral_events"
+      ],
+      "predicted": {
+        "intent": "bilateral",
+        "countries": [
+          "KOR",
+          "JPN"
+        ],
+        "time": {
+          "mode": "latest",
+          "year": null,
+          "date": null,
+          "horizon_year": null
+        },
+        "sector": "all",
+        "severity": null,
+        "metric": "exports",
+        "trade_query": null,
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "score": {
+        "slots": {
+          "intent": true,
+          "countries": true,
+          "time": true,
+          "sector": true,
+          "agents": true
+        },
+        "plan_exact": true,
+        "subject": true,
+        "fallback": false
+      },
+      "consistent": true,
+      "answer": {
+        "agents_asked": 4,
+        "agents_answered": 4,
+        "agent_status": {
+          "soft_power": "ok",
+          "policy_stance": "ok",
+          "trade_intelligence": "ok",
+          "event_summarization": "ok"
+        },
+        "answer_rate": 1.0,
+        "facets_found": [
+          "bilateral_diplomacy",
+          "bilateral_events",
+          "bilateral_trade_bloc"
+        ],
+        "facet_recall": 1.0,
+        "cross_agent_findings": 5,
+        "findings": 35,
+        "top5_confidence": 0.591,
+        "cited_lines": 38,
+        "claim_lines": 38,
+        "latency_ms": 783.0,
+        "headline": "South Korea and Japan: trade and diplomacy agree",
+        "live_plan_matches_offline": true
+      }
+    },
+    {
+      "group": "korea_japan_bilateral",
+      "split": "test",
+      "kind": "typo",
+      "question": "south korea japn relations",
+      "gold": {
+        "intent": "bilateral",
+        "countries": [
+          "KOR",
+          "JPN"
+        ],
+        "time": {
+          "mode": "latest"
+        },
+        "sector": "all",
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "facets": [
+        "bilateral_trade_bloc",
+        "bilateral_diplomacy",
+        "bilateral_events"
+      ],
+      "predicted": {
+        "intent": "country_profile",
+        "countries": [
+          "KOR"
+        ],
+        "time": {
+          "mode": "latest",
+          "year": null,
+          "date": null,
+          "horizon_year": null
+        },
+        "sector": "all",
+        "severity": null,
+        "metric": "exports",
+        "trade_query": null,
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "score": {
+        "slots": {
+          "intent": false,
+          "countries": false,
+          "time": true,
+          "sector": true,
+          "agents": true
+        },
+        "plan_exact": false,
+        "subject": false,
+        "fallback": false
+      },
+      "consistent": false,
+      "answer": {
+        "agents_asked": 4,
+        "agents_answered": 4,
+        "agent_status": {
+          "soft_power": "ok",
+          "policy_stance": "ok",
+          "trade_intelligence": "ok",
+          "event_summarization": "ok"
+        },
+        "answer_rate": 1.0,
+        "facets_found": [],
+        "facet_recall": 0.0,
+        "cross_agent_findings": 4,
+        "findings": 30,
+        "top5_confidence": 0.7036,
+        "cited_lines": 35,
+        "claim_lines": 35,
+        "latency_ms": 700.2,
+        "headline": "South Korea: economic and diplomatic alignment diverge",
+        "live_plan_matches_offline": true
+      }
+    },
+    {
+      "group": "us_russia_2015",
+      "split": "test",
+      "kind": "original",
+      "question": "Compare the US and Russia in 2015",
+      "gold": {
+        "intent": "bilateral",
+        "countries": [
+          "USA",
+          "RUS"
+        ],
+        "time": {
+          "mode": "year",
+          "year": 2015
+        },
+        "sector": "all",
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "facets": [
+        "bilateral_trade_bloc",
+        "bilateral_diplomacy"
+      ],
+      "predicted": {
+        "intent": "bilateral",
+        "countries": [
+          "USA",
+          "RUS"
+        ],
+        "time": {
+          "mode": "year",
+          "year": 2015,
+          "date": null,
+          "horizon_year": null
+        },
+        "sector": "all",
+        "severity": null,
+        "metric": "exports",
+        "trade_query": null,
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "score": {
+        "slots": {
+          "intent": true,
+          "countries": true,
+          "time": true,
+          "sector": true,
+          "agents": true
+        },
+        "plan_exact": true,
+        "subject": true,
+        "fallback": false
+      },
+      "consistent": true,
+      "answer": {
+        "agents_asked": 4,
+        "agents_answered": 4,
+        "agent_status": {
+          "soft_power": "ok",
+          "policy_stance": "ok",
+          "trade_intelligence": "ok",
+          "event_summarization": "ok"
+        },
+        "answer_rate": 1.0,
+        "facets_found": [
+          "bilateral_diplomacy",
+          "bilateral_trade_bloc"
+        ],
+        "facet_recall": 1.0,
+        "cross_agent_findings": 5,
+        "findings": 30,
+        "top5_confidence": 0.431,
+        "cited_lines": 32,
+        "claim_lines": 32,
+        "latency_ms": 819.6,
+        "headline": "United States and Russia: trade and diplomacy agree",
+        "live_plan_matches_offline": true
+      }
+    },
+    {
+      "group": "us_russia_2015",
+      "split": "test",
+      "kind": "alias",
+      "question": "How did Washington and Moscow relate in 2015?",
+      "gold": {
+        "intent": "bilateral",
+        "countries": [
+          "USA",
+          "RUS"
+        ],
+        "time": {
+          "mode": "year",
+          "year": 2015
+        },
+        "sector": "all",
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "facets": [
+        "bilateral_trade_bloc",
+        "bilateral_diplomacy"
+      ],
+      "predicted": {
+        "intent": "bilateral",
+        "countries": [
+          "USA",
+          "RUS"
+        ],
+        "time": {
+          "mode": "year",
+          "year": 2015,
+          "date": null,
+          "horizon_year": null
+        },
+        "sector": "all",
+        "severity": null,
+        "metric": "exports",
+        "trade_query": null,
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "score": {
+        "slots": {
+          "intent": true,
+          "countries": true,
+          "time": true,
+          "sector": true,
+          "agents": true
+        },
+        "plan_exact": true,
+        "subject": true,
+        "fallback": false
+      },
+      "consistent": true,
+      "answer": {
+        "agents_asked": 4,
+        "agents_answered": 4,
+        "agent_status": {
+          "soft_power": "ok",
+          "policy_stance": "ok",
+          "trade_intelligence": "ok",
+          "event_summarization": "ok"
+        },
+        "answer_rate": 1.0,
+        "facets_found": [
+          "bilateral_diplomacy",
+          "bilateral_trade_bloc"
+        ],
+        "facet_recall": 1.0,
+        "cross_agent_findings": 5,
+        "findings": 30,
+        "top5_confidence": 0.431,
+        "cited_lines": 32,
+        "claim_lines": 32,
+        "latency_ms": 812.5,
+        "headline": "United States and Russia: trade and diplomacy agree",
+        "live_plan_matches_offline": true
+      }
+    },
+    {
+      "group": "us_russia_2015",
+      "split": "test",
+      "kind": "reworded",
+      "question": "US-Russia relations in 2015",
+      "gold": {
+        "intent": "bilateral",
+        "countries": [
+          "USA",
+          "RUS"
+        ],
+        "time": {
+          "mode": "year",
+          "year": 2015
+        },
+        "sector": "all",
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "facets": [
+        "bilateral_trade_bloc",
+        "bilateral_diplomacy"
+      ],
+      "predicted": {
+        "intent": "bilateral",
+        "countries": [
+          "USA",
+          "RUS"
+        ],
+        "time": {
+          "mode": "year",
+          "year": 2015,
+          "date": null,
+          "horizon_year": null
+        },
+        "sector": "all",
+        "severity": null,
+        "metric": "exports",
+        "trade_query": null,
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "score": {
+        "slots": {
+          "intent": true,
+          "countries": true,
+          "time": true,
+          "sector": true,
+          "agents": true
+        },
+        "plan_exact": true,
+        "subject": true,
+        "fallback": false
+      },
+      "consistent": true,
+      "answer": {
+        "agents_asked": 4,
+        "agents_answered": 4,
+        "agent_status": {
+          "soft_power": "ok",
+          "policy_stance": "ok",
+          "trade_intelligence": "ok",
+          "event_summarization": "ok"
+        },
+        "answer_rate": 1.0,
+        "facets_found": [
+          "bilateral_diplomacy",
+          "bilateral_trade_bloc"
+        ],
+        "facet_recall": 1.0,
+        "cross_agent_findings": 5,
+        "findings": 30,
+        "top5_confidence": 0.431,
+        "cited_lines": 32,
+        "claim_lines": 32,
+        "latency_ms": 813.0,
+        "headline": "United States and Russia: trade and diplomacy agree",
+        "live_plan_matches_offline": true
+      }
+    },
+    {
+      "group": "us_russia_2015",
+      "split": "test",
+      "kind": "casual",
+      "question": "america vs russia back in 2015",
+      "gold": {
+        "intent": "bilateral",
+        "countries": [
+          "USA",
+          "RUS"
+        ],
+        "time": {
+          "mode": "year",
+          "year": 2015
+        },
+        "sector": "all",
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "facets": [
+        "bilateral_trade_bloc",
+        "bilateral_diplomacy"
+      ],
+      "predicted": {
+        "intent": "bilateral",
+        "countries": [
+          "USA",
+          "RUS"
+        ],
+        "time": {
+          "mode": "year",
+          "year": 2015,
+          "date": null,
+          "horizon_year": null
+        },
+        "sector": "all",
+        "severity": null,
+        "metric": "exports",
+        "trade_query": null,
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "score": {
+        "slots": {
+          "intent": true,
+          "countries": true,
+          "time": true,
+          "sector": true,
+          "agents": true
+        },
+        "plan_exact": true,
+        "subject": true,
+        "fallback": false
+      },
+      "consistent": true,
+      "answer": {
+        "agents_asked": 4,
+        "agents_answered": 4,
+        "agent_status": {
+          "soft_power": "ok",
+          "policy_stance": "ok",
+          "trade_intelligence": "ok",
+          "event_summarization": "ok"
+        },
+        "answer_rate": 1.0,
+        "facets_found": [
+          "bilateral_diplomacy",
+          "bilateral_trade_bloc"
+        ],
+        "facet_recall": 1.0,
+        "cross_agent_findings": 5,
+        "findings": 30,
+        "top5_confidence": 0.431,
+        "cited_lines": 32,
+        "claim_lines": 32,
+        "latency_ms": 868.5,
+        "headline": "United States and Russia: trade and diplomacy agree",
+        "live_plan_matches_offline": true
+      }
+    },
+    {
+      "group": "us_russia_2015",
+      "split": "test",
+      "kind": "typo",
+      "question": "compare the usa and rusia in 2015",
+      "gold": {
+        "intent": "bilateral",
+        "countries": [
+          "USA",
+          "RUS"
+        ],
+        "time": {
+          "mode": "year",
+          "year": 2015
+        },
+        "sector": "all",
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "facets": [
+        "bilateral_trade_bloc",
+        "bilateral_diplomacy"
+      ],
+      "predicted": {
+        "intent": "ranking",
+        "countries": [],
+        "time": {
+          "mode": "year",
+          "year": 2015,
+          "date": null,
+          "horizon_year": null
+        },
+        "sector": "all",
+        "severity": null,
+        "metric": "exports",
+        "trade_query": "risk",
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence"
+        ]
+      },
+      "score": {
+        "slots": {
+          "intent": false,
+          "countries": false,
+          "time": true,
+          "sector": true,
+          "agents": false
+        },
+        "plan_exact": false,
+        "subject": false,
+        "fallback": true
+      },
+      "consistent": false,
+      "answer": {
+        "agents_asked": 3,
+        "agents_answered": 3,
+        "agent_status": {
+          "soft_power": "ok",
+          "policy_stance": "ok",
+          "trade_intelligence": "ok"
+        },
+        "answer_rate": 1.0,
+        "facets_found": [],
+        "facet_recall": 0.0,
+        "cross_agent_findings": 0,
+        "findings": 21,
+        "top5_confidence": 0.9306000000000001,
+        "cited_lines": 24,
+        "claim_lines": 24,
+        "latency_ms": 126.8,
+        "headline": "Global overview",
+        "live_plan_matches_offline": true
+      }
+    },
+    {
+      "group": "russia_energy_half_shock",
+      "split": "test",
+      "kind": "original",
+      "question": "What if Russia cuts its energy exports by 50%?",
+      "gold": {
+        "intent": "shock",
+        "countries": [
+          "RUS"
+        ],
+        "time": {
+          "mode": "latest"
+        },
+        "sector": "energy",
+        "severity": 0.5,
+        "agents": [
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "facets": [
+        "shock_impact"
+      ],
+      "predicted": {
+        "intent": "shock",
+        "countries": [
+          "RUS"
+        ],
+        "time": {
+          "mode": "latest",
+          "year": null,
+          "date": null,
+          "horizon_year": null
+        },
+        "sector": "energy",
+        "severity": 0.5,
+        "metric": "exports",
+        "trade_query": null,
+        "agents": [
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "score": {
+        "slots": {
+          "intent": true,
+          "countries": true,
+          "time": true,
+          "sector": true,
+          "severity": true,
+          "agents": true
+        },
+        "plan_exact": true,
+        "subject": true,
+        "fallback": false
+      },
+      "consistent": true,
+      "answer": {
+        "agents_asked": 3,
+        "agents_answered": 3,
+        "agent_status": {
+          "policy_stance": "ok",
+          "trade_intelligence": "ok",
+          "event_summarization": "ok"
+        },
+        "answer_rate": 1.0,
+        "facets_found": [
+          "shock_impact"
+        ],
+        "facet_recall": 1.0,
+        "cross_agent_findings": 3,
+        "findings": 25,
+        "top5_confidence": 0.5374,
+        "cited_lines": 30,
+        "claim_lines": 30,
+        "latency_ms": 256.0,
+        "headline": "What a 50% cut in Russia's energy exports would do",
+        "live_plan_matches_offline": true
+      }
+    },
+    {
+      "group": "russia_energy_half_shock",
+      "split": "test",
+      "kind": "numeric",
+      "question": "What if Russia halves its oil and gas exports?",
+      "gold": {
+        "intent": "shock",
+        "countries": [
+          "RUS"
+        ],
+        "time": {
+          "mode": "latest"
+        },
+        "sector": "energy",
+        "severity": 0.5,
+        "agents": [
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "facets": [
+        "shock_impact"
+      ],
+      "predicted": {
+        "intent": "shock",
+        "countries": [
+          "RUS"
+        ],
+        "time": {
+          "mode": "latest",
+          "year": null,
+          "date": null,
+          "horizon_year": null
+        },
+        "sector": "energy",
+        "severity": 0.5,
+        "metric": "exports",
+        "trade_query": null,
+        "agents": [
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "score": {
+        "slots": {
+          "intent": true,
+          "countries": true,
+          "time": true,
+          "sector": true,
+          "severity": true,
+          "agents": true
+        },
+        "plan_exact": true,
+        "subject": true,
+        "fallback": false
+      },
+      "consistent": true,
+      "answer": {
+        "agents_asked": 3,
+        "agents_answered": 3,
+        "agent_status": {
+          "policy_stance": "ok",
+          "trade_intelligence": "ok",
+          "event_summarization": "ok"
+        },
+        "answer_rate": 1.0,
+        "facets_found": [
+          "shock_impact"
+        ],
+        "facet_recall": 1.0,
+        "cross_agent_findings": 3,
+        "findings": 25,
+        "top5_confidence": 0.5374,
+        "cited_lines": 30,
+        "claim_lines": 30,
+        "latency_ms": 271.7,
+        "headline": "What a 50% cut in Russia's energy exports would do",
+        "live_plan_matches_offline": true
+      }
+    },
+    {
+      "group": "russia_energy_half_shock",
+      "split": "test",
+      "kind": "numeric",
+      "question": "Moscow reduces fuel exports by half - impact?",
+      "gold": {
+        "intent": "shock",
+        "countries": [
+          "RUS"
+        ],
+        "time": {
+          "mode": "latest"
+        },
+        "sector": "energy",
+        "severity": 0.5,
+        "agents": [
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "facets": [
+        "shock_impact"
+      ],
+      "predicted": {
+        "intent": "country_profile",
+        "countries": [
+          "RUS"
+        ],
+        "time": {
+          "mode": "latest",
+          "year": null,
+          "date": null,
+          "horizon_year": null
+        },
+        "sector": "energy",
+        "severity": null,
+        "metric": "exports",
+        "trade_query": null,
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "score": {
+        "slots": {
+          "intent": false,
+          "countries": true,
+          "time": true,
+          "sector": true,
+          "severity": false,
+          "agents": false
+        },
+        "plan_exact": false,
+        "subject": true,
+        "fallback": false
+      },
+      "consistent": false,
+      "answer": {
+        "agents_asked": 4,
+        "agents_answered": 4,
+        "agent_status": {
+          "soft_power": "ok",
+          "policy_stance": "ok",
+          "trade_intelligence": "ok",
+          "event_summarization": "ok"
+        },
+        "answer_rate": 1.0,
+        "facets_found": [],
+        "facet_recall": 0.0,
+        "cross_agent_findings": 6,
+        "findings": 32,
+        "top5_confidence": 0.40240000000000004,
+        "cited_lines": 37,
+        "claim_lines": 37,
+        "latency_ms": 411.5,
+        "headline": "Russia: cooperative coverage with a critical trade partner",
+        "live_plan_matches_offline": true
+      }
+    },
+    {
+      "group": "russia_energy_half_shock",
+      "split": "test",
+      "kind": "reworded",
+      "question": "Simulate a 50 percent drop in Russian energy exports",
+      "gold": {
+        "intent": "shock",
+        "countries": [
+          "RUS"
+        ],
+        "time": {
+          "mode": "latest"
+        },
+        "sector": "energy",
+        "severity": 0.5,
+        "agents": [
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "facets": [
+        "shock_impact"
+      ],
+      "predicted": {
+        "intent": "country_profile",
+        "countries": [
+          "RUS"
+        ],
+        "time": {
+          "mode": "latest",
+          "year": null,
+          "date": null,
+          "horizon_year": null
+        },
+        "sector": "energy",
+        "severity": null,
+        "metric": "exports",
+        "trade_query": null,
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "score": {
+        "slots": {
+          "intent": false,
+          "countries": true,
+          "time": true,
+          "sector": true,
+          "severity": false,
+          "agents": false
+        },
+        "plan_exact": false,
+        "subject": true,
+        "fallback": false
+      },
+      "consistent": false,
+      "answer": {
+        "agents_asked": 4,
+        "agents_answered": 4,
+        "agent_status": {
+          "soft_power": "ok",
+          "policy_stance": "ok",
+          "trade_intelligence": "ok",
+          "event_summarization": "ok"
+        },
+        "answer_rate": 1.0,
+        "facets_found": [],
+        "facet_recall": 0.0,
+        "cross_agent_findings": 6,
+        "findings": 32,
+        "top5_confidence": 0.40240000000000004,
+        "cited_lines": 37,
+        "claim_lines": 37,
+        "latency_ms": 431.6,
+        "headline": "Russia: cooperative coverage with a critical trade partner",
+        "live_plan_matches_offline": true
+      }
+    },
+    {
+      "group": "russia_energy_half_shock",
+      "split": "test",
+      "kind": "casual",
+      "question": "russia energy exports cut in half, who suffers",
+      "gold": {
+        "intent": "shock",
+        "countries": [
+          "RUS"
+        ],
+        "time": {
+          "mode": "latest"
+        },
+        "sector": "energy",
+        "severity": 0.5,
+        "agents": [
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "facets": [
+        "shock_impact"
+      ],
+      "predicted": {
+        "intent": "country_profile",
+        "countries": [
+          "RUS"
+        ],
+        "time": {
+          "mode": "latest",
+          "year": null,
+          "date": null,
+          "horizon_year": null
+        },
+        "sector": "energy",
+        "severity": null,
+        "metric": "exports",
+        "trade_query": null,
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "score": {
+        "slots": {
+          "intent": false,
+          "countries": true,
+          "time": true,
+          "sector": true,
+          "severity": false,
+          "agents": false
+        },
+        "plan_exact": false,
+        "subject": true,
+        "fallback": false
+      },
+      "consistent": false,
+      "answer": {
+        "agents_asked": 4,
+        "agents_answered": 4,
+        "agent_status": {
+          "soft_power": "ok",
+          "policy_stance": "ok",
+          "trade_intelligence": "ok",
+          "event_summarization": "ok"
+        },
+        "answer_rate": 1.0,
+        "facets_found": [],
+        "facet_recall": 0.0,
+        "cross_agent_findings": 6,
+        "findings": 32,
+        "top5_confidence": 0.40240000000000004,
+        "cited_lines": 37,
+        "claim_lines": 37,
+        "latency_ms": 427.0,
+        "headline": "Russia: cooperative coverage with a critical trade partner",
+        "live_plan_matches_offline": true
+      }
+    },
+    {
+      "group": "japan_forecast_relative",
+      "split": "test",
+      "kind": "original",
+      "question": "Forecast Japan's exports to 2031",
+      "gold": {
+        "intent": "forecast",
+        "countries": [
+          "JPN"
+        ],
+        "time": {
+          "mode": "latest",
+          "horizon_year": 2031
+        },
+        "sector": "all",
+        "metric": "exports",
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence"
+        ]
+      },
+      "facets": [
+        "trade_outlook"
+      ],
+      "predicted": {
+        "intent": "forecast",
+        "countries": [
+          "JPN"
+        ],
+        "time": {
+          "mode": "latest",
+          "year": null,
+          "date": null,
+          "horizon_year": 2031
+        },
+        "sector": "all",
+        "severity": null,
+        "metric": "exports",
+        "trade_query": null,
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence"
+        ]
+      },
+      "score": {
+        "slots": {
+          "intent": true,
+          "countries": true,
+          "time": true,
+          "sector": true,
+          "metric": true,
+          "agents": true
+        },
+        "plan_exact": true,
+        "subject": true,
+        "fallback": false
+      },
+      "consistent": true,
+      "answer": {
+        "agents_asked": 3,
+        "agents_answered": 3,
+        "agent_status": {
+          "soft_power": "ok",
+          "policy_stance": "ok",
+          "trade_intelligence": "ok"
+        },
+        "answer_rate": 1.0,
+        "facets_found": [
+          "trade_outlook"
+        ],
+        "facet_recall": 1.0,
+        "cross_agent_findings": 1,
+        "findings": 11,
+        "top5_confidence": 0.8854,
+        "cited_lines": 15,
+        "claim_lines": 15,
+        "latency_ms": 413.1,
+        "headline": "Japan: economic and soft-power momentum agree",
+        "live_plan_matches_offline": true
+      }
+    },
+    {
+      "group": "japan_forecast_relative",
+      "split": "test",
+      "kind": "numeric",
+      "question": "Where will Japan's exports be in five years?",
+      "gold": {
+        "intent": "forecast",
+        "countries": [
+          "JPN"
+        ],
+        "time": {
+          "mode": "latest",
+          "horizon_year": 2031
+        },
+        "sector": "all",
+        "metric": "exports",
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence"
+        ]
+      },
+      "facets": [
+        "trade_outlook"
+      ],
+      "predicted": {
+        "intent": "country_profile",
+        "countries": [
+          "JPN"
+        ],
+        "time": {
+          "mode": "latest",
+          "year": null,
+          "date": null,
+          "horizon_year": null
+        },
+        "sector": "all",
+        "severity": null,
+        "metric": "exports",
+        "trade_query": null,
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "score": {
+        "slots": {
+          "intent": false,
+          "countries": true,
+          "time": false,
+          "sector": true,
+          "metric": true,
+          "agents": false
+        },
+        "plan_exact": false,
+        "subject": true,
+        "fallback": false
+      },
+      "consistent": false,
+      "answer": {
+        "agents_asked": 4,
+        "agents_answered": 4,
+        "agent_status": {
+          "soft_power": "ok",
+          "policy_stance": "ok",
+          "trade_intelligence": "ok",
+          "event_summarization": "ok"
+        },
+        "answer_rate": 1.0,
+        "facets_found": [],
+        "facet_recall": 0.0,
+        "cross_agent_findings": 4,
+        "findings": 30,
+        "top5_confidence": 0.4658,
+        "cited_lines": 35,
+        "claim_lines": 35,
+        "latency_ms": 660.4,
+        "headline": "Japan: cooperative coverage with a critical trade partner",
+        "live_plan_matches_offline": true
+      }
+    },
+    {
+      "group": "japan_forecast_relative",
+      "split": "test",
+      "kind": "numeric",
+      "question": "Japan export forecast for the next 5 years",
+      "gold": {
+        "intent": "forecast",
+        "countries": [
+          "JPN"
+        ],
+        "time": {
+          "mode": "latest",
+          "horizon_year": 2031
+        },
+        "sector": "all",
+        "metric": "exports",
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence"
+        ]
+      },
+      "facets": [
+        "trade_outlook"
+      ],
+      "predicted": {
+        "intent": "forecast",
+        "countries": [
+          "JPN"
+        ],
+        "time": {
+          "mode": "latest",
+          "year": null,
+          "date": null,
+          "horizon_year": null
+        },
+        "sector": "all",
+        "severity": null,
+        "metric": "exports",
+        "trade_query": null,
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence"
+        ]
+      },
+      "score": {
+        "slots": {
+          "intent": true,
+          "countries": true,
+          "time": false,
+          "sector": true,
+          "metric": true,
+          "agents": true
+        },
+        "plan_exact": false,
+        "subject": true,
+        "fallback": false
+      },
+      "consistent": false,
+      "answer": {
+        "agents_asked": 3,
+        "agents_answered": 3,
+        "agent_status": {
+          "soft_power": "ok",
+          "policy_stance": "ok",
+          "trade_intelligence": "ok"
+        },
+        "answer_rate": 1.0,
+        "facets_found": [
+          "trade_outlook"
+        ],
+        "facet_recall": 1.0,
+        "cross_agent_findings": 1,
+        "findings": 11,
+        "top5_confidence": 0.8854,
+        "cited_lines": 15,
+        "claim_lines": 15,
+        "latency_ms": 411.4,
+        "headline": "Japan: economic and soft-power momentum agree",
+        "live_plan_matches_offline": true
+      }
+    },
+    {
+      "group": "japan_forecast_relative",
+      "split": "test",
+      "kind": "casual",
+      "question": "japanese exports 5 yrs out",
+      "gold": {
+        "intent": "forecast",
+        "countries": [
+          "JPN"
+        ],
+        "time": {
+          "mode": "latest",
+          "horizon_year": 2031
+        },
+        "sector": "all",
+        "metric": "exports",
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence"
+        ]
+      },
+      "facets": [
+        "trade_outlook"
+      ],
+      "predicted": {
+        "intent": "country_profile",
+        "countries": [
+          "JPN"
+        ],
+        "time": {
+          "mode": "latest",
+          "year": null,
+          "date": null,
+          "horizon_year": null
+        },
+        "sector": "all",
+        "severity": null,
+        "metric": "exports",
+        "trade_query": null,
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "score": {
+        "slots": {
+          "intent": false,
+          "countries": true,
+          "time": false,
+          "sector": true,
+          "metric": true,
+          "agents": false
+        },
+        "plan_exact": false,
+        "subject": true,
+        "fallback": false
+      },
+      "consistent": false,
+      "answer": {
+        "agents_asked": 4,
+        "agents_answered": 4,
+        "agent_status": {
+          "soft_power": "ok",
+          "policy_stance": "ok",
+          "trade_intelligence": "ok",
+          "event_summarization": "ok"
+        },
+        "answer_rate": 1.0,
+        "facets_found": [],
+        "facet_recall": 0.0,
+        "cross_agent_findings": 4,
+        "findings": 30,
+        "top5_confidence": 0.4658,
+        "cited_lines": 35,
+        "claim_lines": 35,
+        "latency_ms": 684.1,
+        "headline": "Japan: cooperative coverage with a critical trade partner",
+        "live_plan_matches_offline": true
+      }
+    },
+    {
+      "group": "soft_power_ranking",
+      "split": "test",
+      "kind": "original",
+      "question": "Which countries have the most soft power?",
+      "gold": {
+        "intent": "ranking",
+        "countries": [],
+        "time": {
+          "mode": "latest"
+        },
+        "sector": "all",
+        "agents": [
+          "soft_power"
+        ]
+      },
+      "facets": [
+        "influence"
+      ],
+      "predicted": {
+        "intent": "ranking",
+        "countries": [],
+        "time": {
+          "mode": "latest",
+          "year": null,
+          "date": null,
+          "horizon_year": null
+        },
+        "sector": "all",
+        "severity": null,
+        "metric": "exports",
+        "trade_query": "risk",
+        "agents": [
+          "soft_power"
+        ]
+      },
+      "score": {
+        "slots": {
+          "intent": true,
+          "countries": true,
+          "time": true,
+          "sector": true,
+          "agents": true
+        },
+        "plan_exact": true,
+        "subject": true,
+        "fallback": false
+      },
+      "consistent": true,
+      "answer": {
+        "agents_asked": 1,
+        "agents_answered": 1,
+        "agent_status": {
+          "soft_power": "ok"
+        },
+        "answer_rate": 1.0,
+        "facets_found": [
+          "influence"
+        ],
+        "facet_recall": 1.0,
+        "cross_agent_findings": 0,
+        "findings": 10,
+        "top5_confidence": 0.873,
+        "cited_lines": 11,
+        "claim_lines": 11,
+        "latency_ms": 0.5,
+        "headline": "Global overview",
+        "live_plan_matches_offline": true
+      }
+    },
+    {
+      "group": "soft_power_ranking",
+      "split": "test",
+      "kind": "reworded",
+      "question": "Top 10 countries by global influence",
+      "gold": {
+        "intent": "ranking",
+        "countries": [],
+        "time": {
+          "mode": "latest"
+        },
+        "sector": "all",
+        "agents": [
+          "soft_power"
+        ]
+      },
+      "facets": [
+        "influence"
+      ],
+      "predicted": {
+        "intent": "ranking",
+        "countries": [],
+        "time": {
+          "mode": "latest",
+          "year": null,
+          "date": null,
+          "horizon_year": null
+        },
+        "sector": "all",
+        "severity": null,
+        "metric": "exports",
+        "trade_query": "risk",
+        "agents": [
+          "soft_power"
+        ]
+      },
+      "score": {
+        "slots": {
+          "intent": true,
+          "countries": true,
+          "time": true,
+          "sector": true,
+          "agents": true
+        },
+        "plan_exact": true,
+        "subject": true,
+        "fallback": false
+      },
+      "consistent": true,
+      "answer": {
+        "agents_asked": 1,
+        "agents_answered": 1,
+        "agent_status": {
+          "soft_power": "ok"
+        },
+        "answer_rate": 1.0,
+        "facets_found": [
+          "influence"
+        ],
+        "facet_recall": 1.0,
+        "cross_agent_findings": 0,
+        "findings": 10,
+        "top5_confidence": 0.873,
+        "cited_lines": 11,
+        "claim_lines": 11,
+        "latency_ms": 0.5,
+        "headline": "Global overview",
+        "live_plan_matches_offline": true
+      }
+    },
+    {
+      "group": "soft_power_ranking",
+      "split": "test",
+      "kind": "reworded",
+      "question": "Rank nations by cultural influence",
+      "gold": {
+        "intent": "ranking",
+        "countries": [],
+        "time": {
+          "mode": "latest"
+        },
+        "sector": "all",
+        "agents": [
+          "soft_power"
+        ]
+      },
+      "facets": [
+        "influence"
+      ],
+      "predicted": {
+        "intent": "ranking",
+        "countries": [],
+        "time": {
+          "mode": "latest",
+          "year": null,
+          "date": null,
+          "horizon_year": null
+        },
+        "sector": "all",
+        "severity": null,
+        "metric": "exports",
+        "trade_query": "risk",
+        "agents": [
+          "soft_power"
+        ]
+      },
+      "score": {
+        "slots": {
+          "intent": true,
+          "countries": true,
+          "time": true,
+          "sector": true,
+          "agents": true
+        },
+        "plan_exact": true,
+        "subject": true,
+        "fallback": false
+      },
+      "consistent": true,
+      "answer": {
+        "agents_asked": 1,
+        "agents_answered": 1,
+        "agent_status": {
+          "soft_power": "ok"
+        },
+        "answer_rate": 1.0,
+        "facets_found": [
+          "influence"
+        ],
+        "facet_recall": 1.0,
+        "cross_agent_findings": 0,
+        "findings": 10,
+        "top5_confidence": 0.873,
+        "cited_lines": 11,
+        "claim_lines": 11,
+        "latency_ms": 0.5,
+        "headline": "Global overview",
+        "live_plan_matches_offline": true
+      }
+    },
+    {
+      "group": "soft_power_ranking",
+      "split": "test",
+      "kind": "reworded",
+      "question": "Most attractive countries in terms of reputation",
+      "gold": {
+        "intent": "ranking",
+        "countries": [],
+        "time": {
+          "mode": "latest"
+        },
+        "sector": "all",
+        "agents": [
+          "soft_power"
+        ]
+      },
+      "facets": [
+        "influence"
+      ],
+      "predicted": {
+        "intent": "ranking",
+        "countries": [],
+        "time": {
+          "mode": "latest",
+          "year": null,
+          "date": null,
+          "horizon_year": null
+        },
+        "sector": "all",
+        "severity": null,
+        "metric": "exports",
+        "trade_query": "risk",
+        "agents": [
+          "soft_power"
+        ]
+      },
+      "score": {
+        "slots": {
+          "intent": true,
+          "countries": true,
+          "time": true,
+          "sector": true,
+          "agents": true
+        },
+        "plan_exact": true,
+        "subject": true,
+        "fallback": false
+      },
+      "consistent": true,
+      "answer": {
+        "agents_asked": 1,
+        "agents_answered": 1,
+        "agent_status": {
+          "soft_power": "ok"
+        },
+        "answer_rate": 1.0,
+        "facets_found": [
+          "influence"
+        ],
+        "facet_recall": 1.0,
+        "cross_agent_findings": 0,
+        "findings": 10,
+        "top5_confidence": 0.873,
+        "cited_lines": 11,
+        "claim_lines": 11,
+        "latency_ms": 0.4,
+        "headline": "Global overview",
+        "live_plan_matches_offline": true
+      }
+    },
+    {
+      "group": "soft_power_ranking",
+      "split": "test",
+      "kind": "casual",
+      "question": "who has the biggest soft power",
+      "gold": {
+        "intent": "ranking",
+        "countries": [],
+        "time": {
+          "mode": "latest"
+        },
+        "sector": "all",
+        "agents": [
+          "soft_power"
+        ]
+      },
+      "facets": [
+        "influence"
+      ],
+      "predicted": {
+        "intent": "ranking",
+        "countries": [],
+        "time": {
+          "mode": "latest",
+          "year": null,
+          "date": null,
+          "horizon_year": null
+        },
+        "sector": "all",
+        "severity": null,
+        "metric": "exports",
+        "trade_query": "risk",
+        "agents": [
+          "soft_power"
+        ]
+      },
+      "score": {
+        "slots": {
+          "intent": true,
+          "countries": true,
+          "time": true,
+          "sector": true,
+          "agents": true
+        },
+        "plan_exact": true,
+        "subject": true,
+        "fallback": false
+      },
+      "consistent": true,
+      "answer": {
+        "agents_asked": 1,
+        "agents_answered": 1,
+        "agent_status": {
+          "soft_power": "ok"
+        },
+        "answer_rate": 1.0,
+        "facets_found": [
+          "influence"
+        ],
+        "facet_recall": 1.0,
+        "cross_agent_findings": 0,
+        "findings": 10,
+        "top5_confidence": 0.873,
+        "cited_lines": 11,
+        "claim_lines": 11,
+        "latency_ms": 0.4,
+        "headline": "Global overview",
+        "live_plan_matches_offline": true
+      }
+    },
+    {
+      "group": "ukraine_yesterday",
+      "split": "test",
+      "kind": "original",
+      "question": "What happened in Ukraine yesterday?",
+      "gold": {
+        "intent": "events",
+        "countries": [
+          "UKR"
+        ],
+        "time": {
+          "mode": "date",
+          "date": "20261025"
+        },
+        "sector": "all",
+        "agents": [
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "facets": [
+        "event_activity",
+        "event_headline"
+      ],
+      "predicted": {
+        "intent": "events",
+        "countries": [
+          "UKR"
+        ],
+        "time": {
+          "mode": "date",
+          "year": 2026,
+          "date": "20261025",
+          "horizon_year": null
+        },
+        "sector": "all",
+        "severity": null,
+        "metric": "exports",
+        "trade_query": null,
+        "agents": [
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "score": {
+        "slots": {
+          "intent": true,
+          "countries": true,
+          "time": true,
+          "sector": true,
+          "agents": true
+        },
+        "plan_exact": true,
+        "subject": true,
+        "fallback": false
+      },
+      "consistent": true,
+      "answer": {
+        "agents_asked": 3,
+        "agents_answered": 3,
+        "agent_status": {
+          "policy_stance": "ok",
+          "trade_intelligence": "ok",
+          "event_summarization": "ok"
+        },
+        "answer_rate": 1.0,
+        "facets_found": [
+          "event_activity",
+          "event_headline"
+        ],
+        "facet_recall": 1.0,
+        "cross_agent_findings": 2,
+        "findings": 18,
+        "top5_confidence": 0.699,
+        "cited_lines": 23,
+        "claim_lines": 23,
+        "latency_ms": 165.8,
+        "headline": "Ukraine: what the news shows on 2026-10-25",
+        "live_plan_matches_offline": true
+      }
+    },
+    {
+      "group": "ukraine_yesterday",
+      "split": "test",
+      "kind": "alias",
+      "question": "Kyiv news from yesterday",
+      "gold": {
+        "intent": "events",
+        "countries": [
+          "UKR"
+        ],
+        "time": {
+          "mode": "date",
+          "date": "20261025"
+        },
+        "sector": "all",
+        "agents": [
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "facets": [
+        "event_activity",
+        "event_headline"
+      ],
+      "predicted": {
+        "intent": "events",
+        "countries": [
+          "UKR"
+        ],
+        "time": {
+          "mode": "date",
+          "year": 2026,
+          "date": "20261025",
+          "horizon_year": null
+        },
+        "sector": "all",
+        "severity": null,
+        "metric": "exports",
+        "trade_query": null,
+        "agents": [
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "score": {
+        "slots": {
+          "intent": true,
+          "countries": true,
+          "time": true,
+          "sector": true,
+          "agents": true
+        },
+        "plan_exact": true,
+        "subject": true,
+        "fallback": false
+      },
+      "consistent": true,
+      "answer": {
+        "agents_asked": 3,
+        "agents_answered": 3,
+        "agent_status": {
+          "policy_stance": "ok",
+          "trade_intelligence": "ok",
+          "event_summarization": "ok"
+        },
+        "answer_rate": 1.0,
+        "facets_found": [
+          "event_activity",
+          "event_headline"
+        ],
+        "facet_recall": 1.0,
+        "cross_agent_findings": 2,
+        "findings": 18,
+        "top5_confidence": 0.699,
+        "cited_lines": 23,
+        "claim_lines": 23,
+        "latency_ms": 163.8,
+        "headline": "Ukraine: what the news shows on 2026-10-25",
+        "live_plan_matches_offline": true
+      }
+    },
+    {
+      "group": "ukraine_yesterday",
+      "split": "test",
+      "kind": "reworded",
+      "question": "Ukraine headlines from 2026-10-25",
+      "gold": {
+        "intent": "events",
+        "countries": [
+          "UKR"
+        ],
+        "time": {
+          "mode": "date",
+          "date": "20261025"
+        },
+        "sector": "all",
+        "agents": [
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "facets": [
+        "event_activity",
+        "event_headline"
+      ],
+      "predicted": {
+        "intent": "events",
+        "countries": [
+          "UKR"
+        ],
+        "time": {
+          "mode": "date",
+          "year": 2026,
+          "date": "20261025",
+          "horizon_year": null
+        },
+        "sector": "all",
+        "severity": null,
+        "metric": "exports",
+        "trade_query": null,
+        "agents": [
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "score": {
+        "slots": {
+          "intent": true,
+          "countries": true,
+          "time": true,
+          "sector": true,
+          "agents": true
+        },
+        "plan_exact": true,
+        "subject": true,
+        "fallback": false
+      },
+      "consistent": true,
+      "answer": {
+        "agents_asked": 3,
+        "agents_answered": 3,
+        "agent_status": {
+          "policy_stance": "ok",
+          "trade_intelligence": "ok",
+          "event_summarization": "ok"
+        },
+        "answer_rate": 1.0,
+        "facets_found": [
+          "event_activity",
+          "event_headline"
+        ],
+        "facet_recall": 1.0,
+        "cross_agent_findings": 2,
+        "findings": 18,
+        "top5_confidence": 0.699,
+        "cited_lines": 23,
+        "claim_lines": 23,
+        "latency_ms": 206.1,
+        "headline": "Ukraine: what the news shows on 2026-10-25",
+        "live_plan_matches_offline": true
+      }
+    },
+    {
+      "group": "ukraine_yesterday",
+      "split": "test",
+      "kind": "typo",
+      "question": "what happend in ukriane yesterday",
+      "gold": {
+        "intent": "events",
+        "countries": [
+          "UKR"
+        ],
+        "time": {
+          "mode": "date",
+          "date": "20261025"
+        },
+        "sector": "all",
+        "agents": [
+          "policy_stance",
+          "trade_intelligence",
+          "event_summarization"
+        ]
+      },
+      "facets": [
+        "event_activity",
+        "event_headline"
+      ],
+      "predicted": {
+        "intent": "ranking",
+        "countries": [],
+        "time": {
+          "mode": "date",
+          "year": 2026,
+          "date": "20261025",
+          "horizon_year": null
+        },
+        "sector": "all",
+        "severity": null,
+        "metric": "exports",
+        "trade_query": "risk",
+        "agents": [
+          "soft_power",
+          "policy_stance",
+          "trade_intelligence"
+        ]
+      },
+      "score": {
+        "slots": {
+          "intent": false,
+          "countries": false,
+          "time": true,
+          "sector": true,
+          "agents": false
+        },
+        "plan_exact": false,
+        "subject": false,
+        "fallback": true
+      },
+      "consistent": false,
+      "answer": {
+        "agents_asked": 3,
+        "agents_answered": 3,
+        "agent_status": {
+          "soft_power": "ok",
+          "policy_stance": "ok",
+          "trade_intelligence": "ok"
+        },
+        "answer_rate": 1.0,
+        "facets_found": [],
+        "facet_recall": 0.0,
+        "cross_agent_findings": 0,
+        "findings": 21,
+        "top5_confidence": 0.9166000000000001,
+        "cited_lines": 24,
+        "claim_lines": 24,
+        "latency_ms": 107.7,
+        "headline": "Global overview",
+        "live_plan_matches_offline": true
+      }
+    }
+  ]
+}

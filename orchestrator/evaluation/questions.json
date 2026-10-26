@@ -1,0 +1,357 @@
+{
+  "version": 1,
+  "reference_date": "2026-10-26",
+  "description": "Labelled questions for evaluating query understanding. Each group is one question asked several ways; every question in a group shares the group's gold plan. 'kind' says how a question differs from the group's original. Tune on 'dev' only; report 'test' as the held-out result. See docs/EVALUATION.md.",
+  "groups": [
+    {
+      "id": "india_profile",
+      "split": "dev",
+      "gold": {
+        "intent": "country_profile",
+        "countries": ["IND"],
+        "time": {"mode": "latest"},
+        "sector": "all",
+        "agents": ["soft_power", "policy_stance", "trade_intelligence", "event_summarization"]
+      },
+      "facets": ["influence", "diplomatic_alignment", "trade_exposure", "event_activity"],
+      "questions": [
+        {"text": "How exposed is India right now?", "kind": "original"},
+        {"text": "How vulnerable is India at the moment?", "kind": "reworded"},
+        {"text": "What's New Delhi's risk position?", "kind": "alias"},
+        {"text": "How vulnerable is Bharat at the moment?", "kind": "alias"},
+        {"text": "Indai exposure", "kind": "typo"},
+        {"text": "give me the overall picture on india", "kind": "casual"}
+      ]
+    },
+    {
+      "id": "uk_profile",
+      "split": "dev",
+      "gold": {
+        "intent": "country_profile",
+        "countries": ["GBR"],
+        "time": {"mode": "latest"},
+        "sector": "all",
+        "agents": ["soft_power", "policy_stance", "trade_intelligence", "event_summarization"]
+      },
+      "facets": ["influence", "diplomatic_alignment", "trade_exposure", "event_activity"],
+      "questions": [
+        {"text": "How exposed is the United Kingdom right now?", "kind": "original"},
+        {"text": "How exposed is Britain right now?", "kind": "alias"},
+        {"text": "UK exposure", "kind": "alias"},
+        {"text": "Where does London stand overall?", "kind": "alias"},
+        {"text": "how exposed is the untied kingdom", "kind": "typo"}
+      ]
+    },
+    {
+      "id": "germany_2020_profile",
+      "split": "dev",
+      "gold": {
+        "intent": "country_profile",
+        "countries": ["DEU"],
+        "time": {"mode": "year", "year": 2020},
+        "sector": "all",
+        "agents": ["soft_power", "policy_stance", "trade_intelligence"]
+      },
+      "facets": ["influence", "diplomatic_alignment", "trade_exposure"],
+      "questions": [
+        {"text": "Germany's position in 2020", "kind": "original"},
+        {"text": "How did Germany look in 2020?", "kind": "reworded"},
+        {"text": "Deutschland in 2020", "kind": "alias"},
+        {"text": "The German picture in 2020", "kind": "alias"},
+        {"text": "germnay in 2020", "kind": "typo"}
+      ]
+    },
+    {
+      "id": "vietnam_blocs",
+      "split": "dev",
+      "gold": {
+        "intent": "blocs",
+        "countries": ["VNM"],
+        "time": {"mode": "latest"},
+        "sector": "all",
+        "trade_query": "blocs",
+        "agents": ["soft_power", "policy_stance", "trade_intelligence"]
+      },
+      "facets": ["trade_alignment", "diplomatic_alignment", "diplomatic_blocs"],
+      "questions": [
+        {"text": "Which bloc is Vietnam in?", "kind": "original"},
+        {"text": "Who does Vietnam side with?", "kind": "reworded"},
+        {"text": "Is Vietnam aligned with any bloc?", "kind": "reworded"},
+        {"text": "Which camp does Hanoi belong to?", "kind": "alias"},
+        {"text": "which bloc is vietnma in", "kind": "typo"},
+        {"text": "vietnam - which side is it on", "kind": "casual"}
+      ]
+    },
+    {
+      "id": "global_blocs",
+      "split": "dev",
+      "gold": {
+        "intent": "blocs",
+        "countries": [],
+        "time": {"mode": "latest"},
+        "sector": "all",
+        "trade_query": "blocs",
+        "agents": ["soft_power", "policy_stance", "trade_intelligence"]
+      },
+      "facets": ["trade_alignment", "diplomatic_blocs"],
+      "questions": [
+        {"text": "What are the main trading blocs?", "kind": "original"},
+        {"text": "Show me the world's alliance blocs", "kind": "reworded"},
+        {"text": "How is the world divided into camps?", "kind": "reworded"},
+        {"text": "what blocks exist", "kind": "typo"}
+      ]
+    },
+    {
+      "id": "iran_events",
+      "split": "dev",
+      "gold": {
+        "intent": "events",
+        "countries": ["IRN"],
+        "time": {"mode": "latest"},
+        "sector": "all",
+        "agents": ["policy_stance", "trade_intelligence", "event_summarization"]
+      },
+      "facets": ["event_activity", "event_headline"],
+      "questions": [
+        {"text": "What is happening in Iran?", "kind": "original"},
+        {"text": "What's in the news about Iran today?", "kind": "reworded"},
+        {"text": "Latest on Tehran", "kind": "alias"},
+        {"text": "Any headlines from Iran this week?", "kind": "reworded"},
+        {"text": "whats happening in iarn", "kind": "typo"},
+        {"text": "iran news", "kind": "casual"}
+      ]
+    },
+    {
+      "id": "china_electronics_shock",
+      "split": "dev",
+      "gold": {
+        "intent": "shock",
+        "countries": ["CHN"],
+        "time": {"mode": "latest"},
+        "sector": "electronics",
+        "severity": 1.0,
+        "agents": ["policy_stance", "trade_intelligence", "event_summarization"]
+      },
+      "facets": ["shock_impact"],
+      "questions": [
+        {"text": "What if China stops exporting electronics?", "kind": "original"},
+        {"text": "Suppose Beijing halts all chip shipments", "kind": "alias"},
+        {"text": "Impact of a total Chinese embargo on semiconductors", "kind": "reworded"},
+        {"text": "What happens if the PRC cuts off electronics exports?", "kind": "alias"},
+        {"text": "china stops selling electronics, who gets hurt?", "kind": "casual"},
+        {"text": "what if chna stops exporting electronics", "kind": "typo"}
+      ]
+    },
+    {
+      "id": "brazil_forecast",
+      "split": "dev",
+      "gold": {
+        "intent": "forecast",
+        "countries": ["BRA"],
+        "time": {"mode": "latest", "horizon_year": 2030},
+        "sector": "all",
+        "metric": "exports",
+        "agents": ["soft_power", "policy_stance", "trade_intelligence"]
+      },
+      "facets": ["trade_outlook"],
+      "questions": [
+        {"text": "Forecast Brazil exports to 2030", "kind": "original"},
+        {"text": "Project Brazil's exports through 2030", "kind": "reworded"},
+        {"text": "What will Brazil's exports look like in 2030?", "kind": "reworded"},
+        {"text": "brazil exports outlook to 2030", "kind": "casual"},
+        {"text": "forcast brazil exports to 2030", "kind": "typo"}
+      ]
+    },
+    {
+      "id": "germany_russia_energy",
+      "split": "dev",
+      "gold": {
+        "intent": "bilateral",
+        "countries": ["DEU", "RUS"],
+        "time": {"mode": "latest"},
+        "sector": "energy",
+        "agents": ["soft_power", "policy_stance", "trade_intelligence", "event_summarization"]
+      },
+      "facets": ["bilateral_trade_dependence", "bilateral_diplomacy"],
+      "questions": [
+        {"text": "How dependent is Germany on Russian energy?", "kind": "original"},
+        {"text": "Germany's energy dependence on Russia", "kind": "reworded"},
+        {"text": "Berlin's reliance on Moscow for gas", "kind": "alias"},
+        {"text": "germany russia gas dependence", "kind": "casual"},
+        {"text": "how dependant is germany on russian energy", "kind": "typo"}
+      ]
+    },
+    {
+      "id": "trade_dependence_ranking",
+      "split": "dev",
+      "gold": {
+        "intent": "ranking",
+        "countries": [],
+        "time": {"mode": "latest"},
+        "sector": "all",
+        "trade_query": "leverage",
+        "agents": ["trade_intelligence"]
+      },
+      "facets": ["trade_dependence"],
+      "questions": [
+        {"text": "Which countries are most dependent on trade?", "kind": "original"},
+        {"text": "Who relies most heavily on a single trade partner?", "kind": "reworded"},
+        {"text": "Top 10 most trade-dependent economies", "kind": "reworded"},
+        {"text": "most dependent countries trade-wise", "kind": "casual"}
+      ]
+    },
+    {
+      "id": "fragility_ranking",
+      "split": "dev",
+      "gold": {
+        "intent": "ranking",
+        "countries": [],
+        "time": {"mode": "latest"},
+        "sector": "all",
+        "trade_query": "fragility",
+        "agents": ["trade_intelligence"]
+      },
+      "facets": ["supply_fragility"],
+      "questions": [
+        {"text": "Which countries have the most fragile supply chains?", "kind": "original"},
+        {"text": "Where are imports hardest to substitute?", "kind": "reworded"},
+        {"text": "Rank economies by how brittle their supply is", "kind": "reworded"},
+        {"text": "most fragile supply chains", "kind": "casual"}
+      ]
+    },
+    {
+      "id": "india_china_bilateral",
+      "split": "test",
+      "gold": {
+        "intent": "bilateral",
+        "countries": ["IND", "CHN"],
+        "time": {"mode": "latest"},
+        "sector": "all",
+        "agents": ["soft_power", "policy_stance", "trade_intelligence", "event_summarization"]
+      },
+      "facets": ["bilateral_trade_bloc", "bilateral_diplomacy", "bilateral_events"],
+      "questions": [
+        {"text": "India and China relations", "kind": "original"},
+        {"text": "How do New Delhi and Beijing get along?", "kind": "alias"},
+        {"text": "What is the relationship between China and India like?", "kind": "reworded"},
+        {"text": "Sino-Indian relations", "kind": "alias"},
+        {"text": "india chian ties", "kind": "typo"},
+        {"text": "india vs china - where do things stand", "kind": "casual"}
+      ]
+    },
+    {
+      "id": "korea_japan_bilateral",
+      "split": "test",
+      "gold": {
+        "intent": "bilateral",
+        "countries": ["KOR", "JPN"],
+        "time": {"mode": "latest"},
+        "sector": "all",
+        "agents": ["soft_power", "policy_stance", "trade_intelligence", "event_summarization"]
+      },
+      "facets": ["bilateral_trade_bloc", "bilateral_diplomacy", "bilateral_events"],
+      "questions": [
+        {"text": "South Korea and Japan relations", "kind": "original"},
+        {"text": "Seoul-Tokyo ties", "kind": "alias"},
+        {"text": "ROK and Japan relations", "kind": "alias"},
+        {"text": "How do South Korea and Japan get along?", "kind": "reworded"},
+        {"text": "south korea japn relations", "kind": "typo"}
+      ]
+    },
+    {
+      "id": "us_russia_2015",
+      "split": "test",
+      "gold": {
+        "intent": "bilateral",
+        "countries": ["USA", "RUS"],
+        "time": {"mode": "year", "year": 2015},
+        "sector": "all",
+        "agents": ["soft_power", "policy_stance", "trade_intelligence", "event_summarization"]
+      },
+      "facets": ["bilateral_trade_bloc", "bilateral_diplomacy"],
+      "questions": [
+        {"text": "Compare the US and Russia in 2015", "kind": "original"},
+        {"text": "How did Washington and Moscow relate in 2015?", "kind": "alias"},
+        {"text": "US-Russia relations in 2015", "kind": "reworded"},
+        {"text": "america vs russia back in 2015", "kind": "casual"},
+        {"text": "compare the usa and rusia in 2015", "kind": "typo"}
+      ]
+    },
+    {
+      "id": "russia_energy_half_shock",
+      "split": "test",
+      "gold": {
+        "intent": "shock",
+        "countries": ["RUS"],
+        "time": {"mode": "latest"},
+        "sector": "energy",
+        "severity": 0.5,
+        "agents": ["policy_stance", "trade_intelligence", "event_summarization"]
+      },
+      "facets": ["shock_impact"],
+      "questions": [
+        {"text": "What if Russia cuts its energy exports by 50%?", "kind": "original"},
+        {"text": "What if Russia halves its oil and gas exports?", "kind": "numeric"},
+        {"text": "Moscow reduces fuel exports by half - impact?", "kind": "numeric"},
+        {"text": "Simulate a 50 percent drop in Russian energy exports", "kind": "reworded"},
+        {"text": "russia energy exports cut in half, who suffers", "kind": "casual"}
+      ]
+    },
+    {
+      "id": "japan_forecast_relative",
+      "split": "test",
+      "gold": {
+        "intent": "forecast",
+        "countries": ["JPN"],
+        "time": {"mode": "latest", "horizon_year": 2031},
+        "sector": "all",
+        "metric": "exports",
+        "agents": ["soft_power", "policy_stance", "trade_intelligence"]
+      },
+      "facets": ["trade_outlook"],
+      "questions": [
+        {"text": "Forecast Japan's exports to 2031", "kind": "original"},
+        {"text": "Where will Japan's exports be in five years?", "kind": "numeric"},
+        {"text": "Japan export forecast for the next 5 years", "kind": "numeric"},
+        {"text": "japanese exports 5 yrs out", "kind": "casual"}
+      ]
+    },
+    {
+      "id": "soft_power_ranking",
+      "split": "test",
+      "gold": {
+        "intent": "ranking",
+        "countries": [],
+        "time": {"mode": "latest"},
+        "sector": "all",
+        "agents": ["soft_power"]
+      },
+      "facets": ["influence"],
+      "questions": [
+        {"text": "Which countries have the most soft power?", "kind": "original"},
+        {"text": "Top 10 countries by global influence", "kind": "reworded"},
+        {"text": "Rank nations by cultural influence", "kind": "reworded"},
+        {"text": "Most attractive countries in terms of reputation", "kind": "reworded"},
+        {"text": "who has the biggest soft power", "kind": "casual"}
+      ]
+    },
+    {
+      "id": "ukraine_yesterday",
+      "split": "test",
+      "gold": {
+        "intent": "events",
+        "countries": ["UKR"],
+        "time": {"mode": "date", "date": "20261025"},
+        "sector": "all",
+        "agents": ["policy_stance", "trade_intelligence", "event_summarization"]
+      },
+      "facets": ["event_activity", "event_headline"],
+      "questions": [
+        {"text": "What happened in Ukraine yesterday?", "kind": "original"},
+        {"text": "Kyiv news from yesterday", "kind": "alias"},
+        {"text": "Ukraine headlines from 2026-10-25", "kind": "reworded"},
+        {"text": "what happend in ukriane yesterday", "kind": "typo"}
+      ]
+    }
+  ]
+}
