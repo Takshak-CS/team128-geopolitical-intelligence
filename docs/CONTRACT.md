@@ -126,3 +126,59 @@ result `partial`.
 | GET | `/capabilities` | the orchestrator's intents plus each agent's self-description |
 | GET | `/health` | liveness plus a one-word status per agent |
 | GET | `/` | briefing UI |
+
+## Query reformulation and understanding
+
+Before parsing, `app/reformulate.py` rewrites the question into words the parser
+knows. It has four steps:
+
+| Step | What it rewrites | Example | Confidence |
+|---|---|---|---|
+| `aliases` | capitals, endonyms, abbreviations, combining forms | "Hanoi" → Vietnam, "Bharat" → India, "ROK" → South Korea, "Sino-Indian" → China-India | 0.9-0.95 |
+| `spelling` | a misspelt country name, only when the question seems to be missing a country; misspelt domain words | "Indai" → India, "untied kingdom" → United Kingdom, "forcast" → forecast | 0.8 country, 0.9 word |
+| `numbers` | number words and relative years, counted from today | "in five years" → "by 2031" | 0.9-0.95 |
+| `phrasing` | phrasings the parser has no rule for | "latest on" → "latest news on", "which side" → "which bloc", "X reduces exports by half" → "What if X reduces exports by half", "look like in 2030" → "by 2030" | 0.8-0.9 |
+
+Guards keep reformulation from rewriting what it should not:
+
+- English words one edit from a country name are never corrected ("iron",
+  "green", "child", "macro", "spin").
+- Four-letter names accept only a swapped pair of letters ("iarn" → Iran).
+- A capital followed by "Agreement", "Round", "Accords" and the like names a
+  treaty, so it is left alone ("Paris Agreement", "Doha Round").
+- Capitals that usually mean something else are left out (Brussels, The Hague,
+  Jerusalem).
+- A combining form is rewritten only when the other half is a country, so
+  "Indo-Pacific" stays as it is.
+- Historical questions are not reframed as scenarios.
+
+`tests/test_reformulate.py` tests each of these guards.
+
+The plan (`/parse`, and `plan` in `/ask`) carries:
+
+| Field | Meaning |
+|---|---|
+| `question` | the question as asked |
+| `read_as` | the reformulated question the parser read; null when nothing changed |
+| `rewrites` | one entry per rewrite: `step`, `kind`, `original`, `replacement`, `reason`, `confidence` |
+| `understanding` | 0-1: how sure the system is that it read the question as meant |
+| `entities[].matched` | what the user typed for each country ("Bharat"), not its rewritten name |
+
+**How `understanding` is computed.** It starts as the product of the
+rewrites' confidences. It is then multiplied down when the plan looks like a
+misreading:
+
+- ×0.4 when no country was found in a question with no ranking cue (it will
+  be answered with a global overview);
+- ×0.6 when a question about a relationship names only one recognised country;
+- ×0.8 when a bilateral question names more than two countries.
+
+It describes the reading of the question, not the data, so it is kept apart
+from claim confidence and never changes a claim's confidence or rank. The
+briefing shows `read_as` under the headline. Below 0.5
+(`briefing.LOW_UNDERSTANDING`) it warns that the question may have been
+misread. `briefing.understanding` holds the same information for the UI.
+
+`REFORMULATION_STEPS` (environment variable: `all`, `none`, or a
+comma-separated subset) sets which steps run. `none` gives the parser exactly
+as it was before reformulation.
