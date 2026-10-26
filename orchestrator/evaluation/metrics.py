@@ -233,6 +233,17 @@ def summarize(records: list[dict]) -> dict:
     summary["plan_exact"] = _rate([s["plan_exact"] for s in scores])
     summary["paraphrase_consistency"] = _rate([r["consistent"] for r in records if r["kind"] != "original"])
 
+    # Understanding confidence (intent.parse) against whether the plan was right.
+    # A useful confidence is high on right plans, low on wrong ones, and has a
+    # low Brier score: mean (confidence - right)^2, 0 is perfect.
+    understood = [(r["understanding"]["confidence"], r["score"]["plan_exact"]) for r in records if r.get("understanding")]
+    if understood:
+        summary["rewritten_rate"] = _rate([bool(r["understanding"]["read_as"]) for r in records if r.get("understanding")])
+        summary["understanding_mean"] = mean(c for c, _ in understood)
+        summary["understanding_right"] = _mean([c for c, ok in understood if ok])
+        summary["understanding_wrong"] = _mean([c for c, ok in understood if not ok])
+        summary["understanding_brier"] = mean((c - ok) ** 2 for c, ok in understood)
+
     answers = [r["answer"] for r in records if r.get("answer")]
     if answers:
         latencies = [a["latency_ms"] for a in answers if a.get("latency_ms") is not None]

@@ -4,7 +4,9 @@
     ../.venv/Scripts/python -m evaluation.run                     parser metrics, offline, a few seconds
     ../.venv/Scripts/python -m evaluation.run --live              also ask the running system (scripts/run_all.ps1)
     ../.venv/Scripts/python -m evaluation.run --live --save baseline
-    ../.venv/Scripts/python -m evaluation.run --compare evaluation/results/baseline.json
+    ../.venv/Scripts/python -m evaluation.run --compare evaluation/results/baseline_parser.json
+    ../.venv/Scripts/python -m evaluation.run --ablation              what each reformulation step adds
+    ../.venv/Scripts/python -m evaluation.run --steps none            the parser without reformulation
 
 Parser metrics come from parsing each question offline with "today" pinned to the
 set's reference date, so they are reproducible on any day. ``--live`` sends every
@@ -26,7 +28,8 @@ from typing import Optional
 
 import httpx
 
-from app import intent
+from app import intent, reformulate
+from app.config import REFORMULATION_STEPS
 
 from . import metrics
 
@@ -53,6 +56,11 @@ ROWS = [
     ("agent_recall", "agent selection recall", "dec"),
     ("plan_exact", "plan exact match", "pct"),
     ("paraphrase_consistency", "paraphrase consistency", "pct"),
+    ("rewritten_rate", "questions reformulated", "pct"),
+    ("understanding_mean", "understanding confidence, mean", "dec"),
+    ("understanding_right", "  ... on right plans", "dec"),
+    ("understanding_wrong", "  ... on wrong plans", "dec"),
+    ("understanding_brier", "understanding Brier (lower is better)", "dec"),
     ("request_errors", "request errors", "n"),
     ("answer_rate", "agent answer rate", "pct"),
     ("facet_recall", "facet recall", "dec"),
@@ -81,13 +89,16 @@ def pinned_today(day: date):
         intent._today = original
 
 
-def plan_for(question: str) -> dict:
-    """The plan the system makes for a question. Keep this the same path POST /ask uses."""
-    return intent.parse(question).to_dict()
+def plan_for(question: str, steps: Optional[str] = None) -> dict:
+    """The plan the system makes for a question. Keep this the same path POST /ask uses.
+
+    ``steps`` selects the reformulation steps; None means the configured default.
+    """
+    return intent.parse(question, steps=steps).to_dict()
 
 
 # --------------------------------------------------------------------- run
-def evaluate_parser(data: dict) -> list[dict]:
+def evaluate_parser(data: dict, steps: Optional[str] = None) -> list[dict]:
     reference = date.fromisoformat(data["reference_date"])
     records: list[dict] = []
     with pinned_today(reference):
@@ -95,7 +106,8 @@ def evaluate_parser(data: dict) -> list[dict]:
             gold = group["gold"]
             group_records = []
             for question in group["questions"]:
-                predicted = metrics.plan_slots(plan_for(question["text"]))
+                plan = plan_for(question["text"], steps)
+                predicted = metrics.plan_slots(plan)
                 group_records.append({
                     "group": group["id"],
                     "split": group["split"],
@@ -104,6 +116,11 @@ def evaluate_parser(data: dict) -> list[dict]:
                     "gold": gold,
                     "facets": group.get("facets", []),
                     "predicted": predicted,
+                    "understanding": {
+                        "confidence": plan.get("understanding", 1.0),
+                        "read_as": plan.get("read_as"),
+                        "rewrites": [f"{r['kind']}: {r['original']} -> {r['replacement']}" for r in plan.get("rewrites", [])],
+                    },
                     "score": metrics.score_plan(predicted, gold),
                 })
             original = next(r for r in group_records if r["kind"] == "original")
@@ -136,7 +153,7 @@ def evaluate_live(records: list[dict], base_url: str, timeout: float) -> None:
             record["answer"]["live_plan_matches_offline"] = metrics.same_plan(live, record["predicted"], record["gold"])
 
 
-def build_report(records: list[dict], data: dict, label: Optional[str], live: bool) -> dict:
+def build_report(records: list[dict], data: dict, label: Optional[str], live: bool, steps: Optional[str] = None) -> dict:
     kinds = sorted({r["kind"] for r in records})
     return {
         "label": label,
@@ -144,6 +161,7 @@ def build_report(records: list[dict], data: dict, label: Optional[str], live: bo
         "git": _git_state(),
         "reference_date": data["reference_date"],
         "questions_version": data["version"],
+        "reformulation_steps": list(reformulate.resolve_steps(steps if steps is not None else REFORMULATION_STEPS)),
         "live": live,
         "summary": {
             "all": metrics.summarize(records),
@@ -224,6 +242,27 @@ def print_report(report: dict, compare: Optional[dict], failures: str) -> None:
         print(f"  [{record['group']}/{record['kind']}] {record['question']!r}\n      wrong: {', '.join(wrong)}  got: {json.dumps(got)}")
 
 
+def print_ablation(data: dict) -> None:
+    """What each reformulation step contributes: on its own, and when left out."""
+    configs = [("none (parser only)", "none")]
+    configs += [(f"only {step}", step) for step in reformulate.STEPS]
+    configs += [(f"all but {step}", ",".join(s for s in reformulate.STEPS if s != step)) for step in reformulate.STEPS]
+    configs += [("all steps", "all")]
+
+    header = f"{'reformulation':<22}{'exact dev':>11}{'exact test':>11}{'consist dev':>12}{'consist test':>13}{'fallback':>10}{'Brier':>8}"
+    print(f"\nAblation, reference date {data['reference_date']} (fallback and Brier over all questions)")
+    print(header)
+    print("-" * len(header))
+    for label, steps in configs:
+        records = evaluate_parser(data, steps)
+        dev = metrics.summarize([r for r in records if r["split"] == "dev"])
+        test = metrics.summarize([r for r in records if r["split"] == "test"])
+        every = metrics.summarize(records)
+        print(f"{label:<22}{_fmt(dev['plan_exact'], 'pct'):>11}{_fmt(test['plan_exact'], 'pct'):>11}"
+              f"{_fmt(dev['paraphrase_consistency'], 'pct'):>12}{_fmt(test['paraphrase_consistency'], 'pct'):>13}"
+              f"{_fmt(every['fallback_rate'], 'pct'):>10}{_fmt(every.get('understanding_brier'), 'dec'):>8}")
+
+
 # -------------------------------------------------------------------- main
 def main(argv: Optional[list[str]] = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -234,13 +273,18 @@ def main(argv: Optional[list[str]] = None) -> int:
     parser.add_argument("--save", metavar="LABEL", help="write the full report to evaluation/results/LABEL.json")
     parser.add_argument("--compare", type=Path, metavar="REPORT", help="show the change against a saved report")
     parser.add_argument("--failures", choices=("dev", "all", "none"), default="dev", help="which missed plans to list (default: dev only, so the test split stays held out)")
+    parser.add_argument("--steps", help="reformulation steps for the offline parse: all, none, or e.g. aliases,spelling (default: REFORMULATION_STEPS)")
+    parser.add_argument("--ablation", action="store_true", help="score every combination of reformulation steps offline, then exit")
     args = parser.parse_args(argv)
 
     data = load_questions(args.questions)
-    records = evaluate_parser(data)
+    if args.ablation:
+        print_ablation(data)
+        return 0
+    records = evaluate_parser(data, args.steps)
     if args.live:
         evaluate_live(records, args.base_url, args.timeout)
-    report = build_report(records, data, args.save, args.live)
+    report = build_report(records, data, args.save, args.live, args.steps)
     compare = json.loads(args.compare.read_text(encoding="utf-8")) if args.compare else None
     print_report(report, compare, args.failures)
 

@@ -128,6 +128,29 @@ def test_attribution_counts_cited_claim_lines_only():
     assert metrics.attribution(markdown) == (2, 3)
 
 
+def test_understanding_is_scored_against_plan_correctness():
+    gold = {"intent": "country_profile", "countries": ["IND"]}
+    right = metrics.plan_slots(plan(iso3s=["IND"]))
+    wrong = metrics.plan_slots(plan("ranking"))
+
+    def record(predicted, confidence, read_as=None):
+        return {"gold": gold, "predicted": predicted, "score": metrics.score_plan(predicted, gold), "kind": "reworded", "consistent": True,
+                "understanding": {"confidence": confidence, "read_as": read_as, "rewrites": []}}
+
+    summary = metrics.summarize([record(right, 0.9, "x"), record(wrong, 0.4)])
+    assert summary["understanding_right"] == pytest.approx(0.9)
+    assert summary["understanding_wrong"] == pytest.approx(0.4)
+    assert summary["understanding_brier"] == pytest.approx(((0.9 - 1) ** 2 + 0.4 ** 2) / 2)
+    assert summary["rewritten_rate"] == 0.5
+
+
+def test_ablation_can_switch_reformulation_off():
+    records = {r["question"]: r for r in run.evaluate_parser(DATA, "none")}
+    assert records["How vulnerable is Bharat at the moment?"]["predicted"]["countries"] == []
+    records = {r["question"]: r for r in run.evaluate_parser(DATA, "aliases")}
+    assert records["How vulnerable is Bharat at the moment?"]["predicted"]["countries"] == ["IND"]
+
+
 def test_percentile_is_nearest_rank():
     values = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
     assert metrics.percentile(values, 50) == 50

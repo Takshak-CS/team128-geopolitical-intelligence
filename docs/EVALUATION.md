@@ -9,7 +9,7 @@ are understood, for example query reformulation. The benchmark lives in
 | `questions.json` | the labelled question set |
 | `metrics.py` | the metric definitions, as code (unit-tested in `tests/test_evaluation.py`) |
 | `run.py` | runs the set, prints the report, saves or compares results |
-| `results/*.json` | saved reports; `baseline_parser.json` and `baseline_live.json` are the state before reformulation |
+| `results/*.json` | saved reports: `baseline_*` before query reformulation, `reformulated_*` after it (`*_parser` offline, `*_live` against the running system) |
 
 ## The question set
 
@@ -65,6 +65,8 @@ cd orchestrator
 ..\.venv\Scripts\python -m evaluation.run --live                    # also ask the running system (scripts\run_all.ps1 first)
 ..\.venv\Scripts\python -m evaluation.run --save after_reform       # save a report
 ..\.venv\Scripts\python -m evaluation.run --compare evaluation\results\baseline_parser.json
+..\.venv\Scripts\python -m evaluation.run --ablation                # what each reformulation step adds
+..\.venv\Scripts\python -m evaluation.run --steps none              # the parser without reformulation
 ```
 
 `--live` sends all 90 questions to `POST /ask` one at a time and adds the
@@ -87,6 +89,8 @@ the same day, and a parser run with a parser run.
 | Agent selection precision / recall | over the agent lists | Missing an agent loses its claims; an extra one adds noise |
 | Plan exact match | every slot the gold sets is right | The strictest single number |
 | **Paraphrase consistency** | rewordings whose plan equals their original's plan ÷ rewordings | The headline metric for reformulation: the same question should get the same answer however it is asked |
+| Understanding confidence | the plan's `understanding` (docs/CONTRACT.md), averaged over all questions, over right plans and over wrong plans | A useful confidence is high on right plans and low on wrong ones |
+| Understanding Brier | mean of (understanding − 1 if the plan is right, else 0)² | Calibration of that confidence; 0 is perfect, lower is better |
 
 ### Answers (`--live`)
 
@@ -180,17 +184,102 @@ in 2024 Russia is not among Germany's top energy partners (Norway is). There is
 no pairwise "share of A's energy from B" query, so the system never states the
 number the question asks for.
 
-## Using it for reformulation
+## After query reformulation (2026-10-26)
 
-1. Keep `baseline_parser.json` and `baseline_live.json` as they are.
-2. Build reformulation looking only at `dev` misses (`run.py` lists them).
-3. Run `--compare evaluation/results/baseline_parser.json` and a same-day live
-   run, then report the `test` column.
-4. These should rise: paraphrase consistency, entity F1, intent accuracy,
+Query reformulation (`app/reformulate.py`, described in docs/CONTRACT.md) runs
+before the parser. It has four rule-based steps: aliases, spelling, numbers and
+phrasing. The live runs were made on the same day with warm caches, all four
+agents up.
+
+| Metric | Baseline | Reformulated |
+|---|---|---|
+| Plan exact match (dev / test) | 69.6% / 64.7% | 100% / 100% |
+| Paraphrase consistency (dev / test) | 62.2% / 55.6% | 100% / 100% |
+| Intent accuracy | 72.2% | 100% |
+| Entity F1 (precision stays 1.00) | 0.894 | 1.000 |
+| Fallback rate | 16.4% | 0% |
+| Understanding Brier | 0.195 | 0.013 |
+| Facet recall (live) | 0.715 | 0.972 |
+| Facet hit rate (live) | 76.7% | 100% |
+| Cross-agent findings / question (live) | 2.30 | 2.38 |
+| Attribution rate (live) | 100% | 100% |
+| Top-5 mean confidence (live) | 0.718 | 0.708 |
+| Latency p50 / p95 (live) | 390 / 860 ms | 393 / 802 ms |
+
+The baseline Brier (0.195) uses the plan checks alone, with reformulation
+switched off.
+
+How to read it:
+
+- **The plan improves; the claims do not get more confident.** Top-5 mean
+  confidence is unchanged (0.718 → 0.708), as expected. The same plan gets the
+  same data and the same claim confidence. What changed is that reworded
+  questions now reach the plan that answers them: facet recall rose from 0.72
+  to 0.97.
+- **The new confidence is informative.** Understanding confidence is the
+  system's estimate that it read the question correctly. Its Brier score fell
+  from 0.195 to 0.013. A plan that falls back to a global overview without a
+  ranking cue now scores 0.4 and the briefing warns about it, instead of
+  answering with full confidence.
+- **The remaining facet gap is a data gap, not a parsing one.** Germany-Russia
+  energy dependence still lacks a `bilateral_trade_dependence` claim (see the
+  baseline notes).
+- **Cost.** Reformulation adds about 2 ms per question offline (0.05 ms →
+  2.2 ms). Live latency is unchanged within noise.
+
+Ablation (`--ablation`), plan exact match:
+
+| Steps | dev | test | fallback (all) | Brier (all) |
+|---|---|---|---|---|
+| none (parser only) | 69.6% | 64.7% | 16.4% | 0.195 |
+| only aliases | 78.6% | 70.6% | 9.6% | 0.162 |
+| only spelling | 82.1% | 73.5% | 5.5% | 0.160 |
+| only numbers | 69.6% | 73.5% | 16.4% | 0.162 |
+| only phrasing | 80.4% | 73.5% | 16.4% | 0.099 |
+| all but aliases | 91.1% | 91.2% | 5.5% | 0.041 |
+| all but spelling | 89.3% | 88.2% | 9.6% | 0.041 |
+| all but numbers | 100% | 91.2% | 0% | 0.046 |
+| all but phrasing | 91.1% | 91.2% | 0% | 0.090 |
+| all steps | 100% | 100% | 0% | 0.013 |
+
+Every step contributes. Spelling removes the most fallbacks; phrasing does the
+most for calibration. Numbers helps only the test split, because the dev split
+has no relative-year questions.
+
+### What these numbers do not show
+
+**The test split is not blind.** The same person wrote the test questions and
+the reformulation rules, after seeing which test questions failed. 100% on
+`test` therefore shows the rules cover the phrasings in this set. It does not
+show how they handle phrasings nobody anticipated.
+
+For a held-out result that means something, ask someone who has not seen
+`app/reformulate.py` to write new questions:
+
+1. A teammate writes 30-50 questions in the same group format as
+   `questions.json`, as version 2.
+2. Run `--steps none` and `--steps all` on it.
+3. Report those numbers as the generalisation result.
+
+Expect them to be well below 100%. Rules cover only the aliases, misspellings
+and phrasings they list.
+
+**Questions the system does not support are not in the set.** For example,
+"Is India closer to China or the US?" compares three countries. The bilateral
+plan compares only the first two, and reformulation does not change that.
+
+## Using it for further changes
+
+1. Keep the `baseline_*` and `reformulated_*` reports as they are.
+2. Build changes looking only at `dev` misses (`run.py` lists them), or at a
+   new set.
+3. Compare offline with `--compare`, and live against a run made the same day.
+4. These should rise: paraphrase consistency, entity F1, intent accuracy and
    facet recall.
-5. Fallback rate should fall.
+5. These should fall: fallback rate and understanding Brier.
 6. These must hold:
-   - originals at 100% plan exact (a test enforces it)
+   - originals at 100% plan exact, and no original rewritten (tests enforce
+     both)
    - attribution at 100%
    - latency close to the baseline
 

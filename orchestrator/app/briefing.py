@@ -17,6 +17,10 @@ from .intent import QueryPlan
 # (day, partners, themes, domestic split, three headlines, three baselines).
 SECTION_LIMIT = 10
 
+# Below this understanding confidence the briefing warns that the question may
+# have been misread (intent.parse sets it, e.g. 0.4 when no country was found).
+LOW_UNDERSTANDING = 0.5
+
 # The claims that lead an agent's summary line and its section for a kind of
 # question, in this order, when confidence alone would pick others. "What
 # happened" is answered by the day's activity, not by the (more confident)
@@ -128,7 +132,19 @@ def compose(plan: QueryPlan, fused: dict, results: dict[str, AgentResult], align
     coverage = _coverage(plan, results, alignment)
     headline = _headline(plan, findings, results)
 
+    understanding = {
+        "question": plan.question,
+        "read_as": plan.read_as,
+        "confidence": plan.understanding,
+        "rewrites": plan.rewrites,
+        "low": plan.understanding < LOW_UNDERSTANDING,
+    }
+
     lines = [f"## {headline}", ""]
+    if plan.read_as:
+        lines += [f"_Read as: {plan.read_as} (understanding {plan.understanding:.2f})_", ""]
+    if understanding["low"]:
+        lines += [f"_This may not be the question that was asked (understanding {plan.understanding:.2f}). Check how it was read before relying on the answer._", ""]
     lines += [f"- {sentence}" for sentence in summary]
     lines += ["", f"_{coverage}_"]
     for section in sections:
@@ -148,5 +164,6 @@ def compose(plan: QueryPlan, fused: dict, results: dict[str, AgentResult], align
         "sections": sections,
         "caveats": caveats,
         "coverage": coverage,
+        "understanding": understanding,
         "markdown": "\n".join(lines),
     }

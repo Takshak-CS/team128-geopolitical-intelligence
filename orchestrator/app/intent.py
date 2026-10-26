@@ -5,11 +5,21 @@ the plan it returns (``/parse`` exposes it on its own), it needs no API key, and
 behaves identically in a demo and in a test. A question it cannot place falls back
 to a country profile or a global overview rather than failing.
 
+Before parsing, the question is reformulated (reformulate.py): aliases, typos,
+number words and unfamiliar phrasings are rewritten into words the parser knows.
+The plan keeps the original question, the text it actually read, and every
+rewrite.
+
 A plan answers four questions:
     intent    what kind of question is this
     entities  which countries, as ISO3
     time      which year or day
     agents    which agents to ask, and why
+
+and carries an ``understanding`` confidence: how sure the system is that it read
+the question as meant. It falls with each rewrite and when the plan looks like a
+misreading, such as no country found in a question that is not a global one.
+It says nothing about the data; claim confidences do that.
 """
 
 from __future__ import annotations
@@ -17,9 +27,10 @@ from __future__ import annotations
 import re
 from dataclasses import asdict, dataclass, field
 from datetime import date, datetime, timedelta, timezone
-from typing import Optional
+from typing import Iterable, Optional
 
-from . import countries
+from . import countries, reformulate
+from .config import REFORMULATION_STEPS
 
 INTENTS = ("country_profile", "bilateral", "shock", "forecast", "blocs", "events", "ranking")
 ALL_AGENTS = ("soft_power", "policy_stance", "trade_intelligence", "event_summarization")
@@ -79,6 +90,9 @@ class QueryPlan:
     agent_reasons: dict[str, str] = field(default_factory=dict)
     focus_agents: list[str] = field(default_factory=list)
     notes: list[str] = field(default_factory=list)
+    read_as: Optional[str] = None        # the reformulated question, when it differs
+    rewrites: list[dict] = field(default_factory=list)
+    understanding: float = 1.0
 
     @property
     def iso3s(self) -> list[str]:
@@ -205,13 +219,44 @@ _INTENT_AGENTS = {
 }
 
 
-def parse(question: str, overrides: Optional[dict] = None) -> QueryPlan:
-    """Turn a question into a query plan. ``overrides`` wins over anything parsed."""
+_COUNTRY_REWRITES = ("capital", "endonym", "abbreviation", "combining_form", "country_spelling")
+
+
+def _typed(matched: str, reformulation: reformulate.Reformulation) -> str:
+    """What the user actually typed for a country that reformulation renamed."""
+    for rewrite in reformulation.rewrites:
+        if rewrite.kind in _COUNTRY_REWRITES and matched.lower() in rewrite.replacement.lower():
+            return rewrite.original
+    return matched
+
+
+def _understanding(plan: QueryPlan, reformulation: reformulate.Reformulation, text: str, overrides: dict) -> float:
+    """How sure the system is that the plan is what the question meant (0-1)."""
+    value = reformulation.confidence
+    if not overrides.get("countries") and not overrides.get("intent"):
+        if not plan.entities and plan.intent == "ranking" and not _RANKING.search(text):
+            value *= 0.4
+            plan.notes.append("No country and no ranking cue recognised, so this may not be the question that was asked.")
+        elif len(plan.entities) == 1 and plan.intent != "bilateral" and _BILATERAL.search(text):
+            value *= 0.6
+            plan.notes.append("The question reads like one about a relationship, but only one country was recognised.")
+        elif plan.intent == "bilateral" and len(plan.entities) > 2:
+            value *= 0.8
+    return round(value, 3)
+
+
+def parse(question: str, overrides: Optional[dict] = None, steps: Optional[Iterable[str] | str] = None) -> QueryPlan:
+    """Turn a question into a query plan. ``overrides`` wins over anything parsed.
+
+    ``steps`` picks the reformulation steps to run first; by default the ones
+    in ``REFORMULATION_STEPS`` (all of them, unless configured otherwise).
+    """
     overrides = {key: value for key, value in (overrides or {}).items() if value is not None}
-    text = " ".join(str(question or "").split())
+    reformulation = reformulate.reformulate(question, REFORMULATION_STEPS if steps is None else steps)
+    text = reformulation.text
 
     mentions = countries.find_mentions(text)
-    entities = [Entity(iso3=m.iso3, name=m.name, matched=m.matched) for m in mentions]
+    entities = [Entity(iso3=m.iso3, name=m.name, matched=_typed(m.matched, reformulation)) for m in mentions]
     for iso3 in overrides.get("countries", []) or []:
         resolved = countries.resolve(iso3)
         if resolved and resolved not in {e.iso3 for e in entities}:
@@ -230,7 +275,7 @@ def parse(question: str, overrides: Optional[dict] = None) -> QueryPlan:
 
     limit_match = re.search(r"\btop (\d{1,2})\b", text, re.I)
     plan = QueryPlan(
-        question=text,
+        question=reformulation.original,
         intent=intent,
         entities=entities,
         time=time,
@@ -277,4 +322,10 @@ def parse(question: str, overrides: Optional[dict] = None) -> QueryPlan:
         plan.notes.append(f"{len(entities)} countries mentioned; comparing the first two.")
     if time.horizon_year:
         plan.notes.append(f"Forecast horizon read as {time.horizon_year}.")
+
+    if reformulation.changed:
+        plan.read_as = text
+    plan.rewrites = [rewrite.to_dict() for rewrite in reformulation.rewrites]
+    plan.notes = [rewrite.note() for rewrite in reformulation.rewrites] + plan.notes
+    plan.understanding = _understanding(plan, reformulation, text, overrides)
     return plan

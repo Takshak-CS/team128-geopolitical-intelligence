@@ -62,6 +62,10 @@ DEFAULT_LATEST_YEAR = {
     "trade_intelligence": 2024,
 }
 
+# Query reformulation steps run before parsing (app/reformulate.py): "all",
+# "none", or a comma-separated subset of aliases,spelling,numbers,phrasing.
+REFORMULATION_STEPS = os.environ.get("REFORMULATION_STEPS", "all")
+
 CORS_ORIGINS = [
     origin.strip()
     for origin in os.environ.get("ORCHESTRATOR_CORS_ORIGINS", "http://localhost:8000,http://127.0.0.1:8000").split(",")

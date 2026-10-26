@@ -170,6 +170,7 @@
   <div id="result" class="hidden">
     <section class="brief">
       <h2 id="headline"></h2>
+      <p id="understood" class="muted"></p>
       <ul id="summary"></ul>
       <div class="meta" id="meta"></div>
     </section>
@@ -547,6 +548,9 @@ function renderPlan(data) {
   const plan = data.plan;
   const box = $("plan");
   box.replaceChildren(
+    el("p", {}, el("strong", { text: "Question: " }), plan.question,
+      ...(plan.read_as ? [el("strong", { text: "  ·  Read as: " }), plan.read_as] : []),
+      el("strong", { text: "  ·  Understanding: " }), Number(plan.understanding ?? 1).toFixed(2)),
     el("p", {}, el("strong", { text: "Intent: " }), plan.intent,
       el("strong", { text: "  ·  Countries: " }), plan.entities.length ? plan.entities.map((e) => `${e.name} (${e.iso3}, from "${e.matched}")`).join(", ") : "none",
       el("strong", { text: "  ·  Time: " }), plan.time.mode === "year" ? plan.time.year : plan.time.mode === "date" ? plan.time.date : `latest (aligned ${data.time_alignment.aligned_year ?? "n/a"})`,
@@ -560,6 +564,12 @@ function renderPlan(data) {
 function render(data) {
   const brief = data.briefing;
   $("headline").textContent = plain(brief.headline);
+  const und = brief.understanding || {};
+  const understood = [];
+  if (und.read_as) understood.push(`Read as: "${und.read_as}"`);
+  if (und.read_as || und.low) understood.push(`understanding ${Number(und.confidence).toFixed(2)}`);
+  if (und.low) understood.push("this may not be the question that was asked; see how it was read below");
+  $("understood").textContent = understood.join(" · ");
   $("summary").replaceChildren(...brief.summary.map((line) => el("li", { text: plain(line) })));
   const stats = data.fused.stats;
   $("meta").replaceChildren(
