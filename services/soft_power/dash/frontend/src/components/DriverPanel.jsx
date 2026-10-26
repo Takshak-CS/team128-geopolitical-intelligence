@@ -30,19 +30,20 @@ export default function DriverPanel({ focusCountry }) {
     <section className="panel chart-panel driver-panel">
       <div className="panel-head">
         <div className="panel-title"><span className="tag-index">04</span> Driver Analysis</div>
-        <div className="panel-note">{focusCountry ? `${nameMap[focusCountry] || focusCountry} \u00b7 model attribution` : "Select a country"}</div>
+        <div className="panel-note">{focusCountry ? `${nameMap[focusCountry] || focusCountry} \u00b7 model association` : "Select a country"}</div>
       </div>
 
       {!focusCountry ? (
-        <div className="chart-empty">Pick a country from the ledger to see what is moving its score.</div>
+        <div className="chart-empty">Pick a country from the ledger to see which indicators are most associated with its model score.</div>
       ) : loading && data.length === 0 ? (
         <div className="chart-empty">Loading driver attribution&hellip;</div>
       ) : (
         <>
           <p className="driver-summary">
-            For <strong>{nameMap[focusCountry] || focusCountry}</strong>, the model's largest contributors to its current
-            soft power score are shown below &mdash; bars extending right push the score up, bars extending
-            left pull it down. {info?.kalman_regime && (
+            For <strong>{nameMap[focusCountry] || focusCountry}</strong>, the model-attributed indicators associated
+            with its current soft power score are shown below &mdash; bars extending right are associated with a
+            higher score, while bars extending left are associated with a lower score. These are model
+            associations, not causal effects. {info?.kalman_regime && (
               <>Its current regime is classified as <strong>{info.kalman_regime}</strong>.</>
             )}
           </p>

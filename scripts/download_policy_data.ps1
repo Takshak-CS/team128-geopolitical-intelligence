@@ -26,63 +26,57 @@ function Get-File($name, $dest, $label) {
         Write-Host "  [ok] $label"
         return $true
     } catch {
-        Write-Host "  [warn] $label failed: $($_.Exception.Message) — will retry next run"
+        Write-Host ('  [warn] ' + $label + ' failed: ' + $_.Exception.Message + ' - will retry next run')
         Remove-Item $dest -Force -ErrorAction SilentlyContinue
         return $false
     }
 }
 
-function Expand-Zip($zip, $dir, $label) {
-    if (Test-Path $dir) { Write-Host "  [skip] $label (already extracted)"; Remove-Item $zip -Force -ErrorAction SilentlyContinue; return }
-    if (-not (Test-Path $zip)) { return }
-    Write-Host "  [unzip] $label ..."
-    try {
-        Expand-Archive -Path $zip -DestinationPath $DataDir -Force
-        Remove-Item $zip -Force
-        Write-Host "  [ok] $label"
-    } catch {
-        Write-Host "  [warn] $label unzip failed — deleting corrupt file, will retry next run"
-        Remove-Item $zip -Force -ErrorAction SilentlyContinue
-    }
-}
-
-Write-Host "`nPolicy Stance datasets -> $DataDir`n"
+Write-Host ('Policy Stance datasets -> ' + $DataDir)
 
 # UN GA voting (the main 544K-vote file)
-Get-File "2025_7_23_ga_voting.xlsx" "$DataDir\2025_7_23_ga_voting.xlsx" "UN GA voting 1989-2025 (70 MB)" | Out-Null
+Get-File '2025_7_23_ga_voting.xlsx' (Join-Path $DataDir '2025_7_23_ga_voting.xlsx') 'UN GA voting 1989-2025 (70 MB)' | Out-Null
 
 # UCDP conflict datasets
 $zips = @(
-    @{ file="ged251-csv.zip";                    folder="ged251-csv";                    label="UCDP GED 25.1 (28 MB)" },
-    @{ file="ucdp-dyadic-251-csv_1.zip";         folder="ucdp-dyadic-251-csv";           label="UCDP Dyadic 25.1" },
-    @{ file="ucdp-nonstate-251-csv.zip";         folder="ucdp-nonstate-251-csv";         label="UCDP Non-state 25.1" },
-    @{ file="ucdp-onesided-251-csv.zip";         folder="ucdp-onesided-251-csv";         label="UCDP One-sided 25.1" },
-    @{ file="ucdp-brd-dyadic-251-csv.zip";       folder="ucdp-brd-dyadic-251-csv";       label="UCDP BRD Dyadic 25.1" },
-    @{ file="ucdp-prio-acd-251-csv_1.zip";       folder="ucdp-prio-acd-251-csv";         label="UCDP PRIO ACD 25.1" },
-    @{ file="ucdp-actor-251-csv.zip";            folder="ucdp-actor-251-csv";            label="UCDP Actor 25.1" },
-    @{ file="organizedviolencecy-251-csv_1.zip"; folder="organizedviolencecy-251-csv";   label="UCDP Organised Violence 25.1" }
+    @{ file='ged251-csv.zip';                    folder='ged251-csv';                    label='UCDP GED 25.1 (28 MB)' },
+    @{ file='ucdp-dyadic-251-csv_1.zip';         folder='ucdp-dyadic-251-csv';           label='UCDP Dyadic 25.1' },
+    @{ file='ucdp-nonstate-251-csv.zip';         folder='ucdp-nonstate-251-csv';         label='UCDP Non-state 25.1' },
+    @{ file='ucdp-onesided-251-csv.zip';         folder='ucdp-onesided-251-csv';         label='UCDP One-sided 25.1' },
+    @{ file='ucdp-brd-dyadic-251-csv.zip';       folder='ucdp-brd-dyadic-251-csv';       label='UCDP BRD Dyadic 25.1' },
+    @{ file='ucdp-prio-acd-251-csv_1.zip';       folder='ucdp-prio-acd-251-csv';         label='UCDP PRIO ACD 25.1' },
+    @{ file='ucdp-actor-251-csv.zip';            folder='ucdp-actor-251-csv';            label='UCDP Actor 25.1' },
+    @{ file='organizedviolencecy-251-csv_1.zip'; folder='organizedviolencecy-251-csv';   label='UCDP Organised Violence 25.1' }
 )
 
 foreach ($z in $zips) {
-    $zipPath = "$DataDir\$($z.file)"
-    $folderPath = "$DataDir\$($z.folder)"
+    $zipPath = Join-Path $DataDir $z.file
+    $folderPath = Join-Path $DataDir $z.folder
     Get-File $z.file $zipPath $z.label | Out-Null
-    Expand-Zip $zipPath $folderPath $z.label
+    if (Test-Path $folderPath) {
+        Write-Host ('  [skip] ' + $z.label + ' (already extracted)')
+        Remove-Item $zipPath -Force -ErrorAction SilentlyContinue
+    } elseif (Test-Path $zipPath) {
+        Write-Host ('  [unzip] ' + $z.label + ' ...')
+        Expand-Archive -Path $zipPath -DestinationPath $DataDir -Force
+        Remove-Item $zipPath -Force
+        Write-Host ('  [ok] ' + $z.label)
+    }
 }
 
 # Flat CSV/XLSX datasets
 $flat = @(
-    @{ file="par.csv";                              label="PAR dataset" },
-    @{ file="ucdp-candidate-csv.csv";               label="UCDP Candidate" },
-    @{ file="ucdp_issues_dataset_dyadyear_232.csv"; label="UCDP Issues" },
-    @{ file="CACE_1989-2017.xlsx";                  label="CACE 1989-2017" },
-    @{ file="ucdp-peace-agreements-221.xlsx";       label="UCDP Peace Agreements" },
-    @{ file="un_votes_clean.xlsx";                  label="UN votes (clean, 59 MB)" }
+    @{ file='par.csv';                              label='PAR dataset' },
+    @{ file='ucdp-candidate-csv.csv';               label='UCDP Candidate' },
+    @{ file='ucdp_issues_dataset_dyadyear_232.csv'; label='UCDP Issues' },
+    @{ file='CACE_1989-2017.xlsx';                  label='CACE 1989-2017' },
+    @{ file='ucdp-peace-agreements-221.xlsx';       label='UCDP Peace Agreements' },
+    @{ file='un_votes_clean.xlsx';                  label='UN votes (clean, 59 MB)' }
 )
 
 foreach ($f in $flat) {
-    Get-File $f.file "$DataDir\$($f.file)" $f.label | Out-Null
+    Get-File $f.file (Join-Path $DataDir $f.file) $f.label | Out-Null
 }
 
-Write-Host "`nDataset download complete. Any [warn] items will retry on next run."
-Write-Host "Policy Stance builds its cache on first start (~8 min)."
+Write-Host '`nDataset download complete. Any [warn] items will retry on next run.'
+Write-Host 'Policy Stance builds its cache on first start (~8 min).'

@@ -1,4 +1,5 @@
 import os
+import re
 
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
@@ -64,6 +65,13 @@ def with_fallback(db_fn, file_fn):
         return file_fn()
 
 
+def validate_iso3(iso3: str) -> str:
+    normalized = iso3.upper()
+    if not re.fullmatch(r"[A-Z]{3}", normalized):
+        raise HTTPException(400, "iso3 must be a three-letter country code")
+    return normalized
+
+
 @app.get("/health")
 def health():
     if use_files():
@@ -122,7 +130,9 @@ def get_timeseries(
 ):
     if not iso3:
         raise HTTPException(400, "Provide at least one iso3 query parameter")
-    iso3_upper = [c.upper() for c in iso3]
+    iso3_upper = [validate_iso3(c) for c in iso3]
+    if y_start > y_end:
+        raise HTTPException(400, "yStart must be less than or equal to yEnd")
 
     def db():
         with engine.connect() as conn:
@@ -189,7 +199,7 @@ def get_deltas(y_start: int = Query(alias="yStart"), y_end: int = Query(alias="y
 
 @app.get("/api/drivers/{iso3}")
 def get_drivers(iso3: str):
-    iso3 = iso3.upper()
+    iso3 = validate_iso3(iso3)
 
     def db():
         with engine.connect() as conn:
@@ -210,7 +220,7 @@ def get_drivers(iso3: str):
 
 @app.get("/api/forecast/{iso3}")
 def get_forecast(iso3: str):
-    iso3 = iso3.upper()
+    iso3 = validate_iso3(iso3)
 
     def db():
         with engine.connect() as conn:
@@ -231,7 +241,7 @@ def get_forecast(iso3: str):
 
 @app.get("/api/peers/{iso3}")
 def get_peers(iso3: str, limit: int = Query(default=8, ge=1, le=25)):
-    iso3 = iso3.upper()
+    iso3 = validate_iso3(iso3)
     if not isinstance(limit, int):
         limit = 8
     rows = get_file_store().get_peers(iso3, limit)

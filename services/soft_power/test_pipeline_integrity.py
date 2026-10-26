@@ -23,6 +23,7 @@ Run everything including the slow ones (re-runs pipeline scripts, ~1-2 min):
 """
 
 import pickle
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -143,6 +144,15 @@ def test_kalman_forecast_no_missing_values(kalman_forecast):
     assert nan_counts.sum() == 0, f"NaNs found in forecast output: {nan_counts[nan_counts > 0].to_dict()}"
 
 
+def test_kalman_forecast_values_and_intervals_are_valid(kalman_forecast):
+    """Forecast responses must be finite and their bands must be ordered
+    around the forecast value."""
+    values = kalman_forecast[["forecast_score", "ci_lower_95", "ci_upper_95"]]
+    assert values.notna().all().all()
+    assert (kalman_forecast["ci_lower_95"] <= kalman_forecast["forecast_score"]).all()
+    assert (kalman_forecast["forecast_score"] <= kalman_forecast["ci_upper_95"]).all()
+
+
 def test_kalman_forecast_uncertainty_grows_with_horizon(kalman_forecast):
     """forecast_std should be non-decreasing across horizon 1->5 for every
     country -- this is the core state-space math (P_h = P_last + h*Q). A
@@ -177,6 +187,63 @@ def test_global_rank_is_a_clean_permutation(predictions):
 def test_scores_in_plausible_range(predictions):
     assert predictions["score"].between(0, 120).all(), \
         "soft_power score outside a plausible 0-120 range -- check for a units/scaling bug"
+
+
+def test_latest_rankings_are_deterministic_and_scores_are_bounded():
+    dash_backend = ROOT / "dash" / "backend"
+    if str(dash_backend) not in sys.path:
+        sys.path.insert(0, str(dash_backend))
+    os.environ.setdefault("DATA_SOURCE", "files")
+    from app.file_data import get_file_store
+
+    store = get_file_store()
+    first = [(row["iso3"], row["rank"]) for row in store.latest]
+    second = [(row["iso3"], row["rank"]) for row in store.latest]
+    assert first == second
+    assert all(0 <= row["score"] <= 120 for row in store.latest if row["score"] is not None)
+    assert [row["rank"] for row in store.latest] == list(range(1, len(store.latest) + 1))
+
+
+def test_peer_similarity_is_bounded():
+    dash_backend = ROOT / "dash" / "backend"
+    if str(dash_backend) not in sys.path:
+        sys.path.insert(0, str(dash_backend))
+    os.environ.setdefault("DATA_SOURCE", "files")
+    from app.file_data import get_file_store
+
+    store = get_file_store()
+    country = store.latest[0]["iso3"]
+    peers = store.get_peers(country, limit=8)
+    assert peers
+    assert all(-1 <= peer["similarity"] <= 1 for peer in peers)
+
+
+def test_iso3_validation_rejects_malformed_codes():
+    dash_backend = ROOT / "dash" / "backend"
+    if str(dash_backend) not in sys.path:
+        sys.path.insert(0, str(dash_backend))
+    os.environ.setdefault("DATA_SOURCE", "files")
+    from fastapi import HTTPException
+    from app.main import validate_iso3
+
+    assert validate_iso3("usa") == "USA"
+    for value in ("US", "USAA", "12A", "U$A", ""):
+        with pytest.raises(HTTPException) as error:
+            validate_iso3(value)
+        assert error.value.status_code == 400
+
+
+def test_timeseries_validation_rejects_reversed_year_range():
+    dash_backend = ROOT / "dash" / "backend"
+    if str(dash_backend) not in sys.path:
+        sys.path.insert(0, str(dash_backend))
+    os.environ.setdefault("DATA_SOURCE", "files")
+    from fastapi import HTTPException
+    from app.main import get_timeseries
+
+    with pytest.raises(HTTPException) as error:
+        get_timeseries(["USA"], y_start=2024, y_end=2020)
+    assert error.value.status_code == 400
 
 
 # ─────────────────────────────────────────────────────────────────────────

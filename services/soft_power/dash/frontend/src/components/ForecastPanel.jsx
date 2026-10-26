@@ -25,7 +25,7 @@ export default function ForecastPanel({ focusCountry }) {
       </div>
 
       {!focusCountry ? (
-        <div className="chart-empty">Pick a country to view its Kalman-filtered forecast.</div>
+        <div className="chart-empty">Pick a country to view its Kalman-filtered outlook.</div>
       ) : loading && data.length === 0 ? (
         <div className="chart-empty">Loading forecast&hellip;</div>
       ) : (
@@ -49,7 +49,7 @@ export default function ForecastPanel({ focusCountry }) {
               <Line type="monotone" dataKey="forecast" stroke="var(--accent)" strokeWidth={2.25} strokeDasharray="5 4" dot={{ r: 3 }} connectNulls isAnimationActive={false} />
             </ComposedChart>
           </ResponsiveContainer>
-          <p className="panel-note forecast-note">Solid grey = observed score &middot; dashed teal = Kalman state-space forecast &middot; shaded band = 95% confidence interval.</p>
+          <p className="panel-note forecast-note">Solid grey = observed score &middot; dashed teal = Kalman state-space outlook &middot; shaded band = 95% confidence interval. This is a continuation of the estimated historical trend, not a causal prediction, and may be unreliable during sudden geopolitical shocks.</p>
         </>
       )}
     </section>
