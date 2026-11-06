@@ -66,6 +66,12 @@
   .card.cross_agent { background: var(--cross-soft); border-color: transparent; }
   .kind { font-size: 11.5px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
   .divergence .kind { color: var(--diverge); } .corroboration .kind { color: var(--agree); } .cross_agent .kind { color: var(--cross); }
+  .card.connection { background: var(--accent-soft); border-color: transparent; } .connection .kind { color: var(--accent); }
+  .combined { margin-bottom: 18px; }
+  .combined .overview { font-size: 15.5px; line-height: 1.55; margin: 0 0 14px; }
+  .combined .part-answer { margin: 0 0 12px; line-height: 1.55; }
+  .combined .part-answer strong { display: block; margin-bottom: 2px; }
+  .combined h3.sec { margin-top: 16px; }
   .card h4 { margin: 4px 0 6px; font-size: 15.5px; }
   .card p { margin: 0; }
   .conf { display: flex; align-items: center; gap: 8px; margin-top: 10px; font-size: 12.5px; color: var(--muted); }
@@ -173,6 +179,7 @@
   <div class="status" id="status"></div>
 
   <div id="result" class="hidden">
+    <section class="brief combined hidden" id="combined"></section>
     <section class="parts hidden" id="parts"></section>
     <section class="brief">
       <h2 id="headline"></h2>
@@ -196,7 +203,7 @@
 
 <script>
 const LABELS = { soft_power: "Soft Power", policy_stance: "Policy Stance", trade_intelligence: "Trade", event_summarization: "Events" };
-const KIND_LABEL = { divergence: "Divergence", corroboration: "Corroboration", cross_agent: "Cross-agent" };
+const KIND_LABEL = { divergence: "Divergence", corroboration: "Corroboration", cross_agent: "Cross-agent", connection: "Connection" };
 const EXAMPLES = [
   "How exposed is India right now?",
   "India and China relations",
@@ -602,15 +609,39 @@ function render(data) {
 
 // A compound question comes back with one full answer per sub-question in
 // `parts`; show a tab for each and render the chosen one.
+function renderCombined(combined) {
+  const box = $("combined");
+  const linked = combined.connections?.findings || [];
+  box.replaceChildren(
+    el("h2", { text: plain(combined.headline) }),
+    ...(combined.overview ? [el("p", { class: "overview", text: plain(combined.overview) })] : []),
+    ...combined.paragraphs.map((p) => el("p", { class: "part-answer" },
+      el("strong", { text: `${p.part}. ${p.question}` }), plain(p.text))),
+    ...(linked.length ? [
+      el("h3", { class: "sec", text: combined.connections.title }),
+      el("div", { class: "cards" }, linked.map((f) => {
+        const card = findingCard(f);
+        if (f.parts?.length) card.append(el("p", { class: "muted", text: `Joins parts ${f.parts.join(" and ")}` }));
+        return card;
+      })),
+    ] : []),
+    ...(combined.note ? [el("p", { class: "muted", text: combined.note })] : []),
+  );
+  box.classList.remove("hidden");
+}
+
 function renderAnswer(data) {
   const box = $("parts");
   const parts = data.parts || [];
   if (parts.length < 2) {
     box.classList.add("hidden");
     box.replaceChildren();
+    $("combined").classList.add("hidden");
+    $("combined").replaceChildren();
     render(data);
     return;
   }
+  if (data.combined) renderCombined(data.combined);
   const buttons = parts.map((part, i) => {
     const summary = data.decomposition?.parts?.[i] || {};
     const button = el("button", { type: "button", title: plain(summary.headline || "") },
@@ -623,7 +654,7 @@ function renderAnswer(data) {
     render(parts[i]);
   }
   box.replaceChildren(
-    el("p", { class: "muted", text: `This question asks ${parts.length} things, so each part was answered on its own:` }),
+    el("p", { class: "muted", text: `Each part in detail:` }),
     el("div", { class: "tabs" }, buttons),
     ...(data.decomposition?.parts || []).filter((p) => p.carried_countries?.length).map((p) =>
       el("p", { class: "muted", text: `"${p.question}" names no country; it uses ${p.carried_countries.join(", ")} from another part.` })),

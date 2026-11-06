@@ -62,8 +62,14 @@ dashboard" links in the briefing UI expect. See the list below.
 0. **Decompose** (`orchestrator/app/decompose.py`). A question that asks
    several things ("Forecast Brazil exports to 2030, and which bloc is
    Vietnam in?") is split into sub-questions. Each one runs every step below
-   in parallel and gets its own briefing. The UI shows a tab per part. A
-   question that asks one thing is not split. `DECOMPOSITION=off` turns this off.
+   in parallel and gets its own briefing. Then `orchestrator/app/synthesis.py`
+   joins them: it pools every part's claims, reruns fusion's cross-agent checks
+   over the pool, and applies linking rules (today vs. the forecast, a shock
+   reaching another part's country, the two countries' blocs, a country in the
+   other's news). The result is one combined answer with a "Connecting the
+   parts" section, shown above a tab per part. Parts with no link are answered
+   side by side, and the answer says so. A question that asks one thing is not
+   split. `DECOMPOSITION=off` turns this off.
 1. **Parse** (`orchestrator/app/intent.py`). The question becomes an intent:
    country profile, bilateral, shock, forecast, blocs, events, or ranking.
    The parser also extracts countries (as ISO3), a time window, sector,

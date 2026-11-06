@@ -9,6 +9,8 @@
       -> normalise      each adapter returns the shared envelope    (agents/)
       -> fuse           dedupe, corroborate, diverge, rank          (fusion.py)
       -> brief          cited narrative                             (briefing.py)
+      -> synthesise     compound only: pool the parts' claims, find what
+                        links them, one combined answer             (synthesis.py)
 
 A slow or down agent degrades the briefing - its status says why - instead of
 failing the question.
@@ -23,7 +25,7 @@ from typing import Optional
 
 import httpx
 
-from . import briefing, decompose, fusion, intent
+from . import briefing, decompose, fusion, intent, synthesis
 from .agents.base import AgentAdapter, AgentCallError, AgentResult
 from .agents.events import EventsAdapter
 from .agents.policy_stance import PolicyStanceAdapter
@@ -141,7 +143,9 @@ class Orchestrator:
         if not decomposition.compound:
             return await self._answer(question, decomposition.plans[0], include_envelopes, started)
 
-        parts = await asyncio.gather(*(self._answer(plan.question, plan, include_envelopes, time.perf_counter()) for plan in decomposition.plans))
+        answers = await asyncio.gather(*(self._answer_with_results(plan.question, plan, include_envelopes, time.perf_counter()) for plan in decomposition.plans))
+        parts = [answer.response for answer in answers]
+        connections = synthesis.connect(list(answers))
         response = dict(parts[0])
         overview = decomposition.to_dict()
         for summary, part in zip(overview["parts"], parts):
@@ -149,12 +153,16 @@ class Orchestrator:
         response.update({
             "question": question,
             "decomposition": overview,
-            "parts": list(parts),
+            "combined": synthesis.compose(question, list(answers), connections),
+            "parts": parts,
             "latency_ms": round((time.perf_counter() - started) * 1000, 1),
         })
         return response
 
     async def _answer(self, question: str, plan: intent.QueryPlan, include_envelopes: bool, started: float) -> dict:
+        return (await self._answer_with_results(question, plan, include_envelopes, started)).response
+
+    async def _answer_with_results(self, question: str, plan: intent.QueryPlan, include_envelopes: bool, started: float) -> "synthesis.PartAnswer":
         alignment = await self.align_time(plan)
         context = {"aligned_year": alignment["aligned_year"]}
 
@@ -165,7 +173,7 @@ class Orchestrator:
         fused = fusion.fuse(plan, results)
         brief = briefing.compose(plan, fused, results, alignment)
 
-        return {
+        return synthesis.PartAnswer(plan=plan, results=results, response={
             "question": question,
             "plan": plan.to_dict(),
             "time_alignment": alignment,
@@ -174,7 +182,7 @@ class Orchestrator:
             "agents": {name: result.to_dict(include_envelope=include_envelopes) for name, result in results.items()},
             "latency_ms": round((time.perf_counter() - started) * 1000, 1),
             "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-        }
+        })
 
     # ------------------------------------------------------------ status
     async def agents_health(self) -> dict:
