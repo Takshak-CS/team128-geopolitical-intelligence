@@ -268,6 +268,42 @@ and phrasings they list.
 "Is India closer to China or the US?" compares three countries. The bilateral
 plan compares only the first two, and reformulation does not change that.
 
+## Query decomposition (2026-11-07)
+
+The parser gives one plan per question, so a question asking two things lost
+one of them. `orchestrator/app/decompose.py` splits a compound question at
+clause boundaries, parses each part, carries a country into a part that names
+none, and answers each part with its own fan-out and briefing. Questions that
+ask one thing are left exactly as they were.
+
+`evaluation/compound.json` has 20 questions (10 dev, 10 test). 14 are compound
+and 6 are single-part controls that must not be split. Run it with
+`python -m evaluation.compound`.
+
+| decomposition | split | part recall | all parts | over-split |
+|---|---|---|---|---|
+| off (before) | dev | 35.7% | 30.0% | 0.0% |
+| off (before) | test | 31.2% | 20.0% | 0.0% |
+| on | dev | 100.0% | 100.0% | 0.0% |
+| on | test | 87.5% | 80.0% | 0.0% |
+
+None of the 90 single questions in `questions.json` is split, and their plans
+are unchanged (100% plan exact match, as before).
+
+The two test misses show what the rules do not handle yet:
+
+- *"How exposed is Turkey and how does it compare with Iran?"* The second part
+  names Iran and points back at Turkey with "it". Countries are only carried
+  into a part that names none, so it becomes a profile of Iran instead of a
+  Turkey-Iran comparison.
+- *"What are the trading blocs and how vulnerable is Mexico?"* The first part
+  is a global question, but it has no ranking cue, so it takes Mexico and
+  becomes "which bloc is Mexico in".
+
+The same person wrote the rules and both splits, so the test split is not an
+independent held-out set. With 10 questions, one question moves a rate by 10
+points.
+
 ## Using it for further changes
 
 1. Keep the `baseline_*` and `reformulated_*` reports as they are.

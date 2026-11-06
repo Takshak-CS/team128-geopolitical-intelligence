@@ -59,6 +59,11 @@ dashboard" links in the briefing UI expect. See the list below.
 
 ## What a question goes through
 
+0. **Decompose** (`orchestrator/app/decompose.py`). A question that asks
+   several things ("Forecast Brazil exports to 2030, and which bloc is
+   Vietnam in?") is split into sub-questions. Each one runs every step below
+   in parallel and gets its own briefing. The UI shows a tab per part. A
+   question that asks one thing is not split. `DECOMPOSITION=off` turns this off.
 1. **Parse** (`orchestrator/app/intent.py`). The question becomes an intent:
    country profile, bilateral, shock, forecast, blocs, events, or ranking.
    The parser also extracts countries (as ISO3), a time window, sector,

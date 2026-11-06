@@ -21,7 +21,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-from . import intent
+from . import decompose
 from .config import CORS_ORIGINS
 from .pipeline import ADAPTERS, Orchestrator
 
@@ -93,9 +93,14 @@ async def ask(request: AskRequest) -> dict:
 
 @app.post("/parse")
 async def parse(request: ParseRequest) -> dict:
-    plan = intent.parse(request.question)
+    decomposition = decompose.decompose(request.question)
+    plan = decomposition.plans[0]
     alignment = await _orchestrator().align_time(plan)
-    return {"plan": plan.to_dict(), "time_alignment": alignment}
+    response = {"plan": plan.to_dict(), "time_alignment": alignment}
+    if decomposition.compound:
+        response["decomposition"] = decomposition.to_dict()
+        response["parts"] = [{"plan": p.to_dict(), "time_alignment": await _orchestrator().align_time(p)} for p in decomposition.plans]
+    return response
 
 
 @app.get("/agents")

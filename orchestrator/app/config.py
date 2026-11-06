@@ -66,6 +66,10 @@ DEFAULT_LATEST_YEAR = {
 # "none", or a comma-separated subset of aliases,spelling,numbers,phrasing.
 REFORMULATION_STEPS = os.environ.get("REFORMULATION_STEPS", "all")
 
+# Split compound questions into sub-questions, each answered on its own
+# (app/decompose.py). "off" answers every question as a single plan.
+DECOMPOSITION = os.environ.get("DECOMPOSITION", "on").strip().lower() not in ("off", "0", "false", "no")
+
 CORS_ORIGINS = [
     origin.strip()
     for origin in os.environ.get("ORCHESTRATOR_CORS_ORIGINS", "http://localhost:8000,http://127.0.0.1:8000").split(",")

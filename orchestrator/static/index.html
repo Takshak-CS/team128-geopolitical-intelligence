@@ -42,6 +42,11 @@
   button.ghost { background: transparent; color: var(--accent); }
   .examples { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
   .examples button { padding: 4px 10px; font-size: 13px; background: var(--accent-soft); color: var(--accent); border-color: transparent; }
+  .parts { margin: 0 0 14px; }
+  .parts .tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+  .parts button { padding: 6px 12px; font-size: 13px; text-align: left; background: var(--accent-soft); color: var(--accent); border-color: transparent; }
+  .parts button.on { background: var(--accent); color: #fff; }
+  .parts button.on .muted { color: rgba(255, 255, 255, 0.85); }
   details.opts { margin-top: 10px; color: var(--muted); font-size: 13.5px; }
   details.opts .row { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 8px; align-items: center; }
   details.opts select, details.opts input { font: inherit; padding: 4px 6px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--ink); }
@@ -168,6 +173,7 @@
   <div class="status" id="status"></div>
 
   <div id="result" class="hidden">
+    <section class="parts hidden" id="parts"></section>
     <section class="brief">
       <h2 id="headline"></h2>
       <p id="understood" class="muted"></p>
@@ -199,6 +205,7 @@ const EXAMPLES = [
   "Forecast Brazil exports to 2030",
   "What happened in Iran yesterday?",
   "Which bloc is Vietnam in?",
+  "Forecast Brazil exports to 2030, and which bloc is Vietnam in?",
 ];
 
 const $ = (id) => document.getElementById(id);
@@ -593,6 +600,38 @@ function render(data) {
   $("result").classList.remove("hidden");
 }
 
+// A compound question comes back with one full answer per sub-question in
+// `parts`; show a tab for each and render the chosen one.
+function renderAnswer(data) {
+  const box = $("parts");
+  const parts = data.parts || [];
+  if (parts.length < 2) {
+    box.classList.add("hidden");
+    box.replaceChildren();
+    render(data);
+    return;
+  }
+  const buttons = parts.map((part, i) => {
+    const summary = data.decomposition?.parts?.[i] || {};
+    const button = el("button", { type: "button", title: plain(summary.headline || "") },
+      el("strong", { text: `${i + 1}. ` }), part.question, el("span", { class: "muted", text: `  ·  ${part.plan.intent}` }));
+    button.addEventListener("click", () => select(i));
+    return button;
+  });
+  function select(i) {
+    buttons.forEach((button, j) => { button.className = i === j ? "on" : ""; });
+    render(parts[i]);
+  }
+  box.replaceChildren(
+    el("p", { class: "muted", text: `This question asks ${parts.length} things, so each part was answered on its own:` }),
+    el("div", { class: "tabs" }, buttons),
+    ...(data.decomposition?.parts || []).filter((p) => p.carried_countries?.length).map((p) =>
+      el("p", { class: "muted", text: `"${p.question}" names no country; it uses ${p.carried_countries.join(", ")} from another part.` })),
+  );
+  box.classList.remove("hidden");
+  select(0);
+}
+
 async function ask(question) {
   const agents = [...document.querySelectorAll("input[name=agent]:checked")].map((box) => box.value);
   const body = { question };
@@ -609,7 +648,7 @@ async function ask(question) {
     const response = await fetch("/ask", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
     const data = await response.json();
     if (!response.ok) throw new Error(typeof data.detail === "string" ? data.detail : JSON.stringify(data.detail));
-    render(data);
+    renderAnswer(data);
     status.textContent = `Answered in ${((performance.now() - started) / 1000).toFixed(1)} s.`;
   } catch (error) {
     status.className = "status err";

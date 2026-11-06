@@ -1,6 +1,8 @@
 """The orchestration pipeline behind ``POST /ask``.
 
     question
+      -> decompose      a compound question becomes sub-questions   (decompose.py)
+                        each one runs every step below, in parallel
       -> parse          intent, ISO3 entities, time window, agents   (intent.py)
       -> align time     newest year every selected annual agent can serve
       -> fan out        all selected agents in parallel, per-agent timeouts
@@ -21,7 +23,7 @@ from typing import Optional
 
 import httpx
 
-from . import briefing, fusion, intent
+from . import briefing, decompose, fusion, intent
 from .agents.base import AgentAdapter, AgentCallError, AgentResult
 from .agents.events import EventsAdapter
 from .agents.policy_stance import PolicyStanceAdapter
@@ -126,8 +128,33 @@ class Orchestrator:
             return AgentResult(agent=name, status="error", error=f"adapter failure: {type(exc).__name__}: {exc}", dashboard_url=config.dashboard_url, latency_ms=(time.perf_counter() - started) * 1000)
 
     async def ask(self, question: str, overrides: Optional[dict] = None, include_envelopes: bool = True) -> dict:
+        """Answer a question. A compound question is split (decompose.py) and
+        each part is answered on its own, in parallel.
+
+        A single question gets the same response as always. A compound one gets
+        the first part's answer at the top level, so existing clients still
+        work, plus ``parts`` (one full answer per sub-question) and
+        ``decomposition`` (how it was split).
+        """
         started = time.perf_counter()
-        plan = intent.parse(question, overrides)
+        decomposition = decompose.decompose(question, overrides)
+        if not decomposition.compound:
+            return await self._answer(question, decomposition.plans[0], include_envelopes, started)
+
+        parts = await asyncio.gather(*(self._answer(plan.question, plan, include_envelopes, time.perf_counter()) for plan in decomposition.plans))
+        response = dict(parts[0])
+        overview = decomposition.to_dict()
+        for summary, part in zip(overview["parts"], parts):
+            summary["headline"] = part["briefing"]["headline"]
+        response.update({
+            "question": question,
+            "decomposition": overview,
+            "parts": list(parts),
+            "latency_ms": round((time.perf_counter() - started) * 1000, 1),
+        })
+        return response
+
+    async def _answer(self, question: str, plan: intent.QueryPlan, include_envelopes: bool, started: float) -> dict:
         alignment = await self.align_time(plan)
         context = {"aligned_year": alignment["aligned_year"]}
 
