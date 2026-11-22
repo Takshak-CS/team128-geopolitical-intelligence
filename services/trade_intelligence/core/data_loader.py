@@ -9,7 +9,7 @@ from typing import Optional
 
 import pandas as pd
 
-from core import baci_cache
+from core import baci_cache, product_store
 from core.sector_mapper import (
     baci_sector_mask,
     filter_trade_frame_by_sector,
@@ -38,14 +38,39 @@ def cache_ready() -> bool:
 
 
 
+def product_data_ready() -> bool:
+    """Return True when analyses can be narrowed to a single HS product."""
+    return cache_ready() and product_store.product_store_available(cache_directory())
+
+
+def _require_product_data() -> Path:
+    if not cache_ready():
+        raise ValueError("Product-level analysis needs the parquet cache (scripts/build_cache.py).")
+    product_store.require_store(cache_directory())
+    return cache_directory()
+
+
 def load_trade_data(
     csv_path: str | Path,
     year: Optional[int] = None,
     sector: Optional[str] = "all",
+    product: Optional[str] = None,
 ) -> pd.DataFrame:
-    """Load trade data from the parquet cache, a BACI directory, or a CSV."""
+    """Load trade data from the parquet cache, a BACI directory, or a CSV.
+
+    With ``product`` (an HS code) the flows come from the product store and
+    cover only that chapter, heading or subheading.
+    """
     source = Path(csv_path)
     selected_sector = normalize_sector(sector)
+
+    if product:
+        cache_dir = _require_product_data()
+        available = product_store.product_years(cache_dir)
+        selected_year = max(available) if year is None else int(year)
+        if selected_year not in available:
+            raise ValueError(year_out_of_range_message(selected_year, available))
+        return product_store.load_product_year(cache_dir, selected_year, product)
 
     if cache_ready():
         cache_dir = cache_directory()
@@ -78,10 +103,23 @@ def load_country_time_series(
     csv_path: str | Path,
     country: str,
     sector: Optional[str] = "all",
+    product: Optional[str] = None,
 ) -> dict:
     """Load a yearly country time series from the cache, a BACI directory, or a CSV."""
     source = Path(csv_path)
     selected_sector = normalize_sector(sector)
+
+    if product:
+        cache_dir = _require_product_data()
+        _, country_name = baci_cache.resolve_country(cache_dir, country)
+        quality = dict(baci_cache.load_quality(cache_dir, year=None, sector="all"))
+        quality["min_flow_usd"] = product_store.MIN_FLOW_THOUSAND_USD * 1000
+        return {
+            "country": country_name,
+            "sector": selected_sector,
+            "data_quality": quality,
+            "time_series": product_store.load_product_country_series(cache_dir, product, country_name),
+        }
 
     if cache_ready():
         cache_dir = cache_directory()
