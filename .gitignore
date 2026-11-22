@@ -10,9 +10,12 @@ node_modules/
 dist/
 
 # Data (see docs/DATA.md) - never committed. The one exception is the trade
-# parquet cache (services/trade_intelligence/cache/, 21 MB), which is committed
-# so the trade agent works on a fresh clone without the 8 GB BACI dataset.
+# parquet cache (services/trade_intelligence/cache/, 58 MB), which is committed
+# so the trade agent works on a fresh clone without the 8 GB BACI dataset. Its
+# product-level store (cache/products/, 345 MB) is not: it ships with the deploy
+# data bundle, and the agent works without it, minus product filtering.
 services/trade_intelligence/dataset/
+services/trade_intelligence/cache/products/
 services/policy_stance/data/
 services/policy_stance/outputs/
 services/event_summarization/data/*

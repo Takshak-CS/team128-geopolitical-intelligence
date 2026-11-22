@@ -54,7 +54,8 @@ powershell -ExecutionPolicy Bypass -File .\scripts\deploy.ps1 -Server ubuntu@<pu
 The script:
 
 1. Bundles the code (about 24 MB) and the datasets that are not in git
-   (about 113 MB: the trade cache, the UN votes and UCDP data, the GGE scores).
+   (about 490 MB: the trade cache with its 345 MB product store, the UN votes and
+   UCDP data, the GGE scores).
 2. Uploads both over SSH.
 3. On the server, installs Docker, adds swap on small VMs, writes the Caddy login,
    builds the five images, and starts everything.
@@ -76,6 +77,12 @@ powershell -ExecutionPolicy Bypass -File .\scripts\deploy.ps1 -Server ubuntu@<pu
 
 `-SkipData` skips re-uploading the datasets. Only images whose code changed are
 rebuilt.
+
+The trade sector tables are committed, so they travel with the code even with
+`-SkipData`. The trade product store (`services/trade_intelligence/cache/products/`,
+about 345 MB) is not: after building or refreshing it, deploy once **without**
+`-SkipData` so the server gets it. Until it arrives the trade dashboard simply
+hides product filtering.
 
 ## 5. Operating it
 

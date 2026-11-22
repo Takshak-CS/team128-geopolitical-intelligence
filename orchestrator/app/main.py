@@ -66,7 +66,11 @@ class AskRequest(BaseModel):
     intent: Optional[IntentName] = None
     year: Optional[int] = Field(default=None, ge=1989, le=2030)
     date: Optional[str] = Field(default=None, description="YYYY-MM-DD or YYYYMMDD, for the Events agent")
-    sector: Optional[Literal["all", "energy", "agriculture", "electronics"]] = None
+    # The trade agent's sectors (services/trade_intelligence/core/sector_mapper.py).
+    sector: Optional[Literal[
+        "all", "energy", "agriculture", "electronics", "minerals", "chemicals", "pharmaceuticals",
+        "plastics", "metals", "precious_metals", "textiles", "wood_paper", "vehicles", "arms", "manufactures",
+    ]] = None
     severity: Optional[float] = Field(default=None, ge=0.0, le=1.0)
     include_envelopes: bool = True
 

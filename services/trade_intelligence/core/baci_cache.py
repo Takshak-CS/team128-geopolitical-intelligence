@@ -26,12 +26,11 @@ import pandas as pd
 CACHE_VERSION = 1
 DEFAULT_CACHE_DIR = "cache"
 
-# Entries are keyed by (directory, year, sector), so one year costs four slots
-# when all sectors are touched. A cached year-sector frame is roughly 2-6 MB,
-# putting the default around 100 MB at full occupancy, which buys six years of
-# working set. Eight slots -- the original value -- held only two years and
-# thrashed as soon as anything compared three.
-MAX_CACHED_YEARS = int(os.environ.get("TRADE_CACHE_ENTRIES", "24"))
+# Entries are keyed by (directory, year, sector), so one year costs fifteen
+# slots when a fragility query touches every sector. A year-sector frame is
+# 0.3-6 MB (the "all" graph is the largest), so the default stays around
+# 100 MB at full occupancy while holding three full years of working set.
+MAX_CACHED_YEARS = int(os.environ.get("TRADE_CACHE_ENTRIES", "48"))
 
 _MEMORY_LOCK = threading.Lock()
 _MEMORY: "OrderedDict[tuple[str, int, str], pd.DataFrame]" = OrderedDict()
@@ -133,7 +132,8 @@ def load_year(
     if not path.exists():
         raise ValueError(f"Year {int(year)} is not present in the cache at '{directory}'.")
 
-    frame = pd.read_parquet(path)
+    # Fifteen sectors share each yearly file, so read only the one asked for.
+    frame = pd.read_parquet(path, filters=[("sector", "==", str(sector))])
     frame = frame[frame["sector"] == str(sector)].reset_index(drop=True)
     if frame.empty:
         raise ValueError(f"No cached trade data for year {int(year)} and sector '{sector}'.")
@@ -173,6 +173,68 @@ def load_country_series(
         "export_dependency_ratio",
     ]
     return selected.loc[:, columns].sort_values("year").reset_index(drop=True)
+
+
+def load_pair_series(
+    cache_dir: str | Path,
+    first: str,
+    second: str,
+    sector: str = "all",
+) -> pd.DataFrame:
+    """Yearly flows in both directions between two countries, for one sector.
+
+    ``a_to_b`` is what ``first`` exports to ``second``; years with no recorded
+    flow are zero rather than missing, so the series is forecastable as is.
+    """
+    directory = Path(cache_dir)
+    pair = [str(first), str(second)]
+    records = []
+    for year in cached_years(directory):
+        frame = pd.read_parquet(
+            edges_path(directory, year),
+            columns=["exporter", "importer", "trade_value", "sector"],
+            filters=[("sector", "==", str(sector)), ("exporter", "in", pair), ("importer", "in", pair)],
+        )
+        a_to_b = frame.loc[(frame["exporter"] == pair[0]) & (frame["importer"] == pair[1]), "trade_value"]
+        b_to_a = frame.loc[(frame["exporter"] == pair[1]) & (frame["importer"] == pair[0]), "trade_value"]
+        records.append({"year": int(year), "a_to_b": float(a_to_b.sum()), "b_to_a": float(b_to_a.sum())})
+    return pd.DataFrame(records, columns=["year", "a_to_b", "b_to_a"])
+
+
+def load_pair_sectors(cache_dir: str | Path, year: int, first: str, second: str) -> pd.DataFrame:
+    """What two countries trade with each other in a year, broken down by sector."""
+    pair = [str(first), str(second)]
+    frame = pd.read_parquet(
+        edges_path(Path(cache_dir), year),
+        columns=["exporter", "importer", "trade_value", "sector"],
+        filters=[("exporter", "in", pair), ("importer", "in", pair)],
+    )
+    frame = frame[frame["exporter"] != frame["importer"]]
+    a_to_b = frame[frame["exporter"] == pair[0]].groupby("sector")["trade_value"].sum()
+    b_to_a = frame[frame["exporter"] == pair[1]].groupby("sector")["trade_value"].sum()
+    out = pd.DataFrame({"a_to_b": a_to_b, "b_to_a": b_to_a}).fillna(0.0).rename_axis("sector").reset_index()
+    return out
+
+
+def world_trade_series(cache_dir: str | Path, sector: str = "all") -> list[dict]:
+    """World trade (the sum of every country's exports) per year for a sector."""
+    totals = pd.read_parquet(
+        country_year_path(Path(cache_dir)),
+        columns=["year", "sector", "exports"],
+        filters=[("sector", "==", str(sector))],
+    )
+    series = totals.groupby("year")["exports"].sum().sort_index()
+    return [{"year": int(year), "value": float(value)} for year, value in series.items()]
+
+
+def sector_world_totals(cache_dir: str | Path, year: int) -> dict[str, float]:
+    """World trade per sector in one year."""
+    totals = pd.read_parquet(
+        country_year_path(Path(cache_dir)),
+        columns=["year", "sector", "exports"],
+        filters=[("year", "==", int(year))],
+    )
+    return {str(sector): float(value) for sector, value in totals.groupby("sector")["exports"].sum().items()}
 
 
 def load_quality(

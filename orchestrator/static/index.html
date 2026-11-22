@@ -914,6 +914,8 @@ const OUTPUTS_MORE = {
     const risk = firstOf(ins, "trade_exposure")?.evidence, bloc = firstOf(ins, "trade_alignment")?.evidence, lev = firstOf(ins, "trade_dependence")?.evidence;
     const outlook = firstOf(ins, "trade_outlook")?.evidence, pairDep = firstOf(ins, "bilateral_trade_dependence")?.evidence, pairBloc = firstOf(ins, "bilateral_trade_bloc")?.evidence;
     const shock = byFacet(ins, "shock_impact").filter((s) => isNum(s.evidence?.impact_score));
+    // Two-way flows: the first side's insight carries history, forecast, sectors and products.
+    const flows = byFacet(ins, "bilateral_trade_flows").map((i) => i.evidence).find((e) => e?.history);
     const blocks = [];
     const ranking = !plan?.entities?.length && byFacet(ins, "trade_dependence").length > 1;
     if (ranking) {
@@ -934,6 +936,9 @@ const OUTPUTS_MORE = {
       lev && tile("Most critical partner", lev.most_critical_partner, `${fmt.pct(lev.critical_partner_dependence, 1)} of its trade`),
       lev && tile("Net leverage", fmt.signed(lev.net_leverage), `dominates ${lev.partners_dominated} · depends on ${lev.partners_dependent_on}`),
       s0 && tile("Shock", `${s0.sector} · ${s0.shock_origin}`, `severity ${fmt.pct(s0.severity)} · ${s0.propagation_steps} propagation steps`),
+      flows && tile("Two-way trade", fmt.usdK(flows.bilateral_trade), `${(flows.pair || []).map((c) => nameOf(plan, c)).join(" and ")} · ${flows.sector === "all" ? "all goods" : flows.sector.replace(/_/g, " ")}`),
+      flows && tile(`Balance for ${nameOf(plan, flows.pair?.[0])}`, `${flows.trade_balance >= 0 ? "+" : "-"}${fmt.usdK(Math.abs(flows.trade_balance))}`, `exports ${fmt.usdK(flows.exports_to_partner)} · imports ${fmt.usdK(flows.imports_from_partner)}`),
+      flows && isNum(flows.growth?.total_cagr_5y) && tile("Growth, last 5 years", `${fmt.signed(flows.growth.total_cagr_5y * 100, 1)}% a year`, isNum(flows.forecast?.projected_change) ? `projected ${fmt.signed(flows.forecast.projected_change * 100, 1)}% by ${flows.forecast.values?.at(-1)?.year}` : null),
       pairDep && tile("Who depends on whom", pairDep.exposed_country, `${fmt.pct(pairDep.exposed_dependence, 1)} of its trade vs ${fmt.pct(pairDep.holder_dependence, 1)} for ${pairDep.leverage_holder}`),
       pairBloc && tile("Same trading bloc?", pairBloc.same_bloc ? "Yes" : "No", (pairBloc.anchors || []).join(" · ") || null),
     ]));
@@ -941,6 +946,33 @@ const OUTPUTS_MORE = {
     if (shock.length) {
       out.push(view(`Shock propagation: who is hit (${s0.sector})`, barList(shock.slice(0, 10).map((s) => ({ label: s.entity_name, value: s.evidence.impact_score, display: fmt.pct(s.evidence.impact_score, 1) })), { max: 1 }),
         { wide: true, note: "Impact score after the shock propagates through the trade graph; 100% at the origin." }));
+    }
+    if (flows) {
+      const [a, b] = (flows.pair || []).map((c) => nameOf(plan, c));
+      const hist = flows.history || [], fc = flows.forecast?.values || [];
+      const money = (v) => (Math.abs(v) >= 1e12 ? `$${(v / 1e12).toFixed(1)}T` : Math.abs(v) >= 1e9 ? `$${(v / 1e9).toFixed(0)}B` : `$${(v / 1e6).toFixed(0)}M`);
+      const line = (key) => hist.map((p) => ({ x: p.year, y: p[key] * 1000 }));
+      const ahead = (key) => (hist.length && fc.length ? [{ x: hist.at(-1).year, y: hist.at(-1)[key] * 1000 }, ...fc.map((p) => ({ x: p.year, y: p[key] * 1000 }))] : []);
+      const chart = lineChart({
+        series: [
+          { name: `${a} → ${b}`, points: line("a_to_b") }, { name: null, dashed: true, points: ahead("a_to_b") },
+          { name: `${b} → ${a}`, alt: true, points: line("b_to_a") }, { name: null, dashed: true, alt: true, points: ahead("b_to_a") },
+        ],
+        yFmt: money, clamp: [0, Infinity], label: "Bilateral trade history and forecast",
+      });
+      out.push(view(`Trade between ${a} and ${b}, ${hist[0]?.year}-${fc.at(-1)?.year || hist.at(-1)?.year}`, chart,
+        { wide: true, note: `Solid: recorded flows. Dashed: forecast (${flows.forecast?.method_a_to_b} / ${flows.forecast?.method_b_to_a}).` }));
+      const sectors = (flows.sectors || []).slice(0, 8);
+      if (sectors.length) {
+        out.push(view(`What ${a} sells to ${b}`, barList(sectors.filter((x) => x.a_to_b > 0).map((x) => ({ label: x.label, value: x.share_a_to_b, display: `${fmt.pct(x.share_a_to_b)} · ${fmt.usdK(x.a_to_b)}` })), { max: 1 })));
+        out.push(view(`What ${b} sells to ${a}`, barList(sectors.filter((x) => x.b_to_a > 0).map((x) => ({ label: x.label, value: x.share_b_to_a, display: `${fmt.pct(x.share_b_to_a)} · ${fmt.usdK(x.b_to_a)}` })), { max: 1 })));
+      }
+      const top = flows.top_products;
+      if (top?.a_to_b?.length || top?.b_to_a?.length) {
+        const rows = (list) => barList((list || []).slice(0, 6).map((p) => ({ label: `${p.code} ${p.heading || p.description}`, value: p.share, display: fmt.usdK(p.value), title: `${p.code}: ${p.description}` })), { max: 1 });
+        out.push(view(`Top products ${a} → ${b} (HS6)`, rows(top.a_to_b)));
+        out.push(view(`Top products ${b} → ${a} (HS6)`, rows(top.b_to_a)));
+      }
     }
     if (outlook?.history_values?.length) {
       const hist = outlook.history_values.map((p) => ({ x: p.year, y: p.value * 1000 }));
@@ -1014,10 +1046,11 @@ function opLabel(agent, call) {
     if (p === "/topic-agreement") return `Compare every country's UN General Assembly votes with ${r.country || "the target"}'s${r.topic ? ` on resolutions about ${String(r.topic).split("|").join(" / ")}` : " on every resolution"}${r.start_year ? `, ${r.start_year}-${r.end_year}` : ""}`;
   }
   if (agent === "trade_intelligence" && p === "/query") {
-    const who = r.country ? ` for ${r.country}` : "", sector = r.sector && r.sector !== "all" ? `, ${r.sector}` : "";
+    const who = r.country && r.query_type !== "bilateral" ? ` for ${r.country}` : "", sector = r.sector && r.sector !== "all" ? `, ${r.sector.replace(/_/g, " ")}` : "";
     const what = {
       risk: "Rank structural trade risk (centrality, concentration)", blocs: "Detect trading blocs in the trade graph", leverage: "Map leverage and dependence between partners",
-      fragility: "Score sector supply fragility", shock: `Propagate a ${fmt.pct(r.severity) || ""} export shock through the graph`.replace("  ", " "), forecast: `Forecast ${r.metric || "trade"} ${r.periods ? `${r.periods} years ahead` : ""}`.trim(),
+      fragility: "Score sector supply fragility", bilateral: `Measure trade between ${r.country || "?"} and ${r.partner || "?"}: flows, balance, dependence, ${r.periods || 3}-year forecast`,
+      market: "Rank the exporters and importers", shock: `Propagate a ${fmt.pct(r.severity) || ""} export shock through the graph`.replace("  ", " "), forecast: `Forecast ${r.metric || "trade"} ${r.periods ? `${r.periods} years ahead` : ""}`.trim(),
     }[r.query_type] || `Query the trade graph (${r.query_type || "query"})`;
     return `${what}${who}${sector}`;
   }

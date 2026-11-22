@@ -42,7 +42,7 @@ PRIMARY_BOOST = 1.3
 # Which facets matter most for each intent; others still appear, lower down.
 PRIMARY_FACETS = {
     "country_profile": {"influence", "diplomatic_alignment", "trade_exposure", "trade_alignment", "trade_dependence", "event_activity", "conflict_exposure"},
-    "bilateral": {"bilateral_trade_bloc", "bilateral_trade_dependence", "bilateral_diplomacy", "bilateral_events", "bilateral_headlines", "event_headline", "bilateral_influence", "relationship_baseline"},
+    "bilateral": {"bilateral_trade_flows", "bilateral_trade_bloc", "bilateral_trade_dependence", "bilateral_diplomacy", "bilateral_events", "bilateral_headlines", "event_headline", "bilateral_influence", "relationship_baseline"},
     "shock": {"shock_impact"},
     "forecast": {"trade_outlook", "influence_outlook", "conflict_outlook"},
     "blocs": {"trade_alignment", "diplomatic_alignment", "diplomatic_blocs"},
@@ -236,7 +236,7 @@ def _rule_critical_partners(x: str, idx: InsightIndex) -> list[Finding]:
         if supplier and s_bloc and s_bloc != x_bloc and share >= 0.25:
             sname = countries.name_of(supplier)
             out.append(Finding(
-                "divergence", f"{str(sector).title()} supply depends on another bloc",
+                "divergence", f"{str(sector).replace('_', ' ').title()} supply depends on another bloc",
                 f"{name} sources {share * 100:.0f}% of its {sector} imports from {sname}, which votes in the {s_bloc} ({name}: {x_bloc}).",
                 x, name, min(item["confidence"], policy[1]["confidence"]), ["trade_intelligence", "policy_stance"], ["supply_fragility", "diplomatic_alignment"],
                 [_support(agent, item), _support(*policy)], caveat))

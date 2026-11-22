@@ -11,6 +11,7 @@ the facet fusion lines it up against.
     fragility  -> supply_fragility      per-sector supplier concentration
     shock      -> shock_impact          export disruption propagated through the graph
     forecast   -> trade_outlook         projection with model selection by rolling MAPE
+    bilateral  -> bilateral_trade_flows two countries' flows, balance, history and forecast
 """
 
 from __future__ import annotations
@@ -30,6 +31,7 @@ FACETS = {
     "fragility": "supply_fragility",
     "shock": "shock_impact",
     "forecast": "trade_outlook",
+    "bilateral": "bilateral_trade_flows",
 }
 
 
@@ -43,7 +45,7 @@ def _strip_reason(claim: str, reason: str) -> str:
 class TradeAdapter(AgentAdapter):
     name = "trade_intelligence"
     label = "Trade"
-    description = "Directed weighted trade graph over CEPII BACI HS92: risk, shock propagation, forecast, leverage, blocs, sector fragility."
+    description = "Directed weighted trade graph over CEPII BACI HS92: risk, shock propagation, forecast, leverage, blocs, sector fragility, two-country relationships."
     time_grain = "annual (1995-2024)"
 
     async def capabilities(self) -> dict:
@@ -93,6 +95,10 @@ class TradeAdapter(AgentAdapter):
             for iso3 in plan.iso3s[:2]:
                 jobs.append(("blocs", {**base, "query_type": "blocs", "country": iso3}))
                 jobs.append(("leverage", {**base, "query_type": "leverage", "country": iso3}))
+            if len(plan.iso3s) >= 2:
+                # Their direct flows, balance, history and forecast; one insight per side.
+                a, b = plan.iso3s[:2]
+                jobs.append(("bilateral", {**base, "query_type": "bilateral", "country": a, "partner": b}))
         elif plan.intent in ("event_history", "vote_alignment") and plan.primary:
             # Context for a search of past days: how exposed the country is, and to whom.
             jobs.append(("risk", {**base, "query_type": "risk", "country": plan.primary}))
@@ -136,6 +142,8 @@ class TradeAdapter(AgentAdapter):
             return sorted(items, key=lambda i: i.get("score") or 0, reverse=True)[:3]
         if query_type == "shock":
             return items[: plan.limit + 1]
+        if query_type == "bilateral":
+            return items[:2]
         return items[: max(plan.limit, 1)] if not plan.entities else items[:1]
 
     @staticmethod
