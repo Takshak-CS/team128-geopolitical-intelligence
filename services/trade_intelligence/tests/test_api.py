@@ -55,6 +55,8 @@ def test_capabilities_describes_every_query_type():
         "leverage",
         "blocs",
         "fragility",
+        "market",
+        "bilateral",
     }
     assert "response_envelope" in payload
     assert "all" in payload["parameters"]["sector"]
@@ -345,10 +347,12 @@ def test_agent_name_matches_the_contract():
         ("leverage", {"query_type": "leverage", "limit": 3}),
         ("blocs", {"query_type": "blocs", "limit": 3}),
         ("fragility", {"query_type": "fragility", "limit": 3}),
+        ("market", {"query_type": "market", "limit": 3}),
+        ("bilateral", {"query_type": "bilateral", "country": "India", "partner": "China", "periods": 2}),
     ],
 )
 def test_every_query_type_satisfies_the_contract(query_type, payload):
-    """All six query types must be consumable by the same fusion code."""
+    """All eight query types must be consumable by the same fusion code."""
     if query_type not in {"forecast"}:
         payload["year"] = latest_available_year()
 

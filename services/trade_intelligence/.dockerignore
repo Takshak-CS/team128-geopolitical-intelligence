@@ -6,3 +6,5 @@ __pycache__/
 venv/
 tests/
 .pytest_cache/
+# Mounted at run time (docker-compose); 400 MB with the product store.
+cache/

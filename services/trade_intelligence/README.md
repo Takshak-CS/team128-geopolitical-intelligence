@@ -7,7 +7,9 @@ substituted.
 
 Built on the [CEPII BACI](http://www.cepii.fr/CEPII/en/bdd_modele/bdd_modele_item.asp?id=37)
 HS92 dataset — 226 countries, 1995 to 2024, product-level bilateral flows
-aggregated to country pairs.
+aggregated to country pairs for 14 sectors, with an HS6 product store so any
+analysis can be narrowed to a single good (raw cane sugar, crude oil, integrated
+circuits, rare-earth compounds...).
 
 This is the trade intelligence module of a four-agent geopolitical analysis
 system (Team 128 capstone). It runs standalone and is designed to be called by
@@ -24,10 +26,40 @@ intelligence modules.
 | `leverage`  | Who needs whom more? | Dependence asymmetry, higher is more lopsided |
 | `blocs`     | Which countries cluster into trading blocs? | Share of world trade, or internal trade share |
 | `fragility` | Which sectors can a country not substitute out of? | Fragility score, higher is more brittle |
+| `market`    | Who sells and who buys a sector or product, and how concentrated is supply? | Share of world trade |
+| `bilateral` | How do two countries trade with each other, and where is it heading? | Share of the country's trade that runs through the partner |
 
-`risk`, `leverage`, `blocs`, and `fragility` accept an optional `country`. With
+`market`, `risk`, `leverage`, `blocs`, and `fragility` accept an optional `country`. With
 one, you get that country's profile. Without one, you get a ranked view of the
-whole network.
+whole network. `bilateral` needs a `country` and a `partner`: it returns both
+sides' flows, balance and dependence, the full 1995-2024 history, growth rates,
+a per-direction forecast, the sector split and the top HS6 products each way.
+
+### Sectors and products
+
+The 14 sectors partition the HS chapters, so together they add up to `all`:
+
+| Sector | HS chapters |
+|---|---|
+| `agriculture` Food & agriculture | 01-24 |
+| `minerals` Ores & minerals | 25-26 |
+| `energy` Energy | 27 |
+| `chemicals` Chemicals | 28-29, 31-38 |
+| `pharmaceuticals` Pharmaceuticals | 30 |
+| `plastics` Plastics & rubber | 39-40 |
+| `textiles` Textiles, clothing & leather | 41-43, 50-67 |
+| `wood_paper` Wood & paper | 44-49 |
+| `precious_metals` Precious metals & gems | 71 |
+| `metals` Base metals | 72-83 |
+| `electronics` Machinery & electronics | 84, 85, 90 |
+| `vehicles` Vehicles, aircraft & ships | 86-89 |
+| `arms` Arms & ammunition | 93 |
+| `manufactures` Other manufactures | 68-70, 91-92, 94-97, 99 |
+
+Every query type except `fragility` also takes `product`, an HS code of 2 digits
+(a chapter, `17`), 4 (a heading, `1701`) or 6 (a subheading, `170111`). Find
+codes with `GET /products?q=sugar cane`. Product figures leave out flows under
+$10,000, which is about 0.05% of trade value.
 
 ## Setup
 
@@ -39,8 +71,11 @@ pip install -r requirements.txt
 
 ### 2. The cache comes with the clone
 
-`cache/` is committed: about 21 MB of parquet precomputed from the 8 GB BACI
-dataset, covering 1995-2024, all four sectors, and 234 countries. It is
+`cache/` is committed: about 58 MB of parquet precomputed from the 8 GB BACI
+dataset, covering 1995-2024, all 14 sectors, and 234 countries. The HS6 product
+store in `cache/products/` (345 MB) is not committed; build it as in step 3.
+Without it everything works at sector level and product filtering is reported
+as unavailable. It is
 self-contained (it bundles the country code table), so after `git clone` and
 step 1 the whole module runs with no download and no build step.
 
@@ -69,11 +104,12 @@ dataset/
 ```
 
 ```bash
-python scripts/build_cache.py
+python scripts/build_cache.py --dataset dataset --workers 2
 ```
 
-This makes one pass over each yearly file and rewrites `cache/`. It takes
-roughly 15 minutes. Commit the new `cache/` so teammates get it on their next pull.
+This makes one pass over each yearly file and rewrites `cache/`, including the
+product store. With two workers it takes about 8 minutes; each worker needs
+about 1.5 GB of memory. `--skip-products` leaves the product store out. Commit the new `cache/` so teammates get it on their next pull.
 
 ### 4. Optional: fetch economic metadata
 
@@ -107,7 +143,10 @@ Open `http://127.0.0.1:8080`.
 | Endpoint | Purpose |
 |----------|---------|
 | `POST /query` | Run an analysis, get the standard agent envelope |
-| `GET /graph` | Visualization-friendly network snapshot |
+| `GET /graph` | Visualization-friendly network snapshot, for a sector or a `product` |
+| `GET /sectors` | The sector catalog with each sector's world trade |
+| `GET /products?q=` | Search HS products by words or code, largest world trade first |
+| `GET /products/{code}` | What an HS code covers and its world trade by year |
 | `GET /capabilities` | What this agent can answer, over what years and countries |
 | `GET /health` | Liveness and readiness |
 | `GET /docs` | Interactive OpenAPI documentation |
@@ -204,6 +243,18 @@ curl -X POST http://127.0.0.1:8000/query \
   -d '{"query_type":"shock","country":"China","severity":0.5,"year":2024,"limit":5}'
 ```
 
+```bash
+curl -X POST http://127.0.0.1:8000/query \
+  -H "Content-Type: application/json" \
+  -d '{"query_type":"market","product":"170111","limit":5}'
+```
+
+```bash
+curl -X POST http://127.0.0.1:8000/query \
+  -H "Content-Type: application/json" \
+  -d '{"query_type":"bilateral","country":"India","partner":"China","periods":5}'
+```
+
 ### Country identifiers
 
 Country accepts a name, ISO2, ISO3, BACI numeric code, or a common alias.
@@ -261,6 +312,7 @@ trade_intelligence_module/
   agent/trade_agent.py     query routing and insight construction
   core/
     baci_cache.py          parquet cache reads
+    product_store.py       HS6 product store: search, per-product flows, pair history
     data_loader.py         cache / BACI / CSV loading and cleaning
     graph_builder.py       trade table to NetworkX graph
     feature_engineering.py imports, exports, dependency ratios
@@ -272,7 +324,7 @@ trade_intelligence_module/
     forecast.py            linear / ARIMA / hybrid with model selection
     metadata.py            GDP and population enrichment
     confidence.py          interpretable confidence scoring
-    sector_mapper.py       HS92 chapter to sector mapping
+    sector_mapper.py       the 14 sectors, HS chapter names, HS code helpers
     output_formatter.py    the shared response envelope
   scripts/
     build_cache.py         one-time parquet precompute

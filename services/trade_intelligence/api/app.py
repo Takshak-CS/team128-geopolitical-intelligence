@@ -1,11 +1,14 @@
 """FastAPI application exposing the trade intelligence agent.
 
-Three surfaces:
+Surfaces:
 
-    POST /query         run an analysis and get the standard agent envelope
-    GET  /graph         a visualization-friendly network snapshot
-    GET  /capabilities  what this agent can answer, and over what data
-    GET  /health        liveness and readiness for container orchestration
+    POST /query            run an analysis and get the standard agent envelope
+    GET  /graph            a visualization-friendly network snapshot
+    GET  /sectors          the sector catalog with world trade per sector
+    GET  /products         search HS products by name or code
+    GET  /products/{code}  what one HS code covers, with its world trade history
+    GET  /capabilities     what this agent can answer, and over what data
+    GET  /health           liveness and readiness for container orchestration
 
 ``/capabilities`` exists for the orchestration layer. An orchestrator deciding
 whether to route a question here should not have to read this file to find out
@@ -22,20 +25,32 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from agent import trade_agent
-from core import baci_cache
-from core.data_loader import cache_directory, cache_ready, coverage_years, latest_year, load_trade_data
+from core import baci_cache, product_store
+from core.data_loader import (
+    cache_directory,
+    cache_ready,
+    coverage_years,
+    latest_year,
+    load_trade_data,
+    product_data_ready,
+)
 from core.graph_builder import build_graph_payload, build_trade_graph
 from core.metadata import metadata_available
 from core.output_formatter import AGENT_NAME
-from core.sector_mapper import SUPPORTED_SECTORS
+from core.sector_mapper import SUPPORTED_SECTORS, normalize_product, sector_catalog
 
-QueryType = Literal["risk", "shock", "forecast", "leverage", "blocs", "fragility"]
-SectorName = Literal["all", "energy", "agriculture", "electronics"]
+QueryType = Literal["risk", "shock", "forecast", "leverage", "blocs", "fragility", "market", "bilateral"]
+SectorName = Literal[SUPPORTED_SECTORS]  # type: ignore[valid-type]
 
-API_VERSION = "2.0.0"
+API_VERSION = "2.1.0"
 
 # Queries that operate on a single-year network snapshot rather than a history.
-SNAPSHOT_QUERIES = {"risk", "shock", "leverage", "blocs", "fragility"}
+SNAPSHOT_QUERIES = {"risk", "shock", "leverage", "blocs", "fragility", "market", "bilateral"}
+
+# Parameters that only mean something to one family of query types. Sending
+# them elsewhere is dropped before the agent sees it, as before.
+SHOCK_ONLY = ("severity", "steps", "propagation_factor")
+FORECAST_FIELDS = ("metric", "forecast_model", "periods")
 
 # The frontend is served separately, so the API needs CORS - but a wildcard lets
 # any page the user has open reach a locally running instance. Default to the
@@ -78,6 +93,17 @@ class TradeQuery(BaseModel):
     severity: Optional[float] = Field(default=None, ge=0.0, le=1.0)
     limit: int = Field(default=5, ge=1, le=50)
     sector: SectorName = "all"
+    product: Optional[str] = Field(
+        default=None,
+        max_length=12,
+        description="HS code narrowing the analysis to one product: 2 digits for a chapter "
+        "(17), 4 for a heading (1701) or 6 for a subheading (170111). Not used by fragility.",
+    )
+    partner: Optional[str] = Field(
+        default=None,
+        max_length=64,
+        description="The second country of a bilateral query.",
+    )
     metric: Optional[Literal["imports", "exports"]] = None
     forecast_model: Optional[Literal["auto", "linear", "arima", "hybrid"]] = None
     periods: Optional[int] = Field(default=None, ge=1, le=10)
@@ -104,6 +130,23 @@ class TradeQuery(BaseModel):
             if self.periods is None:
                 self.periods = 3
 
+        if self.query_type == "bilateral":
+            if not self.country or not self.partner:
+                raise ValueError("Bilateral queries require a country and a partner.")
+            if self.forecast_model is None:
+                self.forecast_model = "auto"
+            if self.periods is None:
+                self.periods = 3
+        elif self.partner:
+            raise ValueError("partner applies only to bilateral queries.")
+
+        if self.product is not None:
+            self.product = normalize_product(self.product)
+            if self.query_type == "fragility":
+                raise ValueError(
+                    "Fragility compares sectors, so it cannot be narrowed to one product."
+                )
+
         return self
 
     def to_agent_query(self) -> dict:
@@ -117,6 +160,11 @@ class TradeQuery(BaseModel):
             payload.pop("top_n_partners", None)
             payload.pop("propagation_factor", None)
             payload["metric"] = self.metric or "exports"
+            payload["forecast_model"] = self.forecast_model or "auto"
+            payload["periods"] = self.periods or 3
+        elif self.query_type == "bilateral":
+            for key in (*SHOCK_ONLY, "metric", "top_n_partners"):
+                payload.pop(key, None)
             payload["forecast_model"] = self.forecast_model or "auto"
             payload["periods"] = self.periods or 3
         else:
@@ -134,7 +182,8 @@ app = FastAPI(
     description=(
         "Graph-based trade intelligence over the CEPII BACI dataset. "
         "Answers risk, shock propagation, forecasting, dependence leverage, "
-        "trade bloc, and sector fragility questions."
+        "trade bloc, sector fragility, market structure, and two-country relationship "
+        "questions, for 14 sectors or any single HS product."
     ),
     version=API_VERSION,
 )
@@ -163,22 +212,96 @@ def query_trade_agent(request: TradeQuery) -> dict:
 def get_trade_graph(
     year: Optional[int] = Query(default=None, ge=1900, le=2100),
     sector: SectorName = "all",
+    product: Optional[str] = Query(default=None, max_length=12),
     max_edges: int = Query(default=140, ge=20, le=400),
 ) -> dict:
-    """Return a visualization-friendly graph snapshot for a selected year and sector."""
+    """Return a visualization-friendly graph snapshot for a year and a sector or product."""
     try:
         source_path = trade_agent.DEFAULT_DATA_PATH
-        selected_year = latest_year(source_path) if year is None else int(year)
-        trade_data = load_trade_data(source_path, year=selected_year, sector=sector)
+        code = normalize_product(product)
+        if code:
+            info = product_store.describe_product(cache_directory(), code)
+            sector = info["sector"]
+            selected_year = max(product_store.product_years(cache_directory())) if year is None else int(year)
+        else:
+            selected_year = latest_year(source_path) if year is None else int(year)
+        trade_data = load_trade_data(source_path, year=selected_year, sector=sector, product=code)
         graph = build_trade_graph(trade_data, sector=sector)
         payload = build_graph_payload(graph, max_edges=max_edges)
         payload["year"] = selected_year
         payload["sector"] = sector
+        payload["product"] = code
         return payload
     except (FileNotFoundError, ValueError) as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Unexpected server error: {exc}") from exc
+
+
+@app.get("/sectors")
+def get_sectors(year: Optional[int] = Query(default=None, ge=1900, le=2100)) -> dict:
+    """The sector catalog, with each sector's world trade in a year."""
+    sectors = sector_catalog()
+    selected_year = None
+    if cache_ready():
+        try:
+            selected_year = latest_year(trade_agent.DEFAULT_DATA_PATH) if year is None else int(year)
+            totals = baci_cache.sector_world_totals(cache_directory(), selected_year)
+            for sector in sectors:
+                sector["world_trade"] = totals.get(sector["id"])
+        except (ValueError, OSError):
+            pass
+    return {
+        "year": selected_year,
+        "value_unit": "thousand USD",
+        "products_available": product_data_ready(),
+        "sectors": sectors,
+    }
+
+
+@app.get("/products")
+def get_products(
+    q: str = Query(default="", max_length=80),
+    sector: SectorName = "all",
+    limit: int = Query(default=25, ge=1, le=100),
+) -> dict:
+    """Search HS products by words in their description or by code prefix.
+
+    Answers with ``available: false`` and no products when the product store
+    is not installed, so a dashboard can hide its product picker.
+    """
+    if not product_data_ready():
+        return {"available": False, "products": [], "chapters": []}
+    try:
+        cache_dir = cache_directory()
+        products = product_store.search_products(cache_dir, q, sector=sector, limit=limit)
+        chapters = [] if q.strip() else product_store.sector_products(cache_dir, sector)["chapters"]
+        meta = product_store.product_meta(cache_dir)
+        return {
+            "available": True,
+            "query": q,
+            "sector": sector,
+            "value_unit": "thousand USD",
+            "value_year": max(meta.get("years") or [0]) or None,
+            "products": products,
+            "chapters": chapters,
+        }
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+@app.get("/products/{code}")
+def get_product(code: str) -> dict:
+    """What one HS code covers, and its world trade in every year."""
+    if not product_data_ready():
+        raise HTTPException(status_code=404, detail="Product-level data is not installed on this deployment.")
+    try:
+        cache_dir = cache_directory()
+        info = product_store.describe_product(cache_dir, code)
+        info["world_trade_series"] = product_store.product_world_series(cache_dir, info["code"])
+        return info
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
 
 
 @app.get("/health")
@@ -270,9 +393,28 @@ def capabilities() -> dict:
                 "country": "optional; supplying it returns that country's sector profile",
                 "score_meaning": "fragility score, higher is more brittle",
             },
+            "market": {
+                "description": "Rank the exporters and importers of a sector or product, with concentration.",
+                "country": "optional; supplying it returns that country's exporter and importer position",
+                "score_meaning": "share of world trade in the sector or product",
+            },
+            "bilateral": {
+                "description": "Two countries' trade with each other: flows, balance, dependence, history, forecast.",
+                "country": "required",
+                "requires": ["partner"],
+                "score_meaning": "share of the country's trade that runs through the partner",
+            },
         },
         "parameters": {
             "sector": list(SUPPORTED_SECTORS),
+            "sectors": sector_catalog(),
+            "product": {
+                "available": product_data_ready(),
+                "format": "HS92 code: 2 digits (chapter), 4 (heading) or 6 (subheading)",
+                "search": "/products?q=",
+                "not_for": ["fragility"],
+            },
+            "partner": "country identifier; bilateral only",
             "limit": {"min": 1, "max": 50, "default": 5},
             "severity": {"min": 0.0, "max": 1.0},
             "steps": {"min": 1, "max": 10, "default": 3},

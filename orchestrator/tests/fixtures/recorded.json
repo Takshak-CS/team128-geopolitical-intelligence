@@ -43218,6 +43218,527 @@
   },
   "status": 200
  },
+ "trade_intelligence POST /query {\"country\": \"IND\", \"partner\": \"CHN\", \"query_type\": \"bilateral\", \"sector\": \"all\", \"year\": 2024}": {
+  "json": {
+   "agent": "trade_intelligence",
+   "insights": [
+    {
+     "claim": "All sectors in year 2024: India exported $17.24B to China and imported $122.31B from it, a deficit of $105.07B. China is India's #1 trade partner (12.2% of its trade); India is China's #13 (2.4%), so China is the less dependent side. Two-way trade grew 9.3% a year over 2019-2024. It is projected at $140.85B by 2027 (+0.9% on 2024). Confidence is most sensitive to low overall network density in the selected trade graph.",
+     "confidence": 0.919838431833368,
+     "entity_iso3": "IND",
+     "entity_name": "India",
+     "evidence": {
+      "asymmetry": 0.09729740576038666,
+      "bilateral_trade": 139545814.29299998,
+      "confidence_components": {
+       "data_completeness": 0.989301750870908,
+       "graph_connectivity": 0.770213544629196,
+       "propagation_reliability": 1.0
+      },
+      "dependence_on_partner": 0.12155987849217843,
+      "exports_to_partner": 17237499.001,
+      "exposed_country": "India",
+      "forecast": {
+       "method_a_to_b": "linear_plus_arima_residual",
+       "method_b_to_a": "linear_plus_arima_residual",
+       "model_confidence": 0.95,
+       "periods": 3,
+       "projected_change": 0.009376930729266097,
+       "values": [
+        {
+         "a_to_b": 20040276.725040786,
+         "b_to_a": 117438489.75561967,
+         "total": 137478766.48066047,
+         "year": 2025
+        },
+        {
+         "a_to_b": 22194334.70388598,
+         "b_to_a": 116231619.08403768,
+         "total": 138425953.78792366,
+         "year": 2026
+        },
+        {
+         "a_to_b": 23877942.687585004,
+         "b_to_a": 116976383.03959948,
+         "total": 140854325.72718447,
+         "year": 2027
+        }
+       ]
+      },
+      "growth": {
+       "a_to_b_1y": -0.05037392195449952,
+       "a_to_b_cagr_5y": -0.023860004796475986,
+       "b_to_a_1y": -0.017387734694462642,
+       "b_to_a_cagr_5y": 0.11868603755103035,
+       "total_1y": -0.021585900913697498,
+       "total_cagr_10y": 0.07433241476337615,
+       "total_cagr_5y": 0.09348460208524334
+      },
+      "history": [
+       {
+        "a_to_b": 481511.047,
+        "b_to_a": 951239.3640000001,
+        "year": 1995
+       },
+       {
+        "a_to_b": 853617.0179999999,
+        "b_to_a": 877661.616,
+        "year": 1996
+       },
+       {
+        "a_to_b": 1036127.627,
+        "b_to_a": 1260607.9640000002,
+        "year": 1997
+       },
+       {
+        "a_to_b": 892739.395,
+        "b_to_a": 1272081.322,
+        "year": 1998
+       },
+       {
+        "a_to_b": 862640.944,
+        "b_to_a": 1414102.713,
+        "year": 1999
+       },
+       {
+        "a_to_b": 1318608.381,
+        "b_to_a": 1714876.869,
+        "year": 2000
+       },
+       {
+        "a_to_b": 1641998.3699999999,
+        "b_to_a": 2069173.8460000001,
+        "year": 2001
+       },
+       {
+        "a_to_b": 2332142.605,
+        "b_to_a": 2851936.576,
+        "year": 2002
+       },
+       {
+        "a_to_b": 4337399.034,
+        "b_to_a": 3899831.371,
+        "year": 2003
+       },
+       {
+        "a_to_b": 7620905.892000001,
+        "b_to_a": 6426932.751999999,
+        "year": 2004
+       },
+       {
+        "a_to_b": 9272631.171,
+        "b_to_a": 10616503.824000001,
+        "year": 2005
+       },
+       {
+        "a_to_b": 9917943.698,
+        "b_to_a": 16114591.054000001,
+        "year": 2006
+       },
+       {
+        "a_to_b": 13064847.049,
+        "b_to_a": 24993743.922000002,
+        "year": 2007
+       },
+       {
+        "a_to_b": 16843991.062000003,
+        "b_to_a": 28731715.471,
+        "year": 2008
+       },
+       {
+        "a_to_b": 13038217.151,
+        "b_to_a": 28942478.73,
+        "year": 2009
+       },
+       {
+        "a_to_b": 20208499.28,
+        "b_to_a": 38290514.735,
+        "year": 2010
+       },
+       {
+        "a_to_b": 21527720.695,
+        "b_to_a": 51151101.754,
+        "year": 2011
+       },
+       {
+        "a_to_b": 17794155.676,
+        "b_to_a": 51342037.625,
+        "year": 2012
+       },
+       {
+        "a_to_b": 17424011.088999998,
+        "b_to_a": 48872797.940000005,
+        "year": 2013
+       },
+       {
+        "a_to_b": 16062947.264,
+        "b_to_a": 52065739.81,
+        "year": 2014
+       },
+       {
+        "a_to_b": 12446803.545,
+        "b_to_a": 56333610.353,
+        "year": 2015
+       },
+       {
+        "a_to_b": 11141008.961,
+        "b_to_a": 59957203.427,
+        "year": 2016
+       },
+       {
+        "a_to_b": 15843905.998,
+        "b_to_a": 71567729.132,
+        "year": 2017
+       },
+       {
+        "a_to_b": 20054375.109,
+        "b_to_a": 74080741.994,
+        "year": 2018
+       },
+       {
+        "a_to_b": 19449736.276,
+        "b_to_a": 69809559.233,
+        "year": 2019
+       },
+       {
+        "a_to_b": 21424228.641,
+        "b_to_a": 60002776.53,
+        "year": 2020
+       },
+       {
+        "a_to_b": 26543067.332,
+        "b_to_a": 88628782.062,
+        "year": 2021
+       },
+       {
+        "a_to_b": 16802727.144,
+        "b_to_a": 103237957.887,
+        "year": 2022
+       },
+       {
+        "a_to_b": 18151880.408,
+        "b_to_a": 124472612.047,
+        "year": 2023
+       },
+       {
+        "a_to_b": 17237499.001,
+        "b_to_a": 122308315.292,
+        "year": 2024
+       }
+      ],
+      "imports_from_partner": 122308315.292,
+      "leverage_holder": "China",
+      "leverage_holder_iso3": "CHN",
+      "pair": [
+       "IND",
+       "CHN"
+      ],
+      "partner": "China",
+      "partner_count": 219,
+      "partner_dependence": 0.02426247273179177,
+      "partner_iso3": "CHN",
+      "partner_partner_count": 208,
+      "partner_rank": 1,
+      "partner_share_of_exports": 0.034061592813960616,
+      "partner_share_of_imports": 0.007977701779864968,
+      "rank_with_partner": 13,
+      "sector": "all",
+      "sectors": [
+       {
+        "a_to_b": 2216495.964,
+        "b_to_a": 74107920.626,
+        "label": "Machinery & electronics",
+        "sector": "electronics",
+        "share_a_to_b": 0.12858570514617085,
+        "share_b_to_a": 0.6059107301827686
+       },
+       {
+        "a_to_b": 2041894.041,
+        "b_to_a": 16391457.429,
+        "label": "Chemicals",
+        "sector": "chemicals",
+        "share_a_to_b": 0.11845651395724772,
+        "share_b_to_a": 0.13401752276504572
+       },
+       {
+        "a_to_b": 1284421.784,
+        "b_to_a": 9163803.045,
+        "label": "Base metals",
+        "sector": "metals",
+        "share_a_to_b": 0.07451323326693082,
+        "share_b_to_a": 0.07492379420910387
+       },
+       {
+        "a_to_b": 473180.115,
+        "b_to_a": 6924852.84,
+        "label": "Plastics & rubber",
+        "sector": "plastics",
+        "share_a_to_b": 0.02745062465109059,
+        "share_b_to_a": 0.056618005271902756
+       },
+       {
+        "a_to_b": 1506888.692,
+        "b_to_a": 4880432.265,
+        "label": "Textiles, clothing & leather",
+        "sector": "textiles",
+        "share_a_to_b": 0.0874192185254126,
+        "share_b_to_a": 0.03990270206362021
+       },
+       {
+        "a_to_b": 4190199.029,
+        "b_to_a": 379528.511,
+        "label": "Ores & minerals",
+        "sector": "minerals",
+        "share_a_to_b": 0.24308625217364271,
+        "share_b_to_a": 0.003103047491856217
+       },
+       {
+        "a_to_b": 69948.836,
+        "b_to_a": 4300520.394,
+        "label": "Other manufactures",
+        "sector": "manufactures",
+        "share_a_to_b": 0.004057945760921701,
+        "share_b_to_a": 0.03516130840109193
+       },
+       {
+        "a_to_b": 3160912.202,
+        "b_to_a": 430837.085,
+        "label": "Food & agriculture",
+        "sector": "agriculture",
+        "share_a_to_b": 0.1833741775310111,
+        "share_b_to_a": 0.003522549419239531
+       },
+       {
+        "a_to_b": 308528.567,
+        "b_to_a": 2841869.4020000002,
+        "label": "Vehicles, aircraft & ships",
+        "sector": "vehicles",
+        "share_a_to_b": 0.017898685127239244,
+        "share_b_to_a": 0.023235291854158034
+       },
+       {
+        "a_to_b": 1243314.2019999998,
+        "b_to_a": 404289.997,
+        "label": "Energy",
+        "sector": "energy",
+        "share_a_to_b": 0.0721284567980466,
+        "share_b_to_a": 0.0033054988619113453
+       },
+       {
+        "a_to_b": 567671.083,
+        "b_to_a": 995469.5430000001,
+        "label": "Precious metals & gems",
+        "sector": "precious_metals",
+        "share_a_to_b": 0.032932334497427246,
+        "share_b_to_a": 0.008139017699846547
+       },
+       {
+        "a_to_b": 55084.48,
+        "b_to_a": 1263640.947,
+        "label": "Wood & paper",
+        "sector": "wood_paper",
+        "share_a_to_b": 0.003195619039444434,
+        "share_b_to_a": 0.010331602916638758
+       },
+       {
+        "a_to_b": 118958.73399999998,
+        "b_to_a": 223369.788,
+        "label": "Pharmaceuticals",
+        "sector": "pharmaceuticals",
+        "share_a_to_b": 0.006901159732806878,
+        "share_b_to_a": 0.0018262845618200604
+       },
+       {
+        "a_to_b": 1.272,
+        "b_to_a": 323.42,
+        "label": "Arms & ammunition",
+        "sector": "arms",
+        "share_a_to_b": 7.379260761240407e-08,
+        "share_b_to_a": 2.644300996443816e-06
+       }
+      ],
+      "share_of_exports": 0.037534895511538324,
+      "share_of_imports": 0.1775878202432694,
+      "top_products": {
+       "a_to_b": [
+        {
+         "code": "260111",
+         "description": "Iron ores and concentrates: non-agglomerated",
+         "heading": "Iron ores and concentrates; Iron pyrites",
+         "share": 0.12609198337339364,
+         "value": 2173229.0
+        },
+        {
+         "code": "271000",
+         "description": "Petroleum oils and oils from bituminous minerals, not crude: preparations n.e.c. containing by weight 70% or more of petroleum oils or oils from bituminous minerals: these being the basic constituents of the preparations: waste oils",
+         "heading": "Petroleum oils and oils from bituminous minerals, not crude",
+         "share": 0.07054343863660481,
+         "value": 1215835.0
+        },
+        {
+         "code": "260112",
+         "description": "Iron ores and concentrates: agglomerated (excluding roasted iron pyrites)",
+         "heading": "Iron ores and concentrates; Iron pyrites",
+         "share": 0.052278795564930904,
+         "value": 901039.0
+        },
+        {
+         "code": "030613",
+         "description": "Crustaceans: shrimps and prawns, frozen (whether in shell or not, whether or not cooked by steaming or by boiling in water)",
+         "heading": "Crustaceans",
+         "share": 0.04372058756037838,
+         "value": 753536.0
+        },
+        {
+         "code": "151530",
+         "description": "Vegetable oils: castor oil and its fractions, whether or not refined, but not chemically modified",
+         "heading": "Vegetable oils; Vegetable fats and oils and their fractions",
+         "share": 0.030039395386215948,
+         "value": 517737.0
+        },
+        {
+         "code": "670300",
+         "description": "Human hair, dressed, thinned, bleached or otherwise worked: wool or other animal hair or other textile materials, prepared for use in making wigs or the like",
+         "heading": "Human hair, dressed, thinned, bleached or otherwise worked",
+         "share": 0.028015057730176155,
+         "value": 482847.0
+        },
+        {
+         "code": "710239",
+         "description": "Diamonds: non-industrial, (other than unworked or simply sawn, cleaved or bruted), but not mounted or set",
+         "heading": "Diamonds",
+         "share": 0.027628292616528657,
+         "value": 476181.0
+        },
+        {
+         "code": "090420",
+         "description": "Spices: fruits of the genus capsicum or pimenta, dried or crushed or ground",
+         "heading": "Spices",
+         "share": 0.026863639536306574,
+         "value": 463002.0
+        }
+       ],
+       "b_to_a": [
+        {
+         "code": "854211",
+         "description": "Electronic circuits: monolithic integrated, digital",
+         "heading": "Electronic circuits; Electronic circuits and microassemblies",
+         "share": 0.08436292250283674,
+         "value": 10318220.0
+        },
+        {
+         "code": "851790",
+         "description": "Line telephony or telegraphy apparatus: electrical, parts of the apparatus of heading no. 8517",
+         "heading": "Line telephony or telegraphy apparatus; Telephonic apparatus; Telegraphic app...",
+         "share": 0.04637905263095756,
+         "value": 5672507.0
+        },
+        {
+         "code": "847193",
+         "description": "Data processing machinery: storage units, whether or not presented with the rest of a system",
+         "heading": "Data processing machines; Digital processing units; Data processing machinery",
+         "share": 0.04447518771576453,
+         "value": 5439650.0
+        },
+        {
+         "code": "852520",
+         "description": "Transmission apparatus: for radio-telephony, radio-telegraphy, radio-broadcasting or television, with reception apparatus, with or without sound recording or reproducing apparatus",
+         "heading": "Transmission apparatus; Television cameras",
+         "share": 0.03651713260939094,
+         "value": 4466320.0
+        },
+        {
+         "code": "852990",
+         "description": "Reception and transmission apparatus: for use with the apparatus of heading no. 8525 to 8528, excluding aerials and aerial reflectors",
+         "heading": "Reception and transmission apparatus",
+         "share": 0.03211866233378516,
+         "value": 3928354.0
+        },
+        {
+         "code": "854140",
+         "description": "Electrical apparatus: photosensitive, including photovoltaic cells, whether or not assembled in modules or made up into panels, light emitting diodes",
+         "heading": "Electrical apparatus; Crystals",
+         "share": 0.03028072958587126,
+         "value": 3703561.0
+        },
+        {
+         "code": "847330",
+         "description": "Machines: parts and accessories of automatic data processing, magnetic or optical readers, digital processing units",
+         "heading": "Typewriters and word-processing machines; Calculating machines; Machines",
+         "share": 0.02197907337211852,
+         "value": 2688206.0
+        },
+        {
+         "code": "850780",
+         "description": "Electric accumulators: n.e.s. in heading no. 8507, including separators, whether or not rectangular (including square)",
+         "heading": "Electric accumulators",
+         "share": 0.020748306878460018,
+         "value": 2537674.0
+        }
+       ],
+       "year": 2024
+      },
+      "trade_balance": -105070816.291
+     },
+     "reason": "Confidence is most sensitive to low overall network density in the selected trade graph.",
+     "score": 0.12155987849217843
+    },
+    {
+     "claim": "All sectors in year 2024: China exported $122.31B to India and imported $17.24B from it. India is China's #13 trade partner at 2.4% of its trade. Confidence is most sensitive to low overall network density in the selected trade graph.",
+     "confidence": 0.9157278189783605,
+     "entity_iso3": "CHN",
+     "entity_name": "China",
+     "evidence": {
+      "asymmetry": 0.09729740576038666,
+      "bilateral_trade": 139545814.29299998,
+      "confidence_components": {
+       "data_completeness": 0.989301750870908,
+       "graph_connectivity": 0.7578817060641736,
+       "propagation_reliability": 1.0
+      },
+      "dependence_on_partner": 0.02426247273179177,
+      "exports_to_partner": 122308315.292,
+      "exposed_country": "India",
+      "imports_from_partner": 17237499.001,
+      "leverage_holder": "China",
+      "leverage_holder_iso3": "CHN",
+      "pair": [
+       "IND",
+       "CHN"
+      ],
+      "partner": "India",
+      "partner_count": 208,
+      "partner_dependence": 0.12155987849217843,
+      "partner_iso3": "IND",
+      "partner_rank": 13,
+      "sector": "all",
+      "trade_balance": 105070816.291
+     },
+     "reason": "Confidence is most sensitive to low overall network density in the selected trade graph.",
+     "score": 0.02426247273179177
+    }
+   ],
+   "metadata": {
+    "country": "India",
+    "data_quality": {
+     "quantity_availability": 0.9679052526127242,
+     "quantity_observed": true,
+     "required_field_availability": 1.0,
+     "row_count": 10580049,
+     "value_availability": 1.0
+    },
+    "forecast_method": "linear_plus_arima_residual / linear_plus_arima_residual",
+    "history_years": 30,
+    "method": "bilateral flows, dependence asymmetry, and a per-direction forecast",
+    "partner": "China",
+    "periods": 3,
+    "query_type": "bilateral",
+    "sector": "all",
+    "year": 2024
+   }
+  },
+  "status": 200
+ },
  "trade_intelligence POST /query {\"country\": \"IND\", \"query_type\": \"blocs\", \"sector\": \"all\", \"year\": 2024}": {
   "json": {
    "agent": "trade_intelligence",
@@ -44434,6 +44955,527 @@
     },
     "method": "bilateral dependence asymmetry",
     "query_type": "leverage",
+    "sector": "all",
+    "year": 2015
+   }
+  },
+  "status": 200
+ },
+ "trade_intelligence POST /query {\"country\": \"USA\", \"partner\": \"RUS\", \"query_type\": \"bilateral\", \"sector\": \"all\", \"year\": 2015}": {
+  "json": {
+   "agent": "trade_intelligence",
+   "insights": [
+    {
+     "claim": "All sectors in year 2015: USA exported $10.77B to Russian Federation and imported $16.60B from it, a deficit of $5.83B. Russian Federation is USA's #27 trade partner (0.8% of its trade); USA is Russian Federation's #5 (5.2%), so USA is the less dependent side. Two-way trade shrank 1.8% a year over 2010-2015. It is projected at $4.70B by 2027 (+24.1% on 2024). Confidence is most sensitive to low overall network density in the selected trade graph.",
+     "confidence": 0.9310721419867217,
+     "entity_iso3": "USA",
+     "entity_name": "USA",
+     "evidence": {
+      "asymmetry": 0.0444573836916833,
+      "bilateral_trade": 27374191.824,
+      "confidence_components": {
+       "data_completeness": 0.9910982734785275,
+       "graph_connectivity": 0.8021181524816376,
+       "propagation_reliability": 1.0
+      },
+      "dependence_on_partner": 0.0075563293176955934,
+      "exports_to_partner": 10770185.652999999,
+      "exposed_country": "Russian Federation",
+      "forecast": {
+       "method_a_to_b": "arima(1,1,1)",
+       "method_b_to_a": "arima(1,1,1)",
+       "model_confidence": 0.9476232540764002,
+       "periods": 3,
+       "projected_change": 0.24116537161210586,
+       "values": [
+        {
+         "a_to_b": 556092.59658361,
+         "b_to_a": 4210316.711431704,
+         "total": 4766409.308015315,
+         "year": 2025
+        },
+        {
+         "a_to_b": 545204.9622036554,
+         "b_to_a": 4144626.2303308174,
+         "total": 4689831.192534473,
+         "year": 2026
+        },
+        {
+         "a_to_b": 548915.154249951,
+         "b_to_a": 4149172.2406825693,
+         "total": 4698087.394932521,
+         "year": 2027
+        }
+       ]
+      },
+      "growth": {
+       "a_to_b_1y": -0.3755078225154488,
+       "a_to_b_cagr_5y": 0.03227044694235315,
+       "b_to_a_1y": -0.09297295617059376,
+       "b_to_a_cagr_5y": -0.04375968766509997,
+       "total_1y": -0.23002983240126018,
+       "total_cagr_10y": 0.035831734519962355,
+       "total_cagr_5y": -0.01786378015327994
+      },
+      "history": [
+       {
+        "a_to_b": 2754473.73,
+        "b_to_a": 4198761.892,
+        "year": 1995
+       },
+       {
+        "a_to_b": 3512300.516,
+        "b_to_a": 4728188.874,
+        "year": 1996
+       },
+       {
+        "a_to_b": 3920021.7630000003,
+        "b_to_a": 4643292.283,
+        "year": 1997
+       },
+       {
+        "a_to_b": 4218905.912,
+        "b_to_a": 6084363.923,
+        "year": 1998
+       },
+       {
+        "a_to_b": 2630062.471,
+        "b_to_a": 5635988.049,
+        "year": 1999
+       },
+       {
+        "a_to_b": 2768853.266,
+        "b_to_a": 7281549.225,
+        "year": 2000
+       },
+       {
+        "a_to_b": 3436251.079,
+        "b_to_a": 6161286.806,
+        "year": 2001
+       },
+       {
+        "a_to_b": 3138829.4839999997,
+        "b_to_a": 6164274.079,
+        "year": 2002
+       },
+       {
+        "a_to_b": 2986284.728,
+        "b_to_a": 8679805.861,
+        "year": 2003
+       },
+       {
+        "a_to_b": 3380521.24,
+        "b_to_a": 11823902.228,
+        "year": 2004
+       },
+       {
+        "a_to_b": 4620152.607,
+        "b_to_a": 14630665.194,
+        "year": 2005
+       },
+       {
+        "a_to_b": 6020200.620999999,
+        "b_to_a": 18090951.594,
+        "year": 2006
+       },
+       {
+        "a_to_b": 9293132.63,
+        "b_to_a": 15073401.322,
+        "year": 2007
+       },
+       {
+        "a_to_b": 13398726.56,
+        "b_to_a": 21849728.694,
+        "year": 2008
+       },
+       {
+        "a_to_b": 8171594.341,
+        "b_to_a": 16751964.577999998,
+        "year": 2009
+       },
+       {
+        "a_to_b": 9188734.845,
+        "b_to_a": 20767185.604000002,
+        "year": 2010
+       },
+       {
+        "a_to_b": 11866546.322999999,
+        "b_to_a": 27622824.716000002,
+        "year": 2011
+       },
+       {
+        "a_to_b": 14010111.314000001,
+        "b_to_a": 22425617.313,
+        "year": 2012
+       },
+       {
+        "a_to_b": 14803420.472000001,
+        "b_to_a": 20447267.145999998,
+        "year": 2013
+       },
+       {
+        "a_to_b": 17246309.948000003,
+        "b_to_a": 18305965.94,
+        "year": 2014
+       },
+       {
+        "a_to_b": 10770185.652999999,
+        "b_to_a": 16604006.171,
+        "year": 2015
+       },
+       {
+        "a_to_b": 10616494.859000001,
+        "b_to_a": 13049072.105999999,
+        "year": 2016
+       },
+       {
+        "a_to_b": 12512395.050000003,
+        "b_to_a": 15155265.399000002,
+        "year": 2017
+       },
+       {
+        "a_to_b": 11207101.121000001,
+        "b_to_a": 18751636.457000002,
+        "year": 2018
+       },
+       {
+        "a_to_b": 11951669.757000001,
+        "b_to_a": 21524763.547,
+        "year": 2019
+       },
+       {
+        "a_to_b": 8261558.080999999,
+        "b_to_a": 14754072.320999999,
+        "year": 2020
+       },
+       {
+        "a_to_b": 10704990.538999999,
+        "b_to_a": 28840077.495,
+        "year": 2021
+       },
+       {
+        "a_to_b": 1625873.151,
+        "b_to_a": 14994064.940000001,
+        "year": 2022
+       },
+       {
+        "a_to_b": 594648.681,
+        "b_to_a": 4872581.814,
+        "year": 2023
+       },
+       {
+        "a_to_b": 524142.61100000003,
+        "b_to_a": 3261080.134,
+        "year": 2024
+       }
+      ],
+      "imports_from_partner": 16604006.171,
+      "leverage_holder": "USA",
+      "leverage_holder_iso3": "USA",
+      "pair": [
+       "USA",
+       "RUS"
+      ],
+      "partner": "Russian Federation",
+      "partner_count": 220,
+      "partner_dependence": 0.05201371300937889,
+      "partner_iso3": "RUS",
+      "partner_partner_count": 216,
+      "partner_rank": 27,
+      "partner_share_of_exports": 0.04899094155537677,
+      "partner_share_of_imports": 0.057481440559795885,
+      "rank_with_partner": 5,
+      "sector": "all",
+      "sectors": [
+       {
+        "a_to_b": 26445.648,
+        "b_to_a": 8761037.898,
+        "label": "Energy",
+        "sector": "energy",
+        "share_a_to_b": 0.0024554495950247297,
+        "share_b_to_a": 0.5276460275774731
+       },
+       {
+        "a_to_b": 3951067.307,
+        "b_to_a": 506235.513,
+        "label": "Vehicles, aircraft & ships",
+        "sector": "vehicles",
+        "share_a_to_b": 0.3668522933863673,
+        "share_b_to_a": 0.030488757218373838
+       },
+       {
+        "a_to_b": 3487513.547,
+        "b_to_a": 421037.975,
+        "label": "Machinery & electronics",
+        "sector": "electronics",
+        "share_a_to_b": 0.32381183197418373,
+        "share_b_to_a": 0.025357613738747627
+       },
+       {
+        "a_to_b": 415942.567,
+        "b_to_a": 2943130.241,
+        "label": "Base metals",
+        "sector": "metals",
+        "share_a_to_b": 0.03861981403116673,
+        "share_b_to_a": 0.1772542247147783
+       },
+       {
+        "a_to_b": 947000.1,
+        "b_to_a": 2396088.536,
+        "label": "Chemicals",
+        "sector": "chemicals",
+        "share_a_to_b": 0.08792792719744959,
+        "share_b_to_a": 0.14430785626814133
+       },
+       {
+        "a_to_b": 620464.7880000001,
+        "b_to_a": 245734.527,
+        "label": "Food & agriculture",
+        "sector": "agriculture",
+        "share_a_to_b": 0.057609479352584016,
+        "share_b_to_a": 0.014799713061368989
+       },
+       {
+        "a_to_b": 20623.481,
+        "b_to_a": 616614.8219999999,
+        "label": "Precious metals & gems",
+        "sector": "precious_metals",
+        "share_a_to_b": 0.0019148677343603078,
+        "share_b_to_a": 0.03713650884308624
+       },
+       {
+        "a_to_b": 601254.247,
+        "b_to_a": 2067.4300000000003,
+        "label": "Pharmaceuticals",
+        "sector": "pharmaceuticals",
+        "share_a_to_b": 0.0558258015573318,
+        "share_b_to_a": 0.00012451392626021206
+       },
+       {
+        "a_to_b": 310154.357,
+        "b_to_a": 228119.528,
+        "label": "Plastics & rubber",
+        "sector": "plastics",
+        "share_a_to_b": 0.02879749402589059,
+        "share_b_to_a": 0.013738824573459018
+       },
+       {
+        "a_to_b": 152812.794,
+        "b_to_a": 135752.433,
+        "label": "Other manufactures",
+        "sector": "manufactures",
+        "share_a_to_b": 0.014188501379958526,
+        "share_b_to_a": 0.008175884277681168
+       },
+       {
+        "a_to_b": 73122.685,
+        "b_to_a": 176558.48799999998,
+        "label": "Wood & paper",
+        "sector": "wood_paper",
+        "share_a_to_b": 0.006789361609531023,
+        "share_b_to_a": 0.01063348725492352
+       },
+       {
+        "a_to_b": 133347.957,
+        "b_to_a": 18580.542999999998,
+        "label": "Textiles, clothing & leather",
+        "sector": "textiles",
+        "share_a_to_b": 0.012381212478250676,
+        "share_b_to_a": 0.0011190397551436803
+       },
+       {
+        "a_to_b": 973.0500000000001,
+        "b_to_a": 111139.06499999999,
+        "label": "Arms & ammunition",
+        "sector": "arms",
+        "share_a_to_b": 9.034663202198007e-05,
+        "share_b_to_a": 0.006693509015559857
+       },
+       {
+        "a_to_b": 29463.125,
+        "b_to_a": 41909.172,
+        "label": "Ores & minerals",
+        "sector": "minerals",
+        "share_a_to_b": 0.0027356190458790418,
+        "share_b_to_a": 0.0025240397750030444
+       }
+      ],
+      "share_of_exports": 0.00765044908788346,
+      "share_of_imports": 0.007496507007081873,
+      "top_products": {
+       "a_to_b": [
+        {
+         "code": "880240",
+         "description": "Aeroplanes and other aircraft: of an unladen weight exceeding 15,000kg",
+         "heading": "Helicopters; Aeroplanes and other aircraft; Spacecraft (including satellites)...",
+         "share": 0.2506940431027862,
+         "value": 2699399.0
+        },
+        {
+         "code": "300490",
+         "description": "Medicaments: consisting of mixed or unmixed products n.e.s. in heading no. 3004, for therapeutic or prophylactic uses, packaged for retail sale",
+         "heading": "Medicaments",
+         "share": 0.028225518478732187,
+         "value": 303924.0
+        },
+        {
+         "code": "870333",
+         "description": "Vehicles: compression-ignition internal combustion piston engine (diesel or semi-diesel), cylinder capacity exceeding 2500cc",
+         "heading": "Vehicles",
+         "share": 0.026728820436447774,
+         "value": 287808.0
+        },
+        {
+         "code": "870324",
+         "description": "Vehicles: spark-ignition internal combustion reciprocating piston engine, cylinder capacity exceeding 3000cc",
+         "heading": "Vehicles",
+         "share": 0.02215839348466428,
+         "value": 238595.0
+        },
+        {
+         "code": "870323",
+         "description": "Vehicles: spark-ignition internal combustion reciprocating piston engine, cylinder capacity exceeding 1500cc but not exceeding 3000cc",
+         "heading": "Vehicles",
+         "share": 0.020906873081473366,
+         "value": 225119.0
+        },
+        {
+         "code": "120100",
+         "description": "Soya beans: whether or not broken",
+         "heading": "Soya beans",
+         "share": 0.019970368796390466,
+         "value": 215035.0
+        },
+        {
+         "code": "284410",
+         "description": "Uranium: natural uranium and its compounds, alloys, dispersions (including cermets), ceramic products and mixtures containing natural uranium or natural uranium compounds",
+         "heading": "Uranium; Radioactive elements, isotopes, compounds, n.e.s. in heading no. 284...",
+         "share": 0.018053804047158433,
+         "value": 194398.0
+        },
+        {
+         "code": "850230",
+         "description": "Electric generating sets: n.e.s. in heading no. 8502",
+         "heading": "Electric generating sets; Electric rotary converters",
+         "share": 0.017405662098963912,
+         "value": 187419.0
+        }
+       ],
+       "b_to_a": [
+        {
+         "code": "271000",
+         "description": "Petroleum oils and oils from bituminous minerals, not crude: preparations n.e.c. containing by weight 70% or more of petroleum oils or oils from bituminous minerals: these being the basic constituents of the preparations: waste oils",
+         "heading": "Petroleum oils and oils from bituminous minerals, not crude",
+         "share": 0.4933057021908151,
+         "value": 8189881.0
+        },
+        {
+         "code": "284420",
+         "description": "Uranium: enriched in U235, plutonium, their compounds, alloys dispersions (including cermets), ceramic products and mixtures containing uranium enriched in U235, plutonium or compounds of these products",
+         "heading": "Uranium; Radioactive elements, isotopes, compounds, n.e.s. in heading no. 284...",
+         "share": 0.05196012056349702,
+         "value": 862644.0
+        },
+        {
+         "code": "720110",
+         "description": "Iron: non-alloy pig iron containing by weight 0.5% or less of phosphorus, in pigs, blocks or other primary forms",
+         "heading": "Iron",
+         "share": 0.040670664568932494,
+         "value": 675216.0
+        },
+        {
+         "code": "270900",
+         "description": "Oils: petroleum oils and oils obtained from bituminous minerals, crude",
+         "heading": "Oils",
+         "share": 0.03417429424335804,
+         "value": 567363.0
+        },
+        {
+         "code": "760120",
+         "description": "Aluminium: unwrought, alloys",
+         "heading": "Aluminium",
+         "share": 0.0316170181495768,
+         "value": 524907.0
+        },
+        {
+         "code": "760110",
+         "description": "Aluminium: unwrought, (not alloyed)",
+         "heading": "Aluminium",
+         "share": 0.024077703703882174,
+         "value": 399739.0
+        },
+        {
+         "code": "720712",
+         "description": "Iron or non-alloy steel: semi-finished products of iron or non-alloy steel: containing by weight less than 0.25% of carbon, of rectangular (other than square) cross-section",
+         "heading": "Iron or non-alloy steel",
+         "share": 0.0227141363350528,
+         "value": 377101.0
+        },
+        {
+         "code": "310420",
+         "description": "Fertilizers, mineral or chemical: potassic, potassium chloride",
+         "heading": "Fertilizers, mineral or chemical",
+         "share": 0.0202043242878586,
+         "value": 335433.0
+        }
+       ],
+       "year": 2015
+      },
+      "trade_balance": -5833820.518000001
+     },
+     "reason": "Confidence is most sensitive to low overall network density in the selected trade graph.",
+     "score": 0.0075563293176955934
+    },
+    {
+     "claim": "All sectors in year 2015: Russian Federation exported $16.60B to USA and imported $10.77B from it. USA is Russian Federation's #5 trade partner at 5.2% of its trade. Confidence is most sensitive to low overall network density in the selected trade graph.",
+     "confidence": 0.9187678914274375,
+     "entity_iso3": "RUS",
+     "entity_name": "Russian Federation",
+     "evidence": {
+      "asymmetry": 0.0444573836916833,
+      "bilateral_trade": 27374191.824,
+      "confidence_components": {
+       "data_completeness": 0.9910982734785275,
+       "graph_connectivity": 0.7652054008037853,
+       "propagation_reliability": 1.0
+      },
+      "dependence_on_partner": 0.05201371300937889,
+      "exports_to_partner": 16604006.171,
+      "exposed_country": "Russian Federation",
+      "imports_from_partner": 10770185.652999999,
+      "leverage_holder": "USA",
+      "leverage_holder_iso3": "USA",
+      "pair": [
+       "USA",
+       "RUS"
+      ],
+      "partner": "USA",
+      "partner_count": 216,
+      "partner_dependence": 0.0075563293176955934,
+      "partner_iso3": "USA",
+      "partner_rank": 5,
+      "sector": "all",
+      "trade_balance": 5833820.518000001
+     },
+     "reason": "Confidence is most sensitive to low overall network density in the selected trade graph.",
+     "score": 0.05201371300937889
+    }
+   ],
+   "metadata": {
+    "country": "USA",
+    "data_quality": {
+     "quantity_availability": 0.9732948204355826,
+     "quantity_observed": true,
+     "required_field_availability": 1.0,
+     "row_count": 10499686,
+     "value_availability": 1.0
+    },
+    "forecast_method": "arima(1,1,1) / arima(1,1,1)",
+    "history_years": 30,
+    "method": "bilateral flows, dependence asymmetry, and a per-direction forecast",
+    "partner": "Russian Federation",
+    "periods": 3,
+    "query_type": "bilateral",
     "sector": "all",
     "year": 2015
    }
