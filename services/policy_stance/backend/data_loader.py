@@ -91,6 +91,25 @@ ACTIVE_DATASETS = {
     "CACE_1989-2017",
     "ucdp_issues_dataset_dyadyear",
     "ucdp-peace-agreements",
+    # OWID policy indicator datasets
+    "owid_human_rights",
+    "owid_democracy",
+    "owid_regime",
+    "owid_mil_spending",
+    "owid_corruption",
+    "owid_gdp_per_capita",
+    "owid_trade_gdp",
+    "owid_nuclear_warheads",
+    "owid_co2",
+    "owid_internet_users",
+}
+
+# OWID datasets are country-year indicator tables; they don't feed the conflict
+# master_df but are exposed via the /indicators endpoint directly from dataset_frames.
+OWID_DATASETS = {
+    "owid_human_rights", "owid_democracy", "owid_regime", "owid_mil_spending",
+    "owid_corruption", "owid_gdp_per_capita", "owid_trade_gdp",
+    "owid_nuclear_warheads", "owid_co2", "owid_internet_users",
 }
 
 
@@ -488,6 +507,9 @@ def _process_dataset(dataset_name: str, df: pd.DataFrame) -> tuple[list[dict[str
 
     if dataset_name in VOTE_DATASETS:
         return records, _process_vote_dataset(dataset_name, df)
+
+    if dataset_name in OWID_DATASETS:
+        return records, votes  # stored as-is in dataset_frames; served via /indicators
 
     for _, row in df.iterrows():
         issue = _issue_text_from_row(row, dataset_name)

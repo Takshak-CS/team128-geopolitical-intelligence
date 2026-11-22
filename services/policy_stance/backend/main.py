@@ -108,7 +108,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
 from backend.codebook_parser import build_codebook
-from backend.data_loader import VOTE_DATASETS, discover_datasets, load_all_datasets
+from backend.data_loader import OWID_DATASETS, VOTE_DATASETS, discover_datasets, load_all_datasets
 from backend.graph_builder import build_graphs
 from backend.ml_analysis import run_ml_analysis
 from backend.paths import OUTPUTS_DIR, ROOT_DIR, ensure_directories, output_file
@@ -1201,6 +1201,129 @@ def bloc_discovery(year: int, min_sim: float = Query(0.5)) -> dict[str, Any]:
             status_code=503,
             detail='python-louvain is not installed. Add python-louvain>=0.16 to requirements.txt.',
         )
+
+
+# OWID indicator configuration: dataset_name → (display_label, value_column_index, unit, higher_is_better)
+# value_column_index=3 means the 4th column (after Entity, Code, Year) — standard OWID layout.
+_OWID_CONFIG: dict[str, tuple[str, int, str, bool | None]] = {
+    "owid_human_rights":   ("Human Rights",         3, "index 0–1",       True),
+    "owid_democracy":      ("Democracy Score",       3, "0–3 scale",       True),
+    "owid_regime":         ("Regime Type",           3, "0–3 scale",       True),
+    "owid_mil_spending":   ("Mil. Spending",         3, "USD millions",    None),
+    "owid_corruption":     ("Corruption Index",      3, "CPI 0–100",       True),
+    "owid_gdp_per_capita": ("GDP per Capita",        3, "USD",             None),
+    "owid_trade_gdp":      ("Trade Openness",        3, "% of GDP",        None),
+    "owid_nuclear_warheads":("Nuclear Warheads",     3, "count",           None),
+    "owid_co2":            ("CO2 per Capita",        3, "tonnes",          False),
+    "owid_internet_users": ("Internet Users",        3, "% population",    True),
+}
+
+
+def _owid_value(df: pd.DataFrame, col_index: int) -> pd.Series:
+    """Return the indicator column by index, tolerating special-character column names."""
+    try:
+        return pd.to_numeric(df.iloc[:, col_index], errors='coerce')
+    except Exception:
+        return pd.Series(dtype=float)
+
+
+@app.get('/indicators')
+def get_indicators(countries: str = Query('')) -> dict[str, Any]:
+    """Return latest indicator values for each requested country across all OWID datasets."""
+    if not state.ready:
+        raise HTTPException(status_code=503, detail='Pipeline not ready')
+    country_list = [c.strip() for c in countries.split(',') if c.strip()]
+    frames: dict[str, pd.DataFrame] = state.data.get('dataset_frames', {})
+
+    # Build global min/max per indicator for normalisation (0–100 radar scale)
+    global_range: dict[str, tuple[float, float]] = {}
+    for ds_name, (label, col_idx, unit, _hb) in _OWID_CONFIG.items():
+        df = frames.get(ds_name)
+        if df is None or len(df.columns) <= col_idx:
+            continue
+        vals = _owid_value(df, col_idx).dropna()
+        if len(vals):
+            global_range[label] = (float(vals.min()), float(vals.max()))
+
+    result: dict[str, dict[str, Any]] = {}
+    for ds_name, (label, col_idx, unit, higher_better) in _OWID_CONFIG.items():
+        df = frames.get(ds_name)
+        if df is None or 'Entity' not in df.columns or 'Year' not in df.columns or len(df.columns) <= col_idx:
+            continue
+        df_work = df.copy()
+        df_work['_val'] = _owid_value(df_work, col_idx)
+        df_work = df_work.dropna(subset=['_val'])
+        if country_list:
+            df_work = df_work[df_work['Entity'].isin(country_list)]
+        # Latest year per country
+        latest = df_work.sort_values('Year').groupby('Entity').last().reset_index()
+        lo, hi = global_range.get(label, (0.0, 1.0))
+        rng = max(hi - lo, 1e-9)
+        for _, row in latest.iterrows():
+            country = row['Entity']
+            raw = float(row['_val'])
+            normalized = round(100.0 * (raw - lo) / rng, 1)
+            result.setdefault(country, {})
+            result[country][label] = {
+                'raw': round(raw, 4),
+                'normalized': normalized,
+                'unit': unit,
+                'year': int(row['Year']),
+                'higher_better': higher_better,
+            }
+    return result
+
+
+@app.get('/indicators/trend')
+def get_indicators_trend(
+    countries: str = Query(''),
+    indicator: str = Query(''),
+) -> dict[str, Any]:
+    """Return time-series values for a specific indicator across selected countries."""
+    if not state.ready:
+        raise HTTPException(status_code=503, detail='Pipeline not ready')
+    country_list = [c.strip() for c in countries.split(',') if c.strip()]
+    frames: dict[str, pd.DataFrame] = state.data.get('dataset_frames', {})
+
+    # Find which dataset holds the requested indicator
+    target_ds = None
+    target_col_idx = 3
+    target_meta: tuple[str, int, str, bool | None] | None = None
+    for ds_name, cfg in _OWID_CONFIG.items():
+        if cfg[0].lower() == indicator.lower():
+            target_ds = ds_name
+            target_col_idx = cfg[1]
+            target_meta = cfg
+            break
+
+    if target_ds is None:
+        return {'indicator': indicator, 'series': {}, 'available': [cfg[0] for cfg in _OWID_CONFIG.values()]}
+
+    df = frames.get(target_ds)
+    if df is None or 'Entity' not in df.columns or 'Year' not in df.columns:
+        return {'indicator': indicator, 'series': {}}
+
+    df_work = df.copy()
+    df_work['_val'] = _owid_value(df_work, target_col_idx)
+    df_work = df_work.dropna(subset=['_val'])
+    if country_list:
+        df_work = df_work[df_work['Entity'].isin(country_list)]
+    df_work = df_work[(df_work['Year'] >= 1960) & (df_work['Year'] <= 2025)]
+
+    series: dict[str, list[dict[str, Any]]] = {}
+    for country, grp in df_work.groupby('Entity'):
+        grp_sorted = grp.sort_values('Year')
+        series[country] = [
+            {'year': int(r['Year']), 'value': round(float(r['_val']), 4)}
+            for _, r in grp_sorted.iterrows()
+        ]
+
+    return {
+        'indicator': target_meta[0] if target_meta else indicator,
+        'unit': target_meta[2] if target_meta else '',
+        'higher_better': target_meta[3] if target_meta else None,
+        'series': series,
+    }
 
 
 # Catch-all: serve frontend for any non-API path (must be LAST)

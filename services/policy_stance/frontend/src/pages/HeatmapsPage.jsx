@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Cell, ResponsiveContainer, Scatter, ScatterChart, Tooltip, XAxis, YAxis, ZAxis } from 'recharts';
+import { Cell, Legend, ResponsiveContainer, Scatter, ScatterChart, Tooltip, XAxis, YAxis, ZAxis } from 'recharts';
 
-import { getEmbeddings2d, getSimilarity, getVotingAgreementMatrix } from '../api';
+import { getAllianceBlocs, getEmbeddings2d, getSimilarity, getVotingAgreementMatrix } from '../api';
 import Panel from '../components/Panel';
 
 const TABS = [
@@ -11,11 +11,12 @@ const TABS = [
 ];
 
 const BLOC_COLORS = {
-  'Western Bloc': '#f26b38',
-  'Russia+Allies': '#0f7b8c',
+  'Western Bloc': '#ff8c42',
+  'Russia+Allies': '#62d2a2',
   'China-Centered Bloc': '#e3a008',
-  'Non-Aligned': '#7fb7be',
+  'Non-Aligned': '#8aa5bf',
 };
+const ALL_BLOCS = Object.keys(BLOC_COLORS);
 
 function heatColor(t) {
   t = Math.max(0, Math.min(1, t));
@@ -45,7 +46,7 @@ function MatrixHeatmap({ countries, matrix, fmt = (v) => v.toFixed(2) }) {
               {countries.map((c, i) => (
                 <th key={i} style={{ width: cs, height: 80, verticalAlign: 'bottom', fontSize: fs, fontWeight: 500, padding: 0 }}>
                   <div style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)', whiteSpace: 'nowrap', maxHeight: 76, overflow: 'hidden', paddingBottom: 3 }}>
-                    {c.length > 12 ? c.slice(0, 11) + '…' : c}
+                    {c.length > 12 ? c.slice(0, 11) + '\u2026' : c}
                   </div>
                 </th>
               ))}
@@ -55,7 +56,7 @@ function MatrixHeatmap({ countries, matrix, fmt = (v) => v.toFixed(2) }) {
             {countries.map((row, ri) => (
               <tr key={ri}>
                 <td style={{ fontSize: fs, fontWeight: 500, paddingRight: 6, whiteSpace: 'nowrap', textAlign: 'right', maxWidth: 80, overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                  {row.length > 10 ? row.slice(0, 9) + '…' : row}
+                  {row.length > 10 ? row.slice(0, 9) + '\u2026' : row}
                 </td>
                 {(matrix[ri] || []).map((val, ci) => {
                   const isHov = hovered && (hovered[0] === ri || hovered[1] === ci);
@@ -71,7 +72,7 @@ function MatrixHeatmap({ countries, matrix, fmt = (v) => v.toFixed(2) }) {
                       }}
                       onMouseEnter={() => setHovered([ri, ci])}
                       onMouseLeave={() => setHovered(null)}
-                      title={`${row} × ${countries[ci]}: ${fmt(val)}`}
+                      title={`${row} x ${countries[ci]}: ${fmt(val)}`}
                     />
                   );
                 })}
@@ -82,7 +83,7 @@ function MatrixHeatmap({ countries, matrix, fmt = (v) => v.toFixed(2) }) {
       </div>
       {hovered && matrix[hovered[0]] && (
         <div style={{ marginTop: 8, fontSize: '0.82rem', color: 'var(--ink)', fontWeight: 600 }}>
-          {countries[hovered[0]]} × {countries[hovered[1]]}: {fmt(matrix[hovered[0]][hovered[1]])}
+          {countries[hovered[0]]} x {countries[hovered[1]]}: {fmt(matrix[hovered[0]][hovered[1]])}
         </div>
       )}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 10, fontSize: '0.75rem' }}>
@@ -94,15 +95,121 @@ function MatrixHeatmap({ countries, matrix, fmt = (v) => v.toFixed(2) }) {
   );
 }
 
+function PositioningScatter({ embeddings }) {
+  const [search, setSearch] = useState('');
+  const [blocFilter, setBlocFilter] = useState(null);
+
+  const { byBloc, usedBlocs } = useMemo(() => {
+    const grouped = {};
+    ALL_BLOCS.forEach((b) => (grouped[b] = []));
+    Object.entries(embeddings.coords || {}).forEach(([name, coords]) => {
+      const bloc = embeddings.blocs?.[name] || 'Non-Aligned';
+      (grouped[bloc] = grouped[bloc] || []).push({ name, x: coords[0], y: coords[1] });
+    });
+    return { byBloc: grouped, usedBlocs: ALL_BLOCS.filter((b) => grouped[b]?.length > 0) };
+  }, [embeddings]);
+
+  const filtered = useMemo(() => {
+    const q = search.toLowerCase();
+    const result = {};
+    usedBlocs.forEach((b) => {
+      if (blocFilter && b !== blocFilter) { result[b] = []; return; }
+      result[b] = (byBloc[b] || []).filter((p) => !q || p.name.toLowerCase().includes(q));
+    });
+    return result;
+  }, [byBloc, usedBlocs, search, blocFilter]);
+
+  const total = Object.values(byBloc).reduce((s, arr) => s + arr.length, 0);
+  if (!total) return <p className="empty-hint">Embedding data not available.</p>;
+
+  return (
+    <div>
+      <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '0.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
+        <input
+          placeholder="Search country..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          style={{ background: 'var(--surface-2)', border: '1px solid rgba(138,165,191,0.2)', color: 'var(--ink)', borderRadius: 6, padding: '4px 10px', fontSize: '0.82rem', width: 160 }}
+        />
+        {usedBlocs.map((b) => (
+          <button
+            key={b}
+            type="button"
+            onClick={() => setBlocFilter(blocFilter === b ? null : b)}
+            style={{
+              background: blocFilter === b ? BLOC_COLORS[b] : 'var(--surface-2)',
+              color: blocFilter === b ? '#07131f' : 'var(--ink)',
+              border: `1px solid ${BLOC_COLORS[b]}`,
+              borderRadius: 20, padding: '3px 10px', fontSize: '0.75rem', cursor: 'pointer', fontWeight: 600,
+            }}
+          >
+            {b}
+          </button>
+        ))}
+      </div>
+      <div className="chart-box">
+        <ResponsiveContainer width="100%" height={420}>
+          <ScatterChart margin={{ top: 10, right: 20, bottom: 40, left: 20 }}>
+            <XAxis
+              dataKey="x"
+              name="Dim 1"
+              type="number"
+              tick={false}
+              axisLine={{ stroke: 'rgba(138,165,191,0.15)' }}
+              tickLine={false}
+              label={{ value: 'Embedding dimension 1', position: 'insideBottom', offset: -10, fill: '#8aa5bf', fontSize: 11 }}
+            />
+            <YAxis
+              dataKey="y"
+              name="Dim 2"
+              type="number"
+              tick={false}
+              axisLine={{ stroke: 'rgba(138,165,191,0.15)' }}
+              tickLine={false}
+              label={{ value: 'Embedding dimension 2', angle: -90, position: 'insideLeft', offset: 15, fill: '#8aa5bf', fontSize: 11 }}
+            />
+            <ZAxis range={[55, 55]} />
+            <Tooltip
+              cursor={{ strokeDasharray: '3 3' }}
+              content={({ payload }) => {
+                const d = payload?.[0]?.payload;
+                if (!d) return null;
+                const bloc = embeddings.blocs?.[d.name] || 'Non-Aligned';
+                return (
+                  <div className="custom-tooltip">
+                    <strong>{d.name}</strong>
+                    <br />
+                    <span style={{ color: BLOC_COLORS[bloc] || '#8aa5bf', fontSize: '0.75rem' }}>{bloc}</span>
+                  </div>
+                );
+              }}
+            />
+            <Legend />
+            {usedBlocs.map((bloc) => (
+              <Scatter key={bloc} name={bloc} data={filtered[bloc] || []} fill={BLOC_COLORS[bloc]} opacity={0.85}>
+                {(filtered[bloc] || []).map((_, index) => (
+                  <Cell key={index} fill={BLOC_COLORS[bloc]} />
+                ))}
+              </Scatter>
+            ))}
+          </ScatterChart>
+        </ResponsiveContainer>
+      </div>
+      <p style={{ fontSize: '0.72rem', color: 'var(--muted)', marginTop: 6 }}>
+        {total} countries plotted. Proximity = similar geopolitical profile. Colors = detected bloc.
+      </p>
+    </div>
+  );
+}
+
 export default function HeatmapsPage() {
   const [tab, setTab] = useState('similarity');
   const [simData, setSimData] = useState(null);
   const [tempData, setTempData] = useState(null);
-  const [embData, setEmbData] = useState(null);
+  const [embedData, setEmbedData] = useState(null);
+  const [blocsData, setBlocsData] = useState({});
   const [loading, setLoading] = useState(false);
-  const [search, setSearch] = useState('');
 
-  // Lazy-load per tab to avoid OOM
   useEffect(() => {
     if (tab === 'similarity' && !simData) {
       setLoading(true);
@@ -112,34 +219,30 @@ export default function HeatmapsPage() {
       setLoading(true);
       getVotingAgreementMatrix().then((d) => { setTempData(d); setLoading(false); }).catch(() => setLoading(false));
     }
-    if (tab === 'positioning' && !embData) {
+    if (tab === 'positioning' && !embedData) {
       setLoading(true);
-      getEmbeddings2d().then((d) => { setEmbData(d); setLoading(false); }).catch(() => setLoading(false));
+      Promise.all([
+        getEmbeddings2d().catch(() => ({})),
+        getAllianceBlocs().catch(() => ({ country_to_bloc: {} })),
+      ]).then(([coords, blocs]) => {
+        setEmbedData({ coords, blocs: blocs.country_to_bloc || {} });
+        setLoading(false);
+      });
     }
   }, [tab]);
 
-  // Similarity: API returns {countries: [...], matrix: [[...]]}
   const simReady = useMemo(() => {
     if (!simData?.countries?.length) return null;
     return { countries: simData.countries, matrix: simData.matrix };
   }, [simData]);
 
-  // Temporal: API now returns {countries, matrix} pre-built on backend
   const tempReady = useMemo(() => {
     if (!tempData?.countries?.length) return null;
     return tempData;
   }, [tempData]);
 
-  // Embeddings: API returns {countryName: [x, y]}
-  const embPoints = useMemo(() => {
-    if (!embData) return [];
-    return Object.entries(embData)
-      .map(([country, coords]) => ({ country, x: coords[0], y: coords[1] }))
-      .filter((p) => !search || p.country.toLowerCase().includes(search.toLowerCase()));
-  }, [embData, search]);
-
   const renderContent = () => {
-    if (loading) return <div className="loading-inline">Loading data…</div>;
+    if (loading) return <div className="loading-inline">Loading data...</div>;
 
     if (tab === 'similarity') {
       if (!simReady) return <p className="empty-hint">Similarity data not available.</p>;
@@ -152,30 +255,8 @@ export default function HeatmapsPage() {
     }
 
     if (tab === 'positioning') {
-      if (!embPoints.length) return <p className="empty-hint">Embedding data not available.</p>;
-      return (
-        <div>
-          <input
-            placeholder="Filter countries…"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            style={{ marginBottom: '0.8rem', padding: '6px 12px', borderRadius: 8, border: '1.5px solid var(--border)', width: '100%', maxWidth: 260, fontSize: '0.85rem' }}
-          />
-          <ResponsiveContainer width="100%" height={520}>
-            <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
-              <XAxis dataKey="x" name="Dim 1" hide />
-              <YAxis dataKey="y" name="Dim 2" hide />
-              <ZAxis range={[45, 45]} />
-              <Tooltip content={({ payload }) => payload?.[0] ? <div className="custom-tooltip">{payload[0].payload.country}</div> : null} />
-              <Scatter data={embPoints} name="Countries">
-                {embPoints.map((p, i) => (
-                  <Cell key={i} fill={heatColor(((p.x || 0) + 3) / 6)} />
-                ))}
-              </Scatter>
-            </ScatterChart>
-          </ResponsiveContainer>
-        </div>
-      );
+      if (!embedData) return <p className="empty-hint">Embedding data not available.</p>;
+      return <PositioningScatter embeddings={embedData} />;
     }
   };
 
@@ -188,8 +269,8 @@ export default function HeatmapsPage() {
           ))}
         </div>
         {tab === 'similarity' && <p className="panel-hint" style={{ marginBottom: 12 }}>Cosine similarity of conflict profiles. <strong>Orange = highly similar</strong>, blue = dissimilar. Hover a cell for exact score.</p>}
-        {tab === 'temporal' && <p className="panel-hint" style={{ marginBottom: 12 }}>Average UN General Assembly vote agreement (1989–2023). <strong>Orange = votes together often</strong>. Blocs cluster visibly.</p>}
-        {tab === 'positioning' && <p className="panel-hint" style={{ marginBottom: 12 }}>2D PCA of conflict network embeddings. Countries close together share similar geopolitical positioning.</p>}
+        {tab === 'temporal' && <p className="panel-hint" style={{ marginBottom: 12 }}>Average UN General Assembly vote agreement (1989-2023). <strong>Orange = votes together often</strong>. Blocs cluster visibly.</p>}
+        {tab === 'positioning' && <p className="panel-hint" style={{ marginBottom: 12 }}>2D PCA of conflict-network embeddings. Countries close together share similar geopolitical positioning. Filter by bloc or search a country.</p>}
         {renderContent()}
       </Panel>
     </div>

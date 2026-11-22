@@ -78,7 +78,7 @@ function SearchableChipList({ label, allItems, selected, onToggle }) {
       </div>
       <div className="chip-row selected-chips">
         {selected.map((item) => (
-          <button key={item} type="button" className="chip active" onClick={() => onToggle(item)}>{item} ✕</button>
+          <button key={item} type="button" className="chip active" onClick={() => onToggle(item)}>{item} âœ•</button>
         ))}
         <button ref={btnRef} type="button" className="chip add-btn" onClick={openDropdown}>+ Add</button>
       </div>
@@ -88,11 +88,11 @@ function SearchableChipList({ label, allItems, selected, onToggle }) {
           className="chip-dropdown"
           style={{ position: 'fixed', top: dropPos.top, left: dropPos.left, width: dropPos.width, zIndex: 9999 }}
         >
-          <input autoFocus placeholder={`Search ${label.toLowerCase()}…`} value={query} onChange={(e) => setQuery(e.target.value)} className="chip-search-input" />
+          <input autoFocus placeholder={`Search ${label.toLowerCase()}â€¦`} value={query} onChange={(e) => setQuery(e.target.value)} className="chip-search-input" />
           <div className="chip-dropdown-list">
             {filtered.map((item) => (
               <div key={item} className={`chip-option${selected.includes(item) ? ' selected' : ''}`} onClick={() => { onToggle(item); }}>
-                {selected.includes(item) ? '✓ ' : ''}{item}
+                {selected.includes(item) ? 'âœ“ ' : ''}{item}
               </div>
             ))}
             {filtered.length === 0 && <div className="chip-option muted">No matches</div>}
@@ -140,7 +140,7 @@ export default function PolicyStancePage({ countries, issues, topics }) {
   }, [selectedCountries, selectedIssues, selectedTopic]);
 
   const chartData = useMemo(() => payload.issues.map((issue) => ({
-    issue: issue.length > 20 ? issue.slice(0, 18) + '…' : issue,
+    issue: issue.length > 20 ? issue.slice(0, 18) + 'â€¦' : issue,
     fullIssue: issue,
     ...Object.fromEntries(payload.countries.map((c) => [c, payload.matrix.find((row) => row.country === c)?.[issue] || 0])),
   })), [payload]);
@@ -178,14 +178,14 @@ export default function PolicyStancePage({ countries, issues, topics }) {
             </select>
           </div>
         </div>
-        {loading && <div className="loading-inline">Fetching data…</div>}
+        {loading && <div className="loading-inline">Fetching dataâ€¦</div>}
       </Panel>
 
       <Panel title="Stance Matrix" subtitle="Issue participation counts by country and issue.">
         <div className="table-wrap compact-table">
           <table>
             <thead>
-              <tr><th>Country</th>{payload.issues.map((issue) => <th key={issue} title={issue}>{issue.length > 18 ? issue.slice(0, 16) + '…' : issue}</th>)}</tr>
+              <tr><th>Country</th>{payload.issues.map((issue) => <th key={issue} title={issue}>{issue.length > 18 ? issue.slice(0, 16) + 'â€¦' : issue}</th>)}</tr>
             </thead>
             <tbody>
               {payload.matrix.map((row) => (
@@ -218,11 +218,11 @@ export default function PolicyStancePage({ countries, issues, topics }) {
         <AgreementMiniGraph network={payload.agreement_network} countries={selectedCountries} />
       </Panel>
 
-      <Panel title="Issue Rankings" subtitle="Ranked issue activity — who is most active per issue.">
+      <Panel title="Issue Rankings" subtitle="Ranked issue activity â€” who is most active per issue.">
         <div className="ranking-grid">
           {Object.entries(payload.rankings || {}).map(([issue, rows]) => (
             <div key={issue} className="mini-card">
-              <h3 title={issue}>{issue.length > 22 ? issue.slice(0, 20) + '…' : issue}</h3>
+              <h3 title={issue}>{issue.length > 22 ? issue.slice(0, 20) + 'â€¦' : issue}</h3>
               {(rows || []).slice(0, 5).map((row) => (
                 <div key={row.country} className="list-row">
                   <span>{row.country}</span>
@@ -249,7 +249,7 @@ export default function PolicyStancePage({ countries, issues, topics }) {
         </div>
       </Panel>
 
-      {/* Topic Voting Stance — only when a topic is selected and data exists */}
+      {/* Topic Voting Stance â€” only when a topic is selected and data exists */}
       {payload.selected_topic && Object.keys(payload.topic_stance || {}).length > 0 && (
         <Panel title={`UN Voting: "${payload.selected_topic}"`} subtitle="How each country votes on resolutions under this topic. Green = mostly yes, red = mostly no.">
           <div className="topic-stance-grid">
@@ -264,8 +264,8 @@ export default function PolicyStancePage({ countries, issues, topics }) {
                     <div className="ts-bar" style={{ width: `${pct}%`, background: color }} />
                   </div>
                   <div className="ts-stats">
-                    <span style={{ color: '#2a9d8f' }}>✓ {ts.yes || 0}</span>
-                    <span style={{ color: '#f26b38' }}>✗ {ts.no || 0}</span>
+                    <span style={{ color: '#2a9d8f' }}>âœ“ {ts.yes || 0}</span>
+                    <span style={{ color: '#f26b38' }}>âœ— {ts.no || 0}</span>
                     <span style={{ color: '#aaa' }}>~ {ts.abstain || 0}</span>
                     <strong style={{ color }}>{pct}% yes</strong>
                   </div>
@@ -276,20 +276,6 @@ export default function PolicyStancePage({ countries, issues, topics }) {
         </Panel>
       )}
 
-      <Panel title="UN Resolution Deep Dive" subtitle="Votes on the selected topic, ranked by recency.">
-        <div className="table-wrap compact-table">
-          <table>
-            <thead><tr><th>Country</th><th>Year</th><th>Resolution</th><th>Vote</th></tr></thead>
-            <tbody>
-              {(payload.resolution_votes || []).slice(0, 80).map((vote, i) => (
-                <tr key={i} style={{ color: vote.vote === 'yes' ? '#2a9d8f' : vote.vote === 'no' ? '#f26b38' : undefined }}>
-                  <td>{vote.country}</td><td>{vote.year}</td><td>{vote.resolution}</td><td>{vote.vote}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </Panel>
     </div>
   );
 }

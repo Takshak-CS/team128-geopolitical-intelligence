@@ -8,6 +8,7 @@ import ComparePage from './pages/ComparePage';
 import DashboardPage from './pages/DashboardPage';
 import GraphPage from './pages/GraphPage';
 import HeatmapsPage from './pages/HeatmapsPage';
+import PolicyIndicatorsPage from './pages/PolicyIndicatorsPage';
 import PolicyStancePage from './pages/PolicyStancePage';
 import TemporalPage from './pages/TemporalPage';
 
@@ -69,6 +70,7 @@ export default function App() {
         <Route path="/temporal" element={<TemporalPage countries={countries} status={status} blocMap={blocMap} />} />
         <Route path="/blocs" element={<BlocsPage />} />
         <Route path="/policy-stance" element={<PolicyStancePage countries={countries} issues={issues} topics={topics} />} />
+        <Route path="/indicators" element={<PolicyIndicatorsPage countries={countries} />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </AppShell>

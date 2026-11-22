@@ -8,6 +8,7 @@ const links = [
   ['/temporal', 'Temporal Analysis'],
   ['/blocs', 'Alliance Blocs'],
   ['/policy-stance', 'Policy Stance'],
+  ['/indicators', 'Policy Indicators'],
 ];
 
 export default function AppShell({ status, children }) {

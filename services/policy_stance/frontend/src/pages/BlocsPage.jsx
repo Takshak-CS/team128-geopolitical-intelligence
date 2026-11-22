@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Legend, ResponsiveContainer, Scatter, ScatterChart, Tooltip, XAxis, YAxis, ZAxis } from 'recharts';
 
 import { getAllianceBlocs, getChord, getEmbeddings2d } from '../api';
@@ -36,17 +36,17 @@ export default function BlocsPage() {
 
   return (
     <div className="page-grid wide">
-      <Panel title="Alliance Bloc Detection" subtitle="Countries coloured by detected geopolitical bloc, positioned by embedding similarity.">
+      <Panel title="Alliance Bloc Detection" subtitle="Countries coloured by detected geopolitical bloc. Proximity = similar conflict-network profile. Axis values are PCA embedding coordinates (not direct measurements).">
         <div className="chart-box">
-          <ResponsiveContainer width="100%" height={380}>
-            <ScatterChart>
-              <XAxis dataKey="x" name="x" hide />
-              <YAxis dataKey="y" name="y" hide />
+          <ResponsiveContainer width="100%" height={400}>
+            <ScatterChart margin={{ top: 10, right: 20, bottom: 30, left: 20 }}>
+              <XAxis dataKey="x" name="x" type="number" tick={false} axisLine={{ stroke: 'rgba(138,165,191,0.15)' }} tickLine={false} label={{ value: '← Bloc alignment axis →', position: 'insideBottom', offset: -10, fill: '#8aa5bf', fontSize: 11 }} />
+              <YAxis dataKey="y" name="y" type="number" tick={false} axisLine={{ stroke: 'rgba(138,165,191,0.15)' }} tickLine={false} label={{ value: '← Positioning axis →', angle: -90, position: 'insideLeft', offset: 15, fill: '#8aa5bf', fontSize: 11 }} />
               <ZAxis range={[55, 55]} />
               <Tooltip cursor={{ strokeDasharray: '3 3' }} content={({ payload }) => {
                 const d = payload?.[0]?.payload;
                 if (!d) return null;
-                return <div style={{ background: '#fff', border: '1px solid #ddd', padding: '6px 10px', borderRadius: 4, fontSize: 13 }}><strong>{d.name}</strong></div>;
+                return <div className="custom-tooltip"><strong>{d.name}</strong><br /><span style={{ color: '#8aa5bf', fontSize: '0.72rem' }}>{blocs.country_to_bloc[d.name] || 'Non-Aligned'}</span></div>;
               }} />
               <Legend />
               {ALL_BLOCS.map((bloc) => (
@@ -57,7 +57,7 @@ export default function BlocsPage() {
         </div>
       </Panel>
 
-      <Panel title="Conflict Chord" subtitle="Conflict intensity flows between country pairs.">
+      <Panel title="Conflict Chord" subtitle="Arc width = total conflict intensity between two countries. Hover an arc to see the pair. Thicker arcs = more severe or frequent conflicts.">
         <ChordDiagram links={chord.links} />
       </Panel>
 

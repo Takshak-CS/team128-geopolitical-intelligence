@@ -102,6 +102,16 @@ export async function getGraphDelta(year) {
   return data;
 }
 
+export async function getIndicators(countries) {
+  const { data } = await client.get('/indicators', { params: { countries: countries.join(',') } });
+  return data;
+}
+
+export async function getIndicatorTrend(countries, indicator) {
+  const { data } = await client.get('/indicators/trend', { params: { countries: countries.join(','), indicator } });
+  return data;
+}
+
 export async function getBlocsByYear(year) {
   const { data } = await client.get(`/blocs-by-year/${year}`);
   return data;

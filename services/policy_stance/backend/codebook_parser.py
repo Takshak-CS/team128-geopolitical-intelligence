@@ -183,6 +183,21 @@ def canonical_dataset_name(value: str) -> str:
         "un votes clean": "un_votes_clean",
         "ga voting": "2025_7_23_ga_voting",
         "2025 7 23 ga voting": "2025_7_23_ga_voting",
+        # OWID indicator datasets
+        "owid human rights": "owid_human_rights",
+        "owid democracy": "owid_democracy",
+        "owid regime": "owid_regime",
+        "owid mil spending": "owid_mil_spending",
+        "owid corruption": "owid_corruption",
+        "owid gdp per capita": "owid_gdp_per_capita",
+        "owid trade gdp": "owid_trade_gdp",
+        "owid nuclear warheads": "owid_nuclear_warheads",
+        "owid co2": "owid_co2",
+        "owid internet users": "owid_internet_users",
+        # NonState / OneSided / OrganizedViolence filenames
+        "nonstate": "ucdp-nonstate",
+        "onesided": "ucdp-onesided",
+        "organizedviolencecy": "organizedviolencecy",
     }
     for needle, dataset_name in mapping.items():
         if needle in text:
