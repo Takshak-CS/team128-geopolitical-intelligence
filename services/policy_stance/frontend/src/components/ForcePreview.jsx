@@ -27,10 +27,7 @@ export default function ForcePreview({ graph, height = 340, onNodeClick, blocMap
     return () => ro.disconnect();
   }, []); // only on mount
 
-  const fittedRef = useRef(false);
-
   const data = useMemo(() => {
-    fittedRef.current = false; // reset so new data auto-fits once
     const allNodes = (graph?.nodes || []).filter((n) => n.gw_code >= 2 && n.gw_code <= 920);
     let nodes = allNodes;
     if (minNodes && nodes.length > minNodes) {
@@ -65,12 +62,7 @@ export default function ForcePreview({ graph, height = 340, onNodeClick, blocMap
     fg.d3ReheatSimulation?.();
   }, [data]);
 
-  // Zoom to fit only once after initial load — never again (so user zoom isn't reset)
-  const onEngineStop = useCallback(() => {
-    if (fittedRef.current) return;
-    fittedRef.current = true;
-    fgRef.current?.zoomToFit?.(600, 150);
-  }, []);
+  const onEngineStop = useCallback(() => {}, []);
 
   // Node/link color — pure functions, no state deps → no re-render
   const nodeColor = useCallback((node) => BLOC_COLORS[blocMap[node.name]] || BLOC_COLORS['Non-Aligned'], [blocMap]);

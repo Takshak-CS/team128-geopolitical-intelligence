@@ -1,4 +1,4 @@
-﻿import { Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 import ForcePreview from '../components/ForcePreview';
 import Panel from '../components/Panel';
