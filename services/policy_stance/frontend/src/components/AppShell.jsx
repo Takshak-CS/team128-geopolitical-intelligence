@@ -13,14 +13,12 @@ const links = [
 export default function AppShell({ status, children }) {
   return (
     <div className="app-shell">
-      <div className="ambient ambient-left" />
-      <div className="ambient ambient-right" />
       <header className="navbar">
-        <div>
-          <p className="eyebrow">Capstone Intelligence Platform</p>
-          <h1>Geopolitical Intelligence System</h1>
+        <div className="navbar-brand">
+          <p className="eyebrow">Policy Stance · Team 128</p>
+          <h1>Geopolitical Intelligence</h1>
         </div>
-        <nav>
+        <nav className="navbar-nav">
           {links.map(([to, label]) => (
             <NavLink key={to} to={to} end={to === '/'} className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}>
               {label}
@@ -29,7 +27,7 @@ export default function AppShell({ status, children }) {
         </nav>
         <div className="status-pill">
           <span className={status.ready ? 'status-dot ready' : 'status-dot'} />
-          <span>{status.ready ? 'Ready' : status.progress || 'Starting'}</span>
+          <span>{status.ready ? 'Ready' : status.progress || 'Starting…'}</span>
         </div>
       </header>
       <main className="page-wrap">{children}</main>
