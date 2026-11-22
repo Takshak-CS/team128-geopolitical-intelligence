@@ -143,7 +143,7 @@ fi
 
 echo "== 6/6 Build and start (the first build takes 10-20 minutes)"
 cd "$APP"
-"${COMPOSE[@]}" build
+DOCKER_BUILDKIT=1 "${COMPOSE[@]}" build
 # Check the new Caddyfile before it replaces the current one, then copy it over in
 # place: Caddy's container mounts that very file, so its inode must not change.
 "${COMPOSE[@]}" run --rm --no-deps -T -v "$APP/deploy/Caddyfile.new:/tmp/Caddyfile.new:ro" caddy   caddy validate --config /tmp/Caddyfile.new --adapter caddyfile
