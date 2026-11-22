@@ -1207,7 +1207,7 @@ def bloc_discovery(year: int, min_sim: float = Query(0.5)) -> dict[str, Any]:
 # value_column_index=3 means the 4th column (after Entity, Code, Year) — standard OWID layout.
 _OWID_CONFIG: dict[str, tuple[str, int, str, bool | None]] = {
     "owid_human_rights":   ("Human Rights",         3, "index 0–1",       True),
-    "owid_democracy":      ("Democracy Score",       3, "0–3 scale",       True),
+    "owid_democracy":      ("Democracy Score",       3, "0=autocracy 3=democracy", True),
     "owid_regime":         ("Regime Type",           3, "0–3 scale",       True),
     "owid_mil_spending":   ("Mil. Spending",         3, "USD millions",    None),
     "owid_corruption":     ("Corruption Index",      3, "CPI 0–100",       True),
@@ -1227,13 +1227,73 @@ def _owid_value(df: pd.DataFrame, col_index: int) -> pd.Series:
         return pd.Series(dtype=float)
 
 
+_owid_frame_cache: dict[str, pd.DataFrame] = {}
+
+
+_REGIME_MAP = {
+    'closed autocracy': 0, 'electoral autocracy': 1,
+    'electoral democracy': 2, 'liberal democracy': 3,
+}
+
+# App name → OWID Entity name (only where they differ)
+_OWID_ALIAS: dict[str, str] = {
+    'USA': 'United States',
+    'UK': 'United Kingdom',
+    'South Korea': 'South Korea',
+    'North Korea': 'North Korea',
+    'DR Congo': 'Democratic Republic of Congo',
+    'Congo': 'Congo',
+    'Czech Republic': 'Czechia',
+    'Slovakia': 'Slovakia',
+    'Bosnia': 'Bosnia and Herzegovina',
+    'Macedonia': 'North Macedonia',
+    'UAE': 'United Arab Emirates',
+    'Iran': 'Iran',
+    'Syria': 'Syria',
+    'Venezuela': 'Venezuela',
+    'Bolivia': 'Bolivia',
+    'Tanzania': 'Tanzania',
+    'Ivory Coast': "Cote d'Ivoire",
+}
+_OWID_ALIAS_REV: dict[str, str] = {v: k for k, v in _OWID_ALIAS.items()}
+
+
+def _resolve_owid_names(names: list[str]) -> tuple[list[str], dict[str, str]]:
+    """Expand app names to OWID names; return (owid_names, owid→app map)."""
+    owid_names, back = [], {}
+    for n in names:
+        owid = _OWID_ALIAS.get(n, n)
+        owid_names.append(owid)
+        back[owid] = n
+    return owid_names, back
+
+
+def _get_owid_frames() -> dict[str, pd.DataFrame]:
+    """Lazily load OWID CSVs from the data directory, cached in memory."""
+    missing = [ds for ds in _OWID_CONFIG if ds not in _owid_frame_cache]
+    if missing:
+        from backend.paths import ROOT_DIR
+        for ds in missing:
+            path = os.path.join(ROOT_DIR, 'data', f'{ds}.csv')
+            if os.path.exists(path):
+                try:
+                    df = pd.read_csv(path)
+                    if ds == 'owid_democracy':
+                        col = df.columns[3]
+                        df[col] = df[col].str.strip().str.lower().map(_REGIME_MAP)
+                    _owid_frame_cache[ds] = df
+                except Exception:
+                    pass
+    return _owid_frame_cache
+
+
 @app.get('/indicators')
 def get_indicators(countries: str = Query('')) -> dict[str, Any]:
     """Return latest indicator values for each requested country across all OWID datasets."""
     if not state.ready:
         raise HTTPException(status_code=503, detail='Pipeline not ready')
     country_list = [c.strip() for c in countries.split(',') if c.strip()]
-    frames: dict[str, pd.DataFrame] = state.data.get('dataset_frames', {})
+    frames: dict[str, pd.DataFrame] = _get_owid_frames()
 
     # Build global min/max per indicator for normalisation (0–100 radar scale)
     global_range: dict[str, tuple[float, float]] = {}
@@ -1245,6 +1305,7 @@ def get_indicators(countries: str = Query('')) -> dict[str, Any]:
         if len(vals):
             global_range[label] = (float(vals.min()), float(vals.max()))
 
+    owid_list, back_map = _resolve_owid_names(country_list) if country_list else ([], {})
     result: dict[str, dict[str, Any]] = {}
     for ds_name, (label, col_idx, unit, higher_better) in _OWID_CONFIG.items():
         df = frames.get(ds_name)
@@ -1253,14 +1314,15 @@ def get_indicators(countries: str = Query('')) -> dict[str, Any]:
         df_work = df.copy()
         df_work['_val'] = _owid_value(df_work, col_idx)
         df_work = df_work.dropna(subset=['_val'])
-        if country_list:
-            df_work = df_work[df_work['Entity'].isin(country_list)]
+        if owid_list:
+            df_work = df_work[df_work['Entity'].isin(owid_list)]
         # Latest year per country
         latest = df_work.sort_values('Year').groupby('Entity').last().reset_index()
         lo, hi = global_range.get(label, (0.0, 1.0))
         rng = max(hi - lo, 1e-9)
         for _, row in latest.iterrows():
-            country = row['Entity']
+            owid_name = row['Entity']
+            country = back_map.get(owid_name, owid_name)
             raw = float(row['_val'])
             normalized = round(100.0 * (raw - lo) / rng, 1)
             result.setdefault(country, {})
@@ -1283,7 +1345,7 @@ def get_indicators_trend(
     if not state.ready:
         raise HTTPException(status_code=503, detail='Pipeline not ready')
     country_list = [c.strip() for c in countries.split(',') if c.strip()]
-    frames: dict[str, pd.DataFrame] = state.data.get('dataset_frames', {})
+    frames: dict[str, pd.DataFrame] = _get_owid_frames()
 
     # Find which dataset holds the requested indicator
     target_ds = None
@@ -1303,15 +1365,17 @@ def get_indicators_trend(
     if df is None or 'Entity' not in df.columns or 'Year' not in df.columns:
         return {'indicator': indicator, 'series': {}}
 
+    owid_list, back_map = _resolve_owid_names(country_list) if country_list else ([], {})
     df_work = df.copy()
     df_work['_val'] = _owid_value(df_work, target_col_idx)
     df_work = df_work.dropna(subset=['_val'])
-    if country_list:
-        df_work = df_work[df_work['Entity'].isin(country_list)]
+    if owid_list:
+        df_work = df_work[df_work['Entity'].isin(owid_list)]
     df_work = df_work[(df_work['Year'] >= 1960) & (df_work['Year'] <= 2025)]
 
     series: dict[str, list[dict[str, Any]]] = {}
-    for country, grp in df_work.groupby('Entity'):
+    for owid_name, grp in df_work.groupby('Entity'):
+        country = back_map.get(owid_name, owid_name)
         grp_sorted = grp.sort_values('Year')
         series[country] = [
             {'year': int(r['Year']), 'value': round(float(r['_val']), 4)}
@@ -1324,6 +1388,535 @@ def get_indicators_trend(
         'higher_better': target_meta[3] if target_meta else None,
         'series': series,
     }
+
+
+_ACTOR_COUNTRY_MAP: dict[str, str] = {
+    # India
+    'Government of India': 'India', 'Indian Army': 'India', 'Indian Mujahideen': 'India',
+    'India (Manipur)': 'India', 'India (Assam)': 'India', 'India (Punjab)': 'India',
+    # USA
+    'Government of United States of America': 'USA', 'US Forces': 'USA',
+    'United States of America': 'USA',
+    # Iran
+    'Government of Iran': 'Iran', 'Iranian Government': 'Iran',
+    'Government of Islamic Republic of Iran': 'Iran',
+    # Iraq
+    'Government of Iraq': 'Iraq', 'Iraqi Army': 'Iraq', 'Iraqi Forces': 'Iraq',
+    # Pakistan
+    'Government of Pakistan': 'Pakistan', 'Pakistan Army': 'Pakistan',
+    # Afghanistan
+    'Government of Afghanistan': 'Afghanistan', 'Afghan National Army': 'Afghanistan',
+    # Russia
+    'Government of Russia': 'Russia', 'Russian Forces': 'Russia',
+    'Government of Soviet Union': 'Russia',
+    # Syria
+    'Government of Syria': 'Syria', 'Syrian Army': 'Syria',
+    # Turkey
+    'Government of Turkey': 'Turkey', 'Turkish Armed Forces': 'Turkey',
+    # China
+    'Government of China': 'China', "Government of People's Republic of China": 'China',
+    # Nigeria
+    'Government of Nigeria': 'Nigeria', 'Nigerian Army': 'Nigeria',
+    # Ethiopia
+    'Government of Ethiopia': 'Ethiopia', 'Ethiopian Forces': 'Ethiopia',
+    # Sudan / South Sudan
+    'Government of Sudan': 'Sudan', 'Government of South Sudan': 'South Sudan',
+    # Myanmar
+    'Government of Myanmar': 'Myanmar', 'Myanmar Armed Forces': 'Myanmar',
+    # Colombia
+    'Government of Colombia': 'Colombia', 'Colombian Army': 'Colombia',
+    # Philippines
+    'Government of Philippines': 'Philippines', 'Philippine Army': 'Philippines',
+    # Yemen
+    'Government of Yemen': 'Yemen', 'Yemeni Forces': 'Yemen',
+    # Somalia
+    'Government of Somalia': 'Somalia', 'Somali National Army': 'Somalia',
+    # Mali
+    'Government of Mali': 'Mali', 'Malian Armed Forces': 'Mali',
+    # Israel
+    'Government of Israel': 'Israel', 'Israeli Defense Forces': 'Israel', 'IDF': 'Israel',
+    # Ukraine
+    'Government of Ukraine': 'Ukraine', 'Ukrainian Armed Forces': 'Ukraine',
+    # Egypt
+    'Government of Egypt': 'Egypt', 'Egyptian Army': 'Egypt',
+    # Saudi Arabia
+    'Government of Saudi Arabia': 'Saudi Arabia', 'Saudi Armed Forces': 'Saudi Arabia',
+    # Libya
+    'Government of Libya': 'Libya',
+    # UK
+    'Government of United Kingdom': 'UK', 'British Forces': 'UK',
+    # France
+    'Government of France': 'France', 'French Forces': 'France',
+    # DRC
+    'Government of Democratic Republic of Congo': 'DR Congo',
+    'Government of DRC': 'DR Congo',
+    # CAR
+    'Government of Central African Republic': 'Central African Republic',
+    # Chad
+    'Government of Chad': 'Chad', 'Chadian Army': 'Chad',
+    # Cameroon
+    'Government of Cameroon': 'Cameroon',
+    # Niger
+    'Government of Niger': 'Niger',
+    # Burkina Faso
+    'Government of Burkina Faso': 'Burkina Faso',
+    # Mozambique
+    'Government of Mozambique': 'Mozambique',
+    # Zimbabwe
+    'Government of Zimbabwe': 'Zimbabwe',
+    # Uganda
+    'Government of Uganda': 'Uganda', 'Uganda Peoples Defence Forces': 'Uganda',
+    # Kenya
+    'Government of Kenya': 'Kenya',
+    # Tanzania
+    'Government of Tanzania': 'Tanzania',
+    # Rwanda
+    'Government of Rwanda': 'Rwanda',
+    # Burundi
+    'Government of Burundi': 'Burundi',
+    # Venezuela
+    'Government of Venezuela': 'Venezuela',
+    # Mexico
+    'Government of Mexico': 'Mexico', 'Mexican Army': 'Mexico',
+    # Peru
+    'Government of Peru': 'Peru',
+    # Guatemala
+    'Government of Guatemala': 'Guatemala',
+    # El Salvador
+    'Government of El Salvador': 'El Salvador',
+    # Honduras
+    'Government of Honduras': 'Honduras',
+    # Bosnia
+    'Government of Bosnia and Herzegovina': 'Bosnia and Herzegovina',
+    # Serbia
+    'Government of Serbia': 'Serbia', 'Government of Yugoslavia': 'Serbia',
+    # Croatia
+    'Government of Croatia': 'Croatia',
+    # Kosovo
+    'Government of Kosovo': 'Kosovo',
+    # Georgia
+    'Government of Georgia': 'Georgia',
+    # Azerbaijan
+    'Government of Azerbaijan': 'Azerbaijan',
+    # Armenia
+    'Government of Armenia': 'Armenia',
+    # North Korea
+    'Government of North Korea': 'North Korea',
+    # South Korea
+    'Government of South Korea': 'South Korea',
+    # Thailand
+    'Government of Thailand': 'Thailand',
+    # Indonesia
+    'Government of Indonesia': 'Indonesia',
+    # Cambodia
+    'Government of Cambodia': 'Cambodia',
+    # Laos
+    'Government of Laos': 'Laos',
+    # Vietnam
+    'Government of Vietnam': 'Vietnam',
+    # Bangladesh
+    'Government of Bangladesh': 'Bangladesh',
+    # Nepal
+    'Government of Nepal': 'Nepal',
+    # Sri Lanka
+    'Government of Sri Lanka': 'Sri Lanka',
+    # Lebanon
+    'Government of Lebanon': 'Lebanon', 'Lebanese Army': 'Lebanon',
+    # Jordan
+    'Government of Jordan': 'Jordan',
+    # Algeria
+    'Government of Algeria': 'Algeria', 'Algerian Army': 'Algeria',
+    # Morocco
+    'Government of Morocco': 'Morocco',
+    # Tunisia
+    'Government of Tunisia': 'Tunisia',
+    # Senegal
+    'Government of Senegal': 'Senegal',
+    # Angola
+    'Government of Angola': 'Angola',
+    # Zambia
+    'Government of Zambia': 'Zambia',
+    # Liberia
+    'Government of Liberia': 'Liberia',
+    # Sierra Leone
+    'Government of Sierra Leone': 'Sierra Leone',
+    # Guinea
+    'Government of Guinea': 'Guinea',
+    # Ivory Coast
+    "Government of Cote d'Ivoire": 'Ivory Coast', 'Government of Ivory Coast': 'Ivory Coast',
+    # Ghana
+    'Government of Ghana': 'Ghana',
+    # Togo
+    'Government of Togo': 'Togo',
+    # Benin
+    'Government of Benin': 'Benin',
+    # Haiti
+    'Government of Haiti': 'Haiti',
+    # Bolivia
+    'Government of Bolivia': 'Bolivia',
+    # Ecuador
+    'Government of Ecuador': 'Ecuador',
+    # Paraguay
+    'Government of Paraguay': 'Paraguay',
+    # Uruguay
+    'Government of Uruguay': 'Uruguay',
+    # Chile
+    'Government of Chile': 'Chile',
+    # Argentina
+    'Government of Argentina': 'Argentina',
+    # Brazil
+    'Government of Brazil': 'Brazil',
+    # Spain
+    'Government of Spain': 'Spain',
+    # Italy
+    'Government of Italy': 'Italy',
+    # Germany
+    'Government of Germany': 'Germany',
+    # Poland
+    'Government of Poland': 'Poland',
+    # Romania
+    'Government of Romania': 'Romania',
+    # Bulgaria
+    'Government of Bulgaria': 'Bulgaria',
+    # Greece
+    'Government of Greece': 'Greece',
+    # Portugal
+    'Government of Portugal': 'Portugal',
+    # Hungary
+    'Government of Hungary': 'Hungary',
+    # Czech Republic
+    'Government of Czech Republic': 'Czech Republic',
+    # Slovakia
+    'Government of Slovakia': 'Slovakia',
+    # Tajikistan
+    'Government of Tajikistan': 'Tajikistan',
+    # Uzbekistan
+    'Government of Uzbekistan': 'Uzbekistan',
+    # Kazakhstan
+    'Government of Kazakhstan': 'Kazakhstan',
+    # Kyrgyzstan
+    'Government of Kyrgyzstan': 'Kyrgyzstan',
+    # Turkmenistan
+    'Government of Turkmenistan': 'Turkmenistan',
+    # Belarus
+    'Government of Belarus': 'Belarus',
+    # Moldova
+    'Government of Moldova': 'Moldova',
+    # Mongolia
+    'Government of Mongolia': 'Mongolia',
+    # Eritrea
+    'Government of Eritrea': 'Eritrea',
+    # Djibouti
+    'Government of Djibouti': 'Djibouti',
+    # Tanzania
+    'Government of Tanzania': 'Tanzania',
+    # Namibia
+    'Government of Namibia': 'Namibia',
+    # Botswana
+    'Government of Botswana': 'Botswana',
+    # Eswatini
+    'Government of Swaziland': 'Eswatini',
+    # Lesotho
+    'Government of Lesotho': 'Lesotho',
+    # Madagascar
+    'Government of Madagascar': 'Madagascar',
+    # Papua New Guinea
+    'Government of Papua New Guinea': 'Papua New Guinea',
+    # Timor-Leste
+    'Government of East Timor': 'East Timor', 'Government of Timor-Leste': 'East Timor',
+}
+
+
+def _normalize_actor_to_country(actor: str) -> str:
+    """Map actor names like 'Government of India' to canonical country name 'India'."""
+    exact = _ACTOR_COUNTRY_MAP.get(actor)
+    if exact:
+        return exact
+    # Prefix pattern: "Government of X" → X
+    if actor.startswith('Government of '):
+        return actor[len('Government of '):]
+    return actor
+
+
+def _conflict_counts_per_country(master_df: pd.DataFrame) -> dict[str, dict[str, float]]:
+    """Return per-country: total_events, avg_events_per_year, total_deaths. Fully vectorized."""
+    if master_df.empty:
+        return {}
+    has_deaths = 'deaths' in master_df.columns
+    has_year = 'year' in master_df.columns
+    deaths_col = pd.to_numeric(master_df['deaths'], errors='coerce').fillna(0) if has_deaths else pd.Series(0, index=master_df.index)
+
+    out: dict[str, dict[str, float]] = {}
+    for col in ('country_a', 'country_b'):
+        if col not in master_df.columns:
+            continue
+        norm_col = master_df[col].map(lambda x: _normalize_actor_to_country(x) if isinstance(x, str) else x)
+        tmp = master_df.assign(**{col: norm_col})
+        events = tmp.groupby(col).size()
+        deaths = tmp.assign(_d=deaths_col).groupby(col)['_d'].sum()
+        for country in events.index:
+            if not isinstance(country, str) or not country:
+                continue
+            rec = out.setdefault(country, {'total_events': 0.0, 'avg_per_year': 0.0, 'total_deaths': 0.0})
+            rec['total_events'] += float(events[country])
+            rec['total_deaths'] += float(deaths.get(country, 0))
+
+    if has_year:
+        for col in ('country_a', 'country_b'):
+            if col not in master_df.columns:
+                continue
+            norm_col = master_df[col].map(lambda x: _normalize_actor_to_country(x) if isinstance(x, str) else x)
+            tmp = master_df.assign(**{col: norm_col})
+            yrs = tmp.groupby(col)['year'].nunique()
+            for country, n in yrs.items():
+                if country in out:
+                    out[country]['_yrs'] = max(out[country].get('_yrs', 0), int(n))
+
+    for c, rec in out.items():
+        yrs = max(1, int(rec.pop('_yrs', 1)))
+        rec['avg_per_year'] = rec['total_events'] / yrs
+    return out
+
+
+_risk_score_cache: dict[str, Any] = {}
+_governance_scatter_cache: dict[str, Any] = {}
+_indicator_correlation_cache: dict[str, Any] = {}
+
+
+@app.get('/risk-score')
+def get_risk_score() -> dict[str, Any]:
+    """Composite geopolitical conflict-risk score 0-100 for every country."""
+    if not state.ready:
+        raise HTTPException(status_code=503, detail='Pipeline not ready')
+    if _risk_score_cache:
+        return _risk_score_cache
+    master_df: pd.DataFrame = state.data.get('master_df', pd.DataFrame())
+    conflict_data = _conflict_counts_per_country(master_df)
+    frames = _get_owid_frames()
+
+    governance: dict[str, dict[str, float]] = {}
+    for ds_name, (label, col_idx, _unit, higher_better) in _OWID_CONFIG.items():
+        df = frames.get(ds_name)
+        if df is None or 'Entity' not in df.columns or 'Year' not in df.columns:
+            continue
+        df_w = df.copy()
+        df_w['_v'] = _owid_value(df_w, col_idx)
+        df_w = df_w.dropna(subset=['_v'])
+        latest = df_w.sort_values('Year').groupby('Entity').last().reset_index()
+        for _, row in latest.iterrows():
+            governance.setdefault(row['Entity'], {})[label] = float(row['_v'])
+
+    # Gather all countries with at least some data
+    all_countries = set(conflict_data.keys()) | set(governance.keys())
+    all_countries = {c for c in all_countries if isinstance(c, str) and c}
+
+    def _norm_series(vals: list[float]) -> list[float]:
+        lo, hi = min(vals), max(vals)
+        rng = max(hi - lo, 1e-9)
+        return [(v - lo) / rng for v in vals]
+
+    # Raw scores (higher = worse for each component)
+    conflict_scores: dict[str, float] = {}
+    death_scores: dict[str, float] = {}
+    dem_scores: dict[str, float] = {}
+    hr_scores: dict[str, float] = {}
+    cor_scores: dict[str, float] = {}
+
+    for c in all_countries:
+        conflict_scores[c] = conflict_data.get(c, {}).get('avg_per_year', 0.0)
+        death_scores[c] = min(conflict_data.get(c, {}).get('total_deaths', 0.0), 1e6)  # cap outliers
+        g = governance.get(c, {})
+        # inverted: higher democracy/HR/corruption = lower risk
+        dem_scores[c] = g.get('Democracy Score', 0.0)
+        hr_scores[c] = g.get('Human Rights', 0.0)
+        cor_scores[c] = g.get('Corruption Index', 0.0)
+
+    countries_list = sorted(all_countries)
+    # Normalize each component 0-1
+    def _n(d: dict[str, float]) -> dict[str, float]:
+        vals = list(d.values())
+        lo, hi = min(vals), max(vals)
+        rng = max(hi - lo, 1e-9)
+        return {k: (v - lo) / rng for k, v in d.items()}
+
+    cn = _n(conflict_scores)
+    dn = _n(death_scores)
+    dem_n = _n(dem_scores)
+    hr_n = _n(hr_scores)
+    cor_n = _n(cor_scores)
+
+    results = []
+    for c in countries_list:
+        # Weights: conflict 30%, deaths 20%, democracy_inv 20%, hr_inv 20%, corruption_inv 10%
+        risk = (
+            cn.get(c, 0) * 0.30 +
+            dn.get(c, 0) * 0.20 +
+            (1 - dem_n.get(c, 0)) * 0.20 +
+            (1 - hr_n.get(c, 0)) * 0.20 +
+            (1 - cor_n.get(c, 0)) * 0.10
+        )
+        results.append({
+            'country': c,
+            'score': round(risk * 100, 1),
+            'components': {
+                'conflict_freq': round(cn.get(c, 0) * 100, 1),
+                'deaths': round(dn.get(c, 0) * 100, 1),
+                'democracy_inv': round((1 - dem_n.get(c, 0)) * 100, 1),
+                'hr_inv': round((1 - hr_n.get(c, 0)) * 100, 1),
+                'corruption_inv': round((1 - cor_n.get(c, 0)) * 100, 1),
+            },
+        })
+    results.sort(key=lambda x: -x['score'])
+    _risk_score_cache.update({'scores': results, 'method': 'weighted_composite_normalized'})
+    return _risk_score_cache
+
+
+@app.get('/governance-scatter')
+def get_governance_scatter() -> dict[str, Any]:
+    """Democracy score vs avg conflict events/year scatter, sized by GDP per capita."""
+    if not state.ready:
+        raise HTTPException(status_code=503, detail='Pipeline not ready')
+    if _governance_scatter_cache:
+        return _governance_scatter_cache
+    master_df: pd.DataFrame = state.data.get('master_df', pd.DataFrame())
+    conflict_data = _conflict_counts_per_country(master_df)
+    bloc_map: dict[str, str] = state.data.get('alliance_blocs', {}).get('country_to_bloc', {})
+    frames = _get_owid_frames()
+
+    dem_df = frames.get('owid_democracy')
+    gdp_df = frames.get('owid_gdp_per_capita')
+    hr_df = frames.get('owid_human_rights')
+
+    def _latest(df: pd.DataFrame | None, col_idx: int) -> dict[str, float]:
+        if df is None or 'Entity' not in df.columns:
+            return {}
+        d = df.copy()
+        d['_v'] = _owid_value(d, col_idx)
+        d = d.dropna(subset=['_v'])
+        latest = d.sort_values('Year').groupby('Entity').last().reset_index()
+        return {row['Entity']: float(row['_v']) for _, row in latest.iterrows()}
+
+    dem_vals = _latest(dem_df, 3)
+    gdp_vals = _latest(gdp_df, 3)
+    hr_vals = _latest(hr_df, 3)
+
+    points = []
+    all_countries = set(dem_vals) | set(conflict_data)
+    for c in sorted(all_countries):
+        if not isinstance(c, str) or not c:
+            continue
+        points.append({
+            'country': c,
+            'democracy': round(dem_vals.get(c, 0.0), 4),
+            'conflicts_per_year': round(conflict_data.get(c, {}).get('avg_per_year', 0.0), 2),
+            'gdp': round(gdp_vals.get(c, 0.0), 0),
+            'human_rights': round(hr_vals.get(c, 0.0), 4),
+            'bloc': bloc_map.get(c, 'Non-Aligned'),
+        })
+    # Cap extreme outliers: clip conflicts_per_year at 95th percentile
+    if points:
+        conflict_vals = [p['conflicts_per_year'] for p in points if p['conflicts_per_year'] > 0]
+        if conflict_vals:
+            cap = float(np.percentile(conflict_vals, 95))
+            for p in points:
+                if p['conflicts_per_year'] > cap:
+                    p['conflicts_per_year'] = round(cap, 2)
+                    p['capped'] = True
+    _governance_scatter_cache.update({'points': points})
+    return _governance_scatter_cache
+
+
+@app.get('/governance-trajectory')
+def get_governance_trajectory(countries: str = Query(''), window: int = Query(10)) -> dict[str, Any]:
+    """% change in governance indicators over last N years for selected countries."""
+    if not state.ready:
+        raise HTTPException(status_code=503, detail='Pipeline not ready')
+    country_list = [c.strip() for c in countries.split(',') if c.strip()]
+    frames = _get_owid_frames()
+    end_year = 2024
+    start_year = end_year - window
+
+    owid_list, back_map = _resolve_owid_names(country_list)
+    result: dict[str, Any] = {}
+    for app_name, owid_name in zip(country_list, owid_list):
+        result[app_name] = {}
+        for ds_name, (label, col_idx, unit, _hb) in _OWID_CONFIG.items():
+            if ds_name in ('owid_nuclear_warheads', 'owid_mil_spending'):
+                continue  # skip non-governance
+            df = frames.get(ds_name)
+            if df is None or 'Entity' not in df.columns:
+                continue
+            sub = df[df['Entity'] == owid_name].copy()
+            sub['_v'] = _owid_value(sub, col_idx)
+            sub = sub.dropna(subset=['_v']).sort_values('Year')
+            if sub.empty:
+                continue
+            start_row = sub[sub['Year'] <= start_year].tail(1)
+            end_row = sub[sub['Year'] <= end_year].tail(1)
+            if start_row.empty or end_row.empty:
+                continue
+            sv, ev = float(start_row.iloc[0]['_v']), float(end_row.iloc[0]['_v'])
+            sy, ey = int(start_row.iloc[0]['Year']), int(end_row.iloc[0]['Year'])
+            if abs(sv) < 1e-9:
+                continue
+            result[app_name][label] = {
+                'start': round(sv, 4), 'end': round(ev, 4),
+                'start_year': sy, 'end_year': ey,
+                'change_pct': round((ev - sv) / abs(sv) * 100, 1),
+                'unit': unit,
+            }
+    return result
+
+
+@app.get('/indicator-correlation')
+def get_indicator_correlation() -> dict[str, Any]:
+    """Pearson correlation between each OWID governance indicator and conflict frequency per country."""
+    if not state.ready:
+        raise HTTPException(status_code=503, detail='Pipeline not ready')
+    if _indicator_correlation_cache:
+        return _indicator_correlation_cache
+    master_df: pd.DataFrame = state.data.get('master_df', pd.DataFrame())
+    conflict_data = _conflict_counts_per_country(master_df)
+    frames = _get_owid_frames()
+
+    correlations = []
+    for ds_name, (label, col_idx, unit, higher_better) in _OWID_CONFIG.items():
+        df = frames.get(ds_name)
+        if df is None or 'Entity' not in df.columns:
+            continue
+        df_w = df.copy()
+        df_w['_v'] = _owid_value(df_w, col_idx)
+        df_w = df_w.dropna(subset=['_v'])
+        latest = df_w.sort_values('Year').groupby('Entity').last().reset_index()
+
+        pairs = []
+        for _, row in latest.iterrows():
+            c = row['Entity']
+            if c in conflict_data:
+                pairs.append((float(row['_v']), conflict_data[c]['avg_per_year']))
+
+        if len(pairs) < 10:
+            continue
+        x_arr = np.array([p[0] for p in pairs])
+        y_arr = np.array([p[1] for p in pairs])
+        # Pearson r
+        x_z = x_arr - x_arr.mean()
+        y_z = y_arr - y_arr.mean()
+        denom = np.sqrt((x_z ** 2).sum() * (y_z ** 2).sum())
+        r = float((x_z * y_z).sum() / denom) if denom > 1e-9 else 0.0
+        correlations.append({
+            'indicator': label, 'unit': unit,
+            'r': round(r, 4),
+            'n': len(pairs),
+            'direction': 'positive' if r > 0 else 'negative',
+            'higher_better': higher_better,
+            'interpretation': (
+                f'Higher {label} → {"more" if r > 0 else "fewer"} conflicts'
+            ),
+        })
+    correlations.sort(key=lambda x: -abs(x['r']))
+    _indicator_correlation_cache.update({'correlations': correlations})
+    return _indicator_correlation_cache
 
 
 # Catch-all: serve frontend for any non-API path (must be LAST)

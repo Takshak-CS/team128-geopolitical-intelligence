@@ -121,3 +121,23 @@ export async function getCompareInsight(countryA, countryB) {
   const { data } = await client.get('/compare-insight', { params: { country_a: countryA, country_b: countryB } });
   return data;
 }
+
+export async function getRiskScore() {
+  const { data } = await client.get('/risk-score');
+  return data;
+}
+
+export async function getGovernanceScatter() {
+  const { data } = await client.get('/governance-scatter');
+  return data;
+}
+
+export async function getGovernanceTrajectory(countries, window = 10) {
+  const { data } = await client.get('/governance-trajectory', { params: { countries: countries.join(','), window } });
+  return data;
+}
+
+export async function getIndicatorCorrelation() {
+  const { data } = await client.get('/indicator-correlation');
+  return data;
+}

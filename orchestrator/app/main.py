@@ -163,7 +163,8 @@ async def review_public() -> dict:
 
 @app.get("/reviews/all")
 async def review_all(pin: str = "") -> dict:
-    if pin != "@128":
+    valid = {"@128", "takshak", "shreyas", "santhosh", "anushree"}
+    if pin not in valid:
         raise HTTPException(status_code=403, detail="Invalid pin.")
     all_data = reviews.all_reviews()
     # Strip email from the response — it stays server-side only

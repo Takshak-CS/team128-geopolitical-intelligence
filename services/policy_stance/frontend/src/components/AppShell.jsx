@@ -3,12 +3,11 @@ import { NavLink } from 'react-router-dom';
 const links = [
   ['/', 'Dashboard'],
   ['/graph', 'Network Graph'],
-  ['/compare', 'Country Comparison'],
-  ['/heatmaps', 'Heatmaps'],
-  ['/temporal', 'Temporal Analysis'],
-  ['/blocs', 'Alliance Blocs'],
-  ['/policy-stance', 'Policy Stance'],
   ['/indicators', 'Policy Indicators'],
+  ['/policy-stance', 'Policy Stance'],
+  ['/compare', 'Country Comparison'],
+  ['/temporal', 'Temporal Analysis'],
+  ['/heatmaps', 'Vote Network'],
 ];
 
 export default function AppShell({ status, children }) {

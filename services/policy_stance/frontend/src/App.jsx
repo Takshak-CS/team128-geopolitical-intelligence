@@ -1,9 +1,8 @@
-﻿import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 
 import { getAllianceBlocs, getCountries, getDatasets, getGraph, getIssues, getStatus, getTopics } from './api';
 import AppShell from './components/AppShell';
-import BlocsPage from './pages/BlocsPage';
 import ComparePage from './pages/ComparePage';
 import DashboardPage from './pages/DashboardPage';
 import GraphPage from './pages/GraphPage';
@@ -26,22 +25,14 @@ export default function App() {
     const loadStatus = async () => {
       try {
         const data = await getStatus();
-        if (!cancelled) {
-          setStatus(data);
-        }
-      } catch (error) {
-        if (!cancelled) {
-          setStatus((current) => ({ ...current, progress: 'Backend unavailable' }));
-        }
+        if (!cancelled) setStatus(data);
+      } catch {
+        if (!cancelled) setStatus((current) => ({ ...current, progress: 'Backend unavailable' }));
       }
     };
-
     loadStatus();
     const interval = window.setInterval(loadStatus, 2000);
-    return () => {
-      cancelled = true;
-      window.clearInterval(interval);
-    };
+    return () => { cancelled = true; window.clearInterval(interval); };
   }, []);
 
   useEffect(() => {
@@ -65,12 +56,11 @@ export default function App() {
       <Routes>
         <Route path="/" element={<DashboardPage status={status} countries={countries} datasets={datasets} graph={graph} blocMap={blocMap} />} />
         <Route path="/graph" element={<GraphPage status={status} blocMap={blocMap} />} />
-        <Route path="/compare" element={<ComparePage countries={countries} />} />
-        <Route path="/heatmaps" element={<HeatmapsPage />} />
-        <Route path="/temporal" element={<TemporalPage countries={countries} status={status} blocMap={blocMap} />} />
-        <Route path="/blocs" element={<BlocsPage />} />
-        <Route path="/policy-stance" element={<PolicyStancePage countries={countries} issues={issues} topics={topics} />} />
         <Route path="/indicators" element={<PolicyIndicatorsPage countries={countries} />} />
+        <Route path="/policy-stance" element={<PolicyStancePage countries={countries} issues={issues} topics={topics} />} />
+        <Route path="/compare" element={<ComparePage countries={countries} />} />
+        <Route path="/temporal" element={<TemporalPage countries={countries} status={status} blocMap={blocMap} />} />
+        <Route path="/heatmaps" element={<HeatmapsPage blocMap={blocMap} countries={countries} />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </AppShell>

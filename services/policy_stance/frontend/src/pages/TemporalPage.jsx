@@ -5,7 +5,7 @@ import { getForecast, getGraph, getTimeline } from '../api';
 import ForcePreview from '../components/ForcePreview';
 import Panel from '../components/Panel';
 
-const COLORS = ['#f26b38', '#0f7b8c', '#e3a008', '#7fb7be', '#f7d08a'];
+const COLORS = ['#f26b38', '#0f7b8c', '#e3a008', '#7fb7be', '#f7d08a', '#c77dff', '#2a9d8f', '#a8dadc', '#e76f51', '#457b9d'];
 
 function CountryPicker({ all, selected, onToggle }) {
   const [query, setQuery] = useState('');
@@ -80,8 +80,16 @@ export default function TemporalPage({ countries, status, blocMap }) {
 
   useEffect(() => {
     if (!selectedCountries.length) return;
-    getTimeline(selectedCountries, metric).then(setTimeline).catch(() => setTimeline({ series: [], global_deaths: [], new_conflicts: [] }));
-    getForecast(selectedCountries, metric).then(setForecast).catch(() => setForecast({ forecasts: [], metric }));
+    let cancelled = false;
+    const timer = setTimeout(() => {
+      getTimeline(selectedCountries, metric)
+        .then((d) => { if (!cancelled) setTimeline(d); })
+        .catch(() => { if (!cancelled) setTimeline({ series: [], global_deaths: [], new_conflicts: [] }); });
+      getForecast(selectedCountries, metric)
+        .then((d) => { if (!cancelled) setForecast(d); })
+        .catch(() => { if (!cancelled) setForecast({ forecasts: [], metric }); });
+    }, 600);
+    return () => { cancelled = true; clearTimeout(timer); };
   }, [selectedCountries, metric]);
 
   useEffect(() => {
@@ -98,7 +106,7 @@ export default function TemporalPage({ countries, status, blocMap }) {
   const toggleCountry = (name) => {
     setSelectedCountries((cur) => {
       if (cur.includes(name)) return cur.filter((n) => n !== name);
-      if (cur.length >= 6) return cur; // max 6 lines
+      if (cur.length >= 12) return cur;
       return [...cur, name];
     });
   };
@@ -123,7 +131,7 @@ export default function TemporalPage({ countries, status, blocMap }) {
 
   return (
     <div className="page-grid wide">
-      <Panel title="Temporal Analysis" subtitle="Track how conflict intensity, death toll, and alignment evolve over time. Select up to 6 countries.">
+      <Panel title="Temporal Analysis" subtitle="Track how conflict intensity, death toll, and alignment evolve over time. Select up to 12 countries.">
         <div className="control-row wrap" style={{ gap: 12 }}>
           <select value={metric} onChange={(e) => setMetric(e.target.value)}>
             <option value="conflicts">Conflict Count (events/year)</option>
@@ -142,10 +150,15 @@ export default function TemporalPage({ countries, status, blocMap }) {
                 <Tooltip />
                 <Legend />
                 {timeline.series.map((s, i) => (
-                  <Line key={s.country} type="monotone" dataKey={s.country} stroke={COLORS[i % COLORS.length]} dot={false} strokeWidth={2.5} />
+                  <Line key={s.country} type="monotone" dataKey={s.country} stroke={COLORS[selectedCountries.indexOf(s.country) % COLORS.length]} dot={false} strokeWidth={2.5} />
                 ))}
               </LineChart>
             </ResponsiveContainer>
+            {selectedCountries.filter((n) => !timeline.series.find((s) => s.country === n)).length > 0 && (
+              <p style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: 6 }}>
+                No conflict data for: {selectedCountries.filter((n) => !timeline.series.find((s) => s.country === n)).join(', ')}
+              </p>
+            )}
           </div>
         ) : <p className="empty-hint">Select countries above to plot their conflict timeline.</p>}
       </Panel>

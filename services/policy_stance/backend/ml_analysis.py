@@ -165,6 +165,10 @@ def _random_walk_embeddings(graph: nx.Graph, dimensions: int = 16, walks_per_nod
                     target_index = index[target]
                     co_occurrence[source_index, target_index] += 1.0
 
+    # L2-normalise rows so embedding captures connection patterns, not raw counts.
+    row_norms = np.linalg.norm(co_occurrence, axis=1, keepdims=True)
+    row_norms[row_norms == 0] = 1.0
+    co_occurrence = co_occurrence / row_norms
     return _pca(co_occurrence, dimensions)
 
 
@@ -190,6 +194,9 @@ def _graph_attention_embeddings(graph: nx.Graph, votes_df: pd.DataFrame) -> tupl
         max_values[max_values == 0] = 1.0
         base_features = base_features / max_values
     combined_features = np.hstack([base_features, vote_pca])
+    cf_norms = np.linalg.norm(combined_features, axis=1, keepdims=True)
+    cf_norms[cf_norms == 0] = 1.0
+    combined_features = combined_features / cf_norms
 
     try:
         import torch
