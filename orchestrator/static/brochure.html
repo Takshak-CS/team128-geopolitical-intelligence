@@ -175,28 +175,28 @@
     <div class="sec">
       <div class="sec-label">The idea</div>
       <h2>Four independent agents. One question. Where do they disagree?</h2>
-      <p>The four agents — Soft Power, Policy Stance, Trade Intelligence and Event Summarization — each run entirely separate models on entirely separate datasets. They share only the question asked and the country name. Everything else — the data, the method, the output format — is independent.</p>
-      <p>The fusion engine then asks: what can we learn from the fact that these four independent systems are looking at the same country and coming to different conclusions? It runs five cross-agent rules, each testing a specific hypothesis that requires data from at least two agents.</p>
+      <p>The four agents — Soft Power, Policy Stance, Trade Intelligence and Event Summarization — each run entirely separate models on entirely separate datasets. They share only the question's plan: the country, as an ISO3 code, and the year. Everything else — the data and the method — is independent, and every answer comes back in one shared format so it can be compared.</p>
+      <p>The fusion engine then asks: what can we learn from the fact that these four independent systems are looking at the same country and coming to different conclusions? It runs six cross-agent rules, each testing a specific hypothesis that needs evidence from two independent sources.</p>
       <p>The result is findings that no individual agent — and no summary-based tool — could produce:</p>
       <div class="finding-stack">
         <div class="finding div">
           <div class="fkind">Divergence · Trade × Policy Stance</div>
           <h3>Economic and diplomatic alignment diverge</h3>
-          <p>Vietnam trades inside the China-anchored bloc (38% of its trade stays inside it), but at the UN it sits in the Non-Aligned bloc while China sits in the Eastern Bloc.</p>
+          <p>Vietnam trades inside the China-anchored bloc (68% of its trade stays inside it), but at the UN it sits in the Non-Aligned bloc while China sits in the China-Centered Bloc. Confidence 0.70.</p>
           <p class="finding-why">Why this matters: economic dependency without diplomatic alignment is a pressure point — an analyst can't see it from either dataset alone.</p>
           <div class="fags"><span class="fag">Trade Intelligence</span><span class="fag">Policy Stance</span></div>
         </div>
         <div class="finding corr">
           <div class="fkind">Corroboration · Trade × Soft Power</div>
           <h3>Two independent models point the same direction</h3>
-          <p>India's export trajectory is projected rising (Kalman forecast, Trade agent) and its soft power composite is also trending upward (SHAP-attributed, Soft Power agent) — two completely different datasets, two different models, same conclusion.</p>
-          <p class="finding-why">Why this matters: when independent evidence agrees, confidence multiplies. This is stronger than either finding alone.</p>
+          <p>India's exports are projected rising (Trade agent: a forecast model chosen by back-tested error on BACI 1995–2024) and its soft power is also rising (Soft Power agent: Kalman-smoothed composite score) — two different datasets, two different models, same direction. Combined confidence 0.97.</p>
+          <p class="finding-why">Why this matters: when independent evidence agrees, the combined confidence is higher than either claim's alone.</p>
           <div class="fags"><span class="fag">Trade Intelligence</span><span class="fag">Soft Power</span></div>
         </div>
         <div class="finding cross">
           <div class="fkind">Cross-agent · Events × Trade</div>
-          <h3>Friction today with a critical long-term trade partner</h3>
-          <p>Today's India–China GDELT coverage is conflictual (mean Goldstein −2.3 over 8 events) even though China carries 14.2% of India's total trade — its single largest dependency.</p>
+          <h3>Today's news, weighed by trade stakes</h3>
+          <p>On 22 Nov 2026, India–China GDELT coverage was cooperative (mean Goldstein +2.9 over 11 events), and China carries 12.2% of India's total trade — its single largest relationship. Had the coverage been conflictual, the same rule would have reported friction with a critical partner as a divergence.</p>
           <p class="finding-why">Why this matters: a bad news day with your biggest trade partner is very different from a bad news day with a country you barely trade with. This finding is invisible if you look at news and trade separately.</p>
           <div class="fags"><span class="fag">Events</span><span class="fag">Trade Intelligence</span></div>
         </div>
@@ -208,9 +208,9 @@
     <div class="sec">
       <div class="sec-label">What makes it different</div>
       <h2>This is not a language model. Every number has a source.</h2>
-      <p>ChatGPT summarises text. It has a training cutoff, no access to live data, and no way to tell you which year it's describing. Ask it about India–China trade and it will give you a paragraph — without citing which BACI release, which year, which HS2 sector categories, or what the confidence interval is on that claim.</p>
+      <p>A general-purpose chatbot summarises text. Unless it searches the web, it works from its training data, and it rarely tells you which dataset or year a figure comes from. Ask it about India–China trade and it will give you a paragraph — without citing which BACI release, which year, which product sectors, or how much confidence the figure deserves.</p>
       <p>Every output from this system is traceable. Each finding cites which agent produced it, which dataset it came from, which year the data covers, and what the confidence score was. The briefing shows the exact pipeline: plan → agent responses → fusion findings → narrative. <strong>You can see the working.</strong></p>
-      <p>An LLM can tell you "India and China have complex trade relations." This system tells you: <em>China carries 14.2% of India's total trade (BACI 2023), India sits in the Non-Aligned UN bloc while China sits in the Eastern Bloc, and today's GDELT Goldstein score for the pair is −2.3 against a 30-year GGE baseline of +0.4.</em></p>
+      <p>An LLM can tell you "India and China have complex trade relations." This system tells you: <em>China carries 12.2% of India's total trade in 2024 (BACI, Trade agent, confidence 0.92); India trades inside the China-anchored bloc and the Policy Stance vote model also places it in China's UN bloc, with the caveat that its published label, Non-Aligned, is a manual override (corroboration, confidence 0.97); and on 22 Nov 2026 the pair's GDELT coverage was cooperative (mean Goldstein +2.9 over 11 events) against a broadly neutral 1990–2024 GGE baseline.</em></p>
     </div>
 
     <hr>
@@ -232,7 +232,7 @@
         <div class="uc">
           <div class="uc-label">Journalism</div>
           <h3>Is today's news out of character?</h3>
-          <p>Pick any bilateral pair and any date. The Events agent compares today's GDELT Goldstein score against the GGE 30-year historical baseline for that pair. A conflictual day in a normally cooperative relationship is a real story.</p>
+          <p>Pick any bilateral pair and any date. The Events agent compares that day's GDELT Goldstein score against the pair's 1990–2024 GGE baseline. A conflictual day in a normally cooperative relationship is a real story.</p>
         </div>
         <div class="uc">
           <div class="uc-label">Academic</div>
@@ -262,14 +262,14 @@
     <div class="sec">
       <div class="sec-label">Scale</div>
       <h2>The data foundation</h2>
-      <p>The system is built on six primary datasets. Each agent owns its dataset completely — no sharing, no overlap. The only integration happens at the fusion layer, after each agent has independently analysed the question.</p>
+      <p>The system is built on six primary data sources: UN General Assembly votes, UCDP conflict data, CEPII BACI trade, the GDELT event stream, the GGE bilateral baseline, and ten open datasets combined into the Soft Power index. Each agent owns its data completely — no sharing, no overlap. The only integration happens at the fusion layer, after each agent has independently analysed the question.</p>
       <div class="stat-row">
         <div class="stat"><div class="stat-n">36yr</div><div class="stat-l">UN General Assembly votes, 1989–2025</div></div>
         <div class="stat"><div class="stat-n">226</div><div class="stat-l">economies in BACI bilateral trade, 1995–2024</div></div>
-        <div class="stat"><div class="stat-n">1B+</div><div class="stat-l">GDELT events indexed, live daily ingest</div></div>
-        <div class="stat"><div class="stat-n">185</div><div class="stat-l">countries with Soft Power composite scores, 2000–2024</div></div>
-        <div class="stat"><div class="stat-n">5</div><div class="stat-l">Soft Power dimensions: culture, diplomacy, education, digital, economy</div></div>
-        <div class="stat"><div class="stat-n">30yr</div><div class="stat-l">GGE historical event baseline for deviation detection</div></div>
+        <div class="stat"><div class="stat-n">5yr</div><div class="stat-l">day-by-day GDELT history per country, plus the live daily export</div></div>
+        <div class="stat"><div class="stat-n">195</div><div class="stat-l">states with Soft Power composite scores, 2000–2024</div></div>
+        <div class="stat"><div class="stat-n">5</div><div class="stat-l">Soft Power dimensions: cultural capital, innovation &amp; knowledge, political legitimacy, institutional quality, human development</div></div>
+        <div class="stat"><div class="stat-n">35yr</div><div class="stat-l">GGE bilateral baseline, 1990–2024, for deviation detection</div></div>
       </div>
     </div>
 
@@ -281,46 +281,49 @@
       <div class="agent-grid">
         <div class="ac">
           <div class="ac-top"><div class="ac-bar" style="background:#a78bfa"></div><div class="ac-name">Soft Power Agent</div></div>
-          <div class="ac-ds">Soft Power Index 2000–2024 · 5 dimensions · 185 countries</div>
+          <div class="ac-ds">Soft Power Index 2000–2024 · 5 dimensions · 195 states</div>
           <ul>
-            <li>Composite score time series with <strong>Kalman filter smoothing</strong> — removes noise, preserves trend</li>
-            <li><strong>SHAP attribution</strong>: which of the 5 dimensions (culture, diplomacy, education, digital, economy) drove a year's change and by how much</li>
+            <li>A 0–100 composite of <strong>23 indicators from 10 open datasets</strong>, weighted by principal component analysis rather than by hand</li>
+            <li>Score time series with <strong>Kalman filter smoothing</strong>, noise fitted per country — removes noise, preserves trend, gives a 95% interval for every year</li>
             <li>Kalman <strong>forecast with confidence envelopes</strong> — not just a point estimate</li>
-            <li><strong>K-means peer clustering</strong> with silhouette validation to find comparable countries</li>
-            <li>Outputs: influence score, trend direction, SHAP breakdown, forecast range, closest peer countries</li>
+            <li><strong>SHAP attribution</strong> on an XGBoost, LightGBM and random-forest ensemble: which indicators drive a country's score, with the share taken by the score's own history stated separately</li>
+            <li><strong>FAISS nearest-neighbour peers</strong>: the countries with the most similar indicator profile</li>
+            <li>Outputs: influence score with interval, trend direction, indicator drivers, forecast range, closest peer countries</li>
           </ul>
         </div>
         <div class="ac">
           <div class="ac-top"><div class="ac-bar" style="background:#f5b942"></div><div class="ac-name">Policy Stance Agent</div></div>
           <div class="ac-ds">UN GA votes 1989–2025 · UCDP conflict · 185 countries</div>
           <ul>
-            <li><strong>Graph Neural Network</strong>: countries embedded in a vote-similarity graph. Stance is a learned embedding, not a hand-coded label</li>
-            <li><strong>Louvain community detection</strong>: bloc structure discovered from the vote graph, not from geography</li>
-            <li>Topic-by-topic stance breakdown across 36 years of votes</li>
+            <li><strong>Vote-similarity blocs</strong>: each country is placed in the bloc whose anchor countries it votes most like over a rolling 7-year window, and every placement states its basis (vote model, anchor country, manual override or fallback rule)</li>
+            <li><strong>Louvain community detection</strong>: voting communities discovered from the vote graph with no labels at all, used to cross-check the anchor-based blocs</li>
+            <li><strong>Topic-level vote agreement</strong>: who votes most and least like a country on resolutions about a topic, 1989–2025</li>
             <li><strong>UCDP conflict scoring</strong>: active conflict exposure and intensity</li>
-            <li>Outputs: bloc assignment, vote alignment rates, conflict exposure, diplomatic stance vector</li>
+            <li>Graph attention network embeddings for the dashboard's network views</li>
+            <li>Outputs: bloc assignment with its basis, vote alignment rates, voting partners, conflict exposure</li>
           </ul>
         </div>
         <div class="ac">
           <div class="ac-top"><div class="ac-bar" style="background:#34d399"></div><div class="ac-name">Trade Intelligence Agent</div></div>
-          <div class="ac-ds">BACI bilateral trade 1995–2024 · 226 economies · HS2 sectors</div>
+          <div class="ac-ds">BACI bilateral trade 1995–2024 · 226 economies · 14 sectors and HS6 products</div>
           <ul>
-            <li><strong>Network-based bloc detection</strong>: trading blocs identified from flow data, not political categories</li>
-            <li><strong>Critical partner dependence</strong>: which single relationship accounts for the most of a country's trade</li>
-            <li><strong>Supply fragility</strong> by sector: how concentrated is a country's import sourcing for energy, agriculture, electronics</li>
+            <li><strong>Network-based bloc detection</strong> (Louvain): trading blocs identified from flow data, not political categories</li>
+            <li><strong>Critical partner dependence</strong> and leverage: which single relationship accounts for the most of a country's trade, and who depends on whom</li>
+            <li><strong>Supply fragility</strong> by sector: how concentrated a country's import sourcing is in each of 14 sectors, such as energy, agriculture and electronics</li>
             <li><strong>Shock simulation</strong>: cascade a supply disruption through the full 226-node trade network</li>
-            <li>Kalman forecasts on export/import trajectories with trend direction signals</li>
+            <li><strong>Forecasts</strong> of exports and imports: a linear trend, ARIMA or a hybrid of the two, picked for each series by back-tested error</li>
           </ul>
         </div>
         <div class="ac">
           <div class="ac-top"><div class="ac-bar" style="background:#f472b6"></div><div class="ac-name">Event Summarization Agent</div></div>
           <div class="ac-ds">GDELT live stream · GGE historical baseline 1990–2024</div>
           <ul>
-            <li><strong>spaCy NER</strong>: entity extraction from raw GDELT event descriptions to attribute events to country pairs correctly</li>
-            <li><strong>K-means theme clustering</strong> on CAMEO event codes to identify dominant event types</li>
+            <li><strong>spaCy NER</strong>: turns noisy GDELT actor strings into attributable names, so events are credited to the right country pair</li>
+            <li><strong>K-means theme clustering</strong> on CAMEO event root codes and Goldstein scores, validated against shuffled labels and across random seeds</li>
             <li><strong>Goldstein scale scoring</strong>: quantitative tone for each event and aggregated per bilateral pair</li>
-            <li><strong>GGE baseline deviation</strong>: is today's tone statistically out of character for this relationship's 30-year history?</li>
-            <li>Outputs: event count, Goldstein score, dominant themes, bilateral partner activity, baseline deviation flag</li>
+            <li><strong>GGE baseline comparison</strong>: is today's tone out of character for this relationship's 1990–2024 history?</li>
+            <li><strong>Source checks</strong>: each top event is checked against its source article, and events the article does not support are flagged as likely mis-tagged</li>
+            <li>Outputs: event count, Goldstein score, dominant themes, bilateral partner activity, baseline comparison, checked headlines; a 5-year day-by-day index answers history questions</li>
           </ul>
         </div>
       </div>
@@ -331,7 +334,7 @@
     <div class="sec">
       <div class="sec-label">Architecture</div>
       <h2>System design</h2>
-      <p>Five FastAPI microservices, each containerised independently with Docker Compose. Caddy handles HTTPS termination via sslip.io — no domain needed. The orchestrator fans a question out to all four agents in parallel, streams each result as it arrives via NDJSON chunked transfer (no WebSocket, no polling), then runs the fusion engine once all four have responded.</p>
+      <p>Five FastAPI microservices, each containerised independently with Docker Compose. Caddy handles HTTPS termination via sslip.io — no domain needed. The orchestrator fans a question out in parallel to the agents its plan selects (usually all four), each under its own timeout, streams each result as it arrives via NDJSON chunked transfer (no WebSocket, no polling), then runs the fusion engine once every selected agent has answered or timed out. An agent that is down or slow is reported as missing; the rest still answer.</p>
       <div class="code">
 <span class="c"># POST /run → real-time NDJSON stream</span>
 <span class="k">{"type":</span> <span class="s">"plan"</span>,  <span class="v">intent, iso3s, agents, time_window, severity</span><span class="k">}</span>
@@ -347,36 +350,41 @@
 
     <div class="sec">
       <div class="sec-label">The key innovation</div>
-      <h2>Cross-agent fusion: five rules, two datasets each</h2>
-      <p>Fusion is not averaging. Each rule tests a specific hypothesis that <em>requires data from two different agents</em> — a finding neither agent could produce alone. All five rules run on every query; the results are ranked by confidence × kind weight × intent relevance.</p>
+      <h2>Cross-agent fusion: six rules, two independent sources each</h2>
+      <p>Fusion is not averaging. Each rule tests a specific hypothesis that <em>requires evidence from two independent sources</em> — a finding neither could produce alone. Rules 1–4 run for each country in the question, Rule 5 for two-country questions and Rule 6 for shock scenarios; the results are ranked by confidence × kind weight × intent relevance.</p>
       <div class="rule-list">
         <div class="rule">
           <div class="rule-name">Rule 1 — Bloc alignment</div>
-          <p>Compares the trading bloc anchor (Trade agent, from BACI flow analysis) against the UN bloc assignment (Policy Stance agent, from vote-graph community detection). If country X trades inside a bloc but votes outside it, this is a divergence — a structural economic-diplomatic tension.</p>
+          <p>Compares the trading bloc anchor (Trade agent, from BACI flow analysis) against the UN bloc assignment (Policy Stance agent, from vote similarity to anchor countries, cross-checked by label-free Louvain communities). If country X trades inside a bloc but votes outside it, this is a divergence — a structural economic-diplomatic tension. If the bloc label is an assumption rather than a measurement, the finding carries that caveat.</p>
           <div class="rule-agents"><span class="ra" style="background:rgba(52,211,153,.1);color:#34d399;border:1px solid rgba(52,211,153,.2)">Trade</span><span class="ra" style="background:rgba(245,185,66,.1);color:#f5b942;border:1px solid rgba(245,185,66,.2)">Policy Stance</span></div>
         </div>
         <div class="rule">
           <div class="rule-name">Rule 2 — Critical partner across the bloc line</div>
-          <p>Checks whether the country's most critical trade dependency (Trade agent: highest share partner) sits in the same UN bloc as the country itself (Policy Stance agent). A country whose biggest trade partner votes on the other side of the UN is structurally exposed in a way that neither dataset reveals alone.</p>
+          <p>Checks whether the country's most critical trade dependency (Trade agent: highest-share partner), and its dominant supplier in each sector such as energy, sit in the same UN bloc as the country itself (Policy Stance agent). A country whose biggest trade partner votes on the other side of the UN is structurally exposed in a way that neither dataset reveals alone.</p>
           <div class="rule-agents"><span class="ra" style="background:rgba(52,211,153,.1);color:#34d399;border:1px solid rgba(52,211,153,.2)">Trade</span><span class="ra" style="background:rgba(245,185,66,.1);color:#f5b942;border:1px solid rgba(245,185,66,.2)">Policy Stance</span></div>
         </div>
         <div class="rule">
           <div class="rule-name">Rule 3 — Momentum agreement</div>
-          <p>Compares the trade trajectory direction (Trade agent: Kalman forecast trend) against the soft power direction (Soft Power agent: SHAP-attributed trend). Two completely independent models, different datasets, measuring different things. If both say "rising" or both say "falling", the corroboration is statistically stronger than either model alone.</p>
+          <p>Compares the trade trajectory direction (Trade agent: model-selected export or import forecast) against the soft power direction (Soft Power agent: Kalman-smoothed trend or 5-year outlook). Two completely independent models, different datasets, measuring different things. If both say "rising" or both say "falling", their confidences combine into a corroboration stronger than either alone; if they point opposite ways, it is a divergence.</p>
           <div class="rule-agents"><span class="ra" style="background:rgba(52,211,153,.1);color:#34d399;border:1px solid rgba(52,211,153,.2)">Trade</span><span class="ra" style="background:rgba(167,139,250,.1);color:#a78bfa;border:1px solid rgba(167,139,250,.2)">Soft Power</span></div>
         </div>
         <div class="rule">
-          <div class="rule-name">Rule 4 — Event friction vs. trade stakes</div>
-          <p>Takes the Goldstein score of today's GDELT events for a bilateral pair (Events agent) and compares it against that partner's share of total trade (Trade agent). A conflictual day with your largest trade partner is a materially different signal from a conflictual day with a minor partner — but you need both datasets to know the difference.</p>
+          <div class="rule-name">Rule 4 — Today's events vs. trade stakes and history</div>
+          <p>Takes the Goldstein score of today's GDELT events with the country's most critical trade partner (Events agent) and compares it against that partner's share of total trade (Trade agent). A conflictual day with your largest trade partner is a materially different signal from a conflictual day with a minor partner — but you need both datasets to know the difference. The same rule also sets the day's score for each of the most active pairs against the pair's GGE 1990–2024 baseline (a second, independent dataset): a cooperative news day in a historically tense relationship is as telling as the reverse.</p>
           <div class="rule-agents"><span class="ra" style="background:rgba(244,114,182,.1);color:#f472b6;border:1px solid rgba(244,114,182,.2)">Events</span><span class="ra" style="background:rgba(52,211,153,.1);color:#34d399;border:1px solid rgba(52,211,153,.2)">Trade</span></div>
         </div>
         <div class="rule">
-          <div class="rule-name">Rule 5 — Today vs. 30-year baseline</div>
-          <p>Compares GDELT daily Goldstein score (Events agent, live stream) against GGE annual baseline 1990–2024 (Events agent, historical dataset). Same agent, two completely independent data sources — an internal cross-check. A cooperative news day in a historically conflictual relationship is as telling as the reverse.</p>
-          <div class="rule-agents"><span class="ra" style="background:rgba(244,114,182,.1);color:#f472b6;border:1px solid rgba(244,114,182,.2)">Events (live)</span><span class="ra" style="background:rgba(244,114,182,.1);color:#f472b6;border:1px solid rgba(244,114,182,.2)">Events (baseline)</span></div>
+          <div class="rule-name">Rule 5 — Two countries: trade ties vs. votes</div>
+          <p>For a question about a pair: do the two share a trading bloc (Trade agent) and a UN bloc (Policy Stance agent)? Does the more dependent side rely on the relationship for at least 10% of its trade while the two vote alike on fewer than half of sampled resolutions? And is today's coverage between two UN-bloc partners conflictual (Events agent)?</p>
+          <div class="rule-agents"><span class="ra" style="background:rgba(52,211,153,.1);color:#34d399;border:1px solid rgba(52,211,153,.2)">Trade</span><span class="ra" style="background:rgba(245,185,66,.1);color:#f5b942;border:1px solid rgba(245,185,66,.2)">Policy Stance</span><span class="ra" style="background:rgba(244,114,182,.1);color:#f472b6;border:1px solid rgba(244,114,182,.2)">Events</span></div>
+        </div>
+        <div class="rule">
+          <div class="rule-name">Rule 6 — Shock by diplomatic camp</div>
+          <p>For a shock scenario: of the economies most exposed to the cut (Trade agent, shock propagation), which vote in the origin country's own UN bloc and which in other blocs (Policy Stance agent)? A disruption that lands mostly on the other side of a bloc line is a different political event from one that hits allies.</p>
+          <div class="rule-agents"><span class="ra" style="background:rgba(52,211,153,.1);color:#34d399;border:1px solid rgba(52,211,153,.2)">Trade</span><span class="ra" style="background:rgba(245,185,66,.1);color:#f5b942;border:1px solid rgba(245,185,66,.2)">Policy Stance</span></div>
         </div>
       </div>
-      <p style="margin-top:14px">Confidence arithmetic: corroborations combine as <code style="font-size:12px;background:rgba(255,255,255,.06);padding:1px 5px;border-radius:4px">1 − ∏(1 − cᵢ)</code> (independent evidence strengthens the claim, capped at 0.97). Divergences and conjunctions take <code style="font-size:12px;background:rgba(255,255,255,.06);padding:1px 5px;border-radius:4px">min(cᵢ)</code> — only as solid as the weakest side. Findings are ranked by confidence × kind weight (divergence: 1.35, corroboration: 1.20, cross-agent: 1.10) × intent-relevance boost.</p>
+      <p style="margin-top:14px">Confidence arithmetic: corroborations combine as <code style="font-size:12px;background:rgba(255,255,255,.06);padding:1px 5px;border-radius:4px">1 − ∏(1 − cᵢ)</code> (independent evidence strengthens the claim, capped at 0.97). Divergences and conjunctions take <code style="font-size:12px;background:rgba(255,255,255,.06);padding:1px 5px;border-radius:4px">min(cᵢ)</code> — only as solid as the weakest side. Findings are ranked by confidence × kind weight (divergence: 1.35, corroboration: 1.20, cross-agent: 1.10, single-agent claim: 1.0) × intent-relevance boost, which pushes contradictions between domains up the list. Cross-agent findings are listed before single-agent claims.</p>
     </div>
 
     <hr>
@@ -385,12 +393,15 @@
       <div class="sec-label">ML methods</div>
       <h2>Models used</h2>
       <div class="rule-list">
-        <div class="rule"><div class="rule-name">Kalman filter — Soft Power &amp; Trade agents</div><p>State-space smoothing on annual time series. Used for two tasks: noise reduction on historical scores, and forward forecasting with explicit uncertainty bounds. The filter's process noise and observation noise parameters are fit per-country, so a country with volatile historical data gets wider envelopes.</p></div>
-        <div class="rule"><div class="rule-name">SHAP (SHapley Additive exPlanations) — Soft Power agent</div><p>Decomposes each year's soft power score change into contributions from each of the 5 dimensions. Answers "why did India's soft power score rise in 2022?" with specific, quantified attributions per dimension rather than a qualitative answer.</p></div>
-        <div class="rule"><div class="rule-name">Graph Neural Network — Policy Stance agent</div><p>Countries are nodes; vote similarity is the edge weight. The GNN learns embeddings in a vote-similarity space. Policy stance is the resulting position in that space — a data-derived measure, not a manually assigned category. Used to place countries without full vote records by their structural position in the graph.</p></div>
-        <div class="rule"><div class="rule-name">Louvain community detection — Policy Stance agent</div><p>Modularity-maximising community detection on the UN vote similarity graph. Identifies voting blocs entirely from the data. The bloc labels (Eastern Bloc, Western Bloc, Non-Aligned, etc.) emerge from the graph structure, not from political assumptions.</p></div>
-        <div class="rule"><div class="rule-name">K-means with silhouette validation — Soft Power &amp; Events agents</div><p>Used in two contexts: Soft Power agent uses it to cluster countries by composite profile (finding peer groups). Events agent uses it to cluster GDELT CAMEO codes into dominant event themes. Silhouette scoring ensures the number of clusters is chosen by data quality, not by assumption.</p></div>
-        <div class="rule"><div class="rule-name">spaCy NER — Event Summarization agent</div><p>Named entity recognition on GDELT event descriptions to correctly extract country actors and bilateral pairs from raw news-derived event data. Required because GDELT CAMEO actor codes are often incomplete or ambiguous at the sub-national level.</p></div>
+        <div class="rule"><div class="rule-name">Kalman filter — Soft Power agent</div><p>State-space smoothing on annual time series. Used for two tasks: noise reduction on historical scores, and forward forecasting with explicit uncertainty bounds. The filter's process noise and observation noise parameters are fit per country, so a country with volatile historical data gets wider envelopes. The width of that 95% interval also sets the confidence of each Soft Power claim.</p></div>
+        <div class="rule"><div class="rule-name">Forecast model selection — Trade agent</div><p>For each export or import series, a linear trend, ARIMA(1,1,1) and a hybrid (linear trend plus ARIMA-modelled residuals) are back-tested from rolling origins, and the one with the lowest mean absolute percentage error is used. The series are annual, so no seasonal model is fitted.</p></div>
+        <div class="rule"><div class="rule-name">SHAP (SHapley Additive exPlanations) — Soft Power agent</div><p>Attributes the ensemble's prediction of a country's score to its indicators, for example property rights. Because the score's own three-year history carries most of the attribution, the briefing lists the indicator drivers and states that share separately rather than presenting it as a driver.</p></div>
+        <div class="rule"><div class="rule-name">FAISS nearest-neighbour search — Soft Power agent</div><p>Finds the countries whose standardised indicator profiles are closest by cosine similarity, shown as each country's peers.</p></div>
+        <div class="rule"><div class="rule-name">Louvain community detection — Policy Stance &amp; Trade agents</div><p>Modularity-maximising community detection. On the UN vote-similarity graph it finds voting communities from the data alone, with no labels or anchor countries; the orchestrator compares them with the anchor-based blocs (Western Bloc, Russia+Allies, China-Centered Bloc, Non-Aligned) and attaches a caveat where they disagree. On the trade graph it finds trading blocs, with a fixed seed so results are reproducible.</p></div>
+        <div class="rule"><div class="rule-name">Graph attention network — Policy Stance agent</div><p>A two-layer graph attention network learns country embeddings from the conflict and vote-agreement graph for the dashboard's network views, with a random-walk embedding as a fallback. Bloc assignment itself comes from vote similarity to anchor countries, not from these embeddings.</p></div>
+        <div class="rule"><div class="rule-name">K-means with silhouette validation — Events agent</div><p>Groups a day's events into themes using each event's CAMEO root code and Goldstein score. The fit is checked with the silhouette score against shuffled labels and for stability across random seeds, and the briefing states that check next to the themes.</p></div>
+        <div class="rule"><div class="rule-name">spaCy NER — Event Summarization agent</div><p>Named entity recognition turns GDELT's noisy actor strings into attributable names, so events are credited to the right country pair. Required because GDELT CAMEO actor codes are often incomplete or ambiguous at the sub-national level.</p></div>
+        <div class="rule"><div class="rule-name">Source-article checks — Events, no AI model</div><p>Each of the day's top events is checked against its source article: are both actors named in one descriptive sentence? Events the article does not support are reported as likely mis-tagged by GDELT, never as news.</p></div>
       </div>
     </div>
 
@@ -400,7 +411,7 @@
       <div class="sec-label">Infrastructure</div>
       <h2>Deployment</h2>
       <p>Docker Compose with six services: orchestrator (FastAPI, port 8000), soft power (FastAPI, port 8101), policy stance (FastAPI, port 8102), trade intelligence (FastAPI, port 8103), event summarization (FastAPI, port 8104), and Caddy as the HTTPS reverse proxy. Caddy uses sslip.io for TLS certificate issuance — no domain purchase required.</p>
-      <p>Each agent service exposes its own REST API and a React/Vite dashboard served by Caddy directly. The orchestrator serves the three HTML pages (home, features, engine) as static files. Streaming uses chunked transfer encoding with <code style="font-size:12px;background:rgba(255,255,255,.06);padding:1px 5px;border-radius:4px">Cache-Control: no-cache, no-transform</code> and <code style="font-size:12px;background:rgba(255,255,255,.06);padding:1px 5px;border-radius:4px">X-Accel-Buffering: no</code> to prevent proxy buffering.</p>
+      <p>Each agent service exposes its own REST API and a React/Vite dashboard served by Caddy directly. The orchestrator serves the site's HTML pages (home, features, engine and this page) as static files. Streaming uses chunked transfer encoding with <code style="font-size:12px;background:rgba(255,255,255,.06);padding:1px 5px;border-radius:4px">Cache-Control: no-cache, no-transform</code> and <code style="font-size:12px;background:rgba(255,255,255,.06);padding:1px 5px;border-radius:4px">X-Accel-Buffering: no</code> to prevent proxy buffering.</p>
       <div class="cta-row">
         <a class="cta primary" href="/features">Explore the agents</a>
         <a class="cta sec" href="/engine">Ask a question</a>

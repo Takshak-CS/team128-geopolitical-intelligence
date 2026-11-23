@@ -641,9 +641,9 @@ const FF_SCENES = [
       <div class="ffs-pills"><span class="ffs-pill">195 STATES</span><span class="ffs-pill">2000–2024</span><span class="ffs-pill">5 CAPITAL DIMENSIONS</span></div>
       <div class="ffs-desc">A comparative ledger of national soft power — composite scores, trajectories, and the measured drivers behind each rise or fall.</div>
       <div class="ffs-ticker">
-        <span class="ffs-tick d">▼ PLW −14.6</span><span class="ffs-tick u">▲ TUV +31.4</span>
-        <span class="ffs-tick d">▼ YEM −12.1</span><span class="ffs-tick u">▲ TON +21.3</span>
-        <span class="ffs-tick d">▼ VEN −11.5</span><span class="ffs-tick u">▲ BWA +18.9</span>
+        <span class="ffs-tick d">▼ PLW −15.4</span><span class="ffs-tick u">▲ MCO +37.6</span>
+        <span class="ffs-tick d">▼ SMR −11.2</span><span class="ffs-tick u">▲ TUV +29.8</span>
+        <span class="ffs-tick d">▼ YEM −10.5</span><span class="ffs-tick u">▲ TON +17.4</span>
       </div>
       <div class="ffs-slabel">COMPARE COUNTRIES</div>
       <div class="ffs-box" id="ffs-chips"></div>
@@ -653,18 +653,19 @@ const FF_SCENES = [
             <span class="ffs-yr" id="ffs-y1">2000</span> → <span class="ffs-yr" id="ffs-y2">2024</span>
           </div></div>
         <div><div class="ffs-slabel">TREND METRIC</div>
-          <select class="ffs-sel" id="ffs-met"><option>Composite Score</option><option>Culture</option><option>Diplomacy</option></select>
+          <select class="ffs-sel" id="ffs-met"><option>Composite Score</option><option>Cultural Capital</option><option>Institutional Quality</option></select>
         </div>
       </div>
       <div id="ffs-crows"></div>
     </div>`; },
     async animate(){
-      const pairs=[['India','#4ade80',68.4,'+4.2'],['Germany','#60a5fa',81.2,'+1.8'],['China','#f87171',74.6,'+6.1'],['France','#fb923c',79.1,'−0.9']];
+      // Kalman-smoothed 2024 scores and the 2014-2024 change (services/soft_power/output/kalman_results.csv).
+      const pairs=[['India','#4ade80',66.5,'+8.2'],['Germany','#60a5fa',87.4,'+1.5'],['China','#f87171',75.1,'+17.1'],['France','#fb923c','84.0','+2.7']];
       const chips=document.getElementById('ffs-chips'); if(!chips)return;
       for(const[n,c] of pairs){ await ffd(500); if(!document.getElementById('ffs-chips'))return;
         chips.insertAdjacentHTML('beforeend',ffChip(n,c)); }
       await ffd(600);
-      const yr1=document.getElementById('ffs-y1'); if(yr1) yr1.textContent='2010';
+      const yr1=document.getElementById('ffs-y1'); if(yr1) yr1.textContent='2014';
       const sel=document.getElementById('ffs-met'); if(sel){sel.selectedIndex=0;}
       const rows=document.getElementById('ffs-crows'); if(!rows)return;
       rows.innerHTML=`<div class="ffs-crows">${pairs.map(([n,c,s,ch],i)=>`
@@ -683,37 +684,38 @@ const FF_SCENES = [
     render(){return `<div class="ffs">
       <div class="ffs-ey">SOFT POWER AGENT · INDIA</div>
       <div class="ffs-h1">India — What drove the rise?</div>
-      <div class="ffs-desc">Kalman-smoothed composite score 2000–2024. SHAP attribution decomposes each year's change into its five dimensional drivers.</div>
+      <div class="ffs-desc">Kalman-smoothed composite score 2000–2024, ranked #31 of 195. SHAP attribution names the indicators that drive the score; the score's own history carries 83% of the attribution and is reported separately.</div>
       <div class="ffs-row">
         <div style="flex:1;background:rgba(167,139,250,.06);border:1px solid rgba(167,139,250,.18);border-radius:10px;padding:12px">
           <div class="ffs-slabel">COMPOSITE SCORE 2024</div>
-          <div style="font-size:28px;font-weight:800;color:#a78bfa">68.4</div>
-          <div style="font-size:11px;color:#4ade80;margin-top:3px">▲ +4.2 vs 2010 baseline</div>
+          <div style="font-size:28px;font-weight:800;color:#a78bfa">66.5</div>
+          <div style="font-size:11px;color:#4ade80;margin-top:3px">▲ +8.2 vs 2014 · rank 43 → 31</div>
         </div>
         <div style="flex:1;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:12px">
           <div class="ffs-slabel">KALMAN FORECAST 2026</div>
-          <div style="font-size:28px;font-weight:800;color:#67e8f9">71.1</div>
-          <div style="font-size:11px;color:rgba(255,255,255,.35);margin-top:3px">± 2.3 confidence band</div>
+          <div style="font-size:28px;font-weight:800;color:#67e8f9">67.9</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.35);margin-top:3px">95% interval 64.8–71.1</div>
         </div>
       </div>
-      <div class="ffs-slabel" style="margin-top:4px">SHAP ATTRIBUTION — WHAT DROVE IT</div>
+      <div class="ffs-slabel" style="margin-top:4px">SHAP ATTRIBUTION — TOP INDICATOR DRIVERS (SCORE POINTS)</div>
       <div class="ffs-shap" id="ffs-shap"></div>
       <div style="margin-top:14px"><div class="ffs-slabel">CLOSEST PEER COUNTRIES</div>
         <div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:6px" id="ffs-peers"></div></div>
     </div>`; },
     async animate(){
-      const dims=[['Culture',62,'#f472b6'],['Diplomacy',71,'#60a5fa'],['Education',74,'#4ade80'],['Digital',55,'#fb923c'],['Economy',66,'#a78bfa']];
+      // India's top SHAP drivers and FAISS peers, as the Soft Power agent returns them (/api/drivers/IND, /api/peers/IND).
+      const dims=[['UNESCO sites',1.00,'#f472b6'],['ICT patents',0.52,'#60a5fa'],['AI publications',0.50,'#4ade80']];
       const shap=document.getElementById('ffs-shap'); if(!shap)return;
       shap.innerHTML=dims.map(([n,v,c],i)=>`<div class="ffs-sdim" style="animation-delay:${i*.1}s">
         <span class="ffs-sdname">${n}</span>
         <div class="ffs-sdbarw"><div class="ffs-sdbar" id="ffsdb${i}" style="background:${c}"></div></div>
-        <span class="ffs-sdval" style="color:${c}">${v}</span>
+        <span class="ffs-sdval" style="color:${c}">+${v.toFixed(2)}</span>
       </div>`).join('');
       await ffd(100);
-      dims.forEach(([,,],i)=>{ const b=document.getElementById('ffsdb'+i); if(b) b.style.width=dims[i][1]+'%'; });
+      dims.forEach(([,,],i)=>{ const b=document.getElementById('ffsdb'+i); if(b) b.style.width=(dims[i][1]*80)+'%'; });
       await ffd(900);
       const peers=document.getElementById('ffs-peers'); if(!peers)return;
-      for(const[n,c] of [['Brazil','#4ade80'],['Indonesia','#60a5fa'],['South Africa','#fb923c'],['Turkey','#a78bfa']]){
+      for(const[n,c] of [['China 0.81','#4ade80'],['Mexico 0.79','#60a5fa'],['Spain 0.66','#fb923c'],['Italy 0.66','#a78bfa']]){
         await ffd(300);
         peers.insertAdjacentHTML('beforeend',ffChip(n,c));
       }
@@ -726,7 +728,7 @@ const FF_SCENES = [
       return `<div class="ffs">
       <div class="ffs-ey">POLICY STANCE · VOTE SIMILARITY NETWORK · 1989–2025</div>
       <div class="ffs-h1">Who votes with whom?</div>
-      <div class="ffs-desc">GNN embeds 185 countries in a vote-similarity space. Louvain community detection finds blocs from the data — no hand-coded labels. Edge weight = UN GA vote agreement rate.</div>
+      <div class="ffs-desc">Each of 185 countries is placed in the bloc whose anchor countries it votes most like over a rolling 7-year window; Louvain community detection on the same vote-similarity graph, with no labels, is the cross-check. Colours show the 2024 assignment. India's published label, Non-Aligned, is a manual override; the vote model places it with China.</div>
       <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:10px">
         ${blocs.map(([n,c])=>`<span style="display:flex;align-items:center;gap:5px;font-size:11px;font-weight:700;color:${c}"><span style="width:8px;height:8px;border-radius:50%;background:${c};box-shadow:0 0 6px ${c};flex:none"></span>${n}</span>`).join('')}
       </div>
@@ -737,25 +739,27 @@ const FF_SCENES = [
       </svg>
       <div class="ffs-stats" style="margin-top:2px">
         <div class="ffs-stat"><div class="ffs-stat-n" style="color:#f5b942">185</div><div class="ffs-stat-l">countries</div></div>
-        <div class="ffs-stat"><div class="ffs-stat-n" style="color:#f5b942">4</div><div class="ffs-stat-l">detected blocs</div></div>
-        <div class="ffs-stat"><div class="ffs-stat-n" style="color:#f5b942">0.47</div><div class="ffs-stat-l">modularity Q</div></div>
+        <div class="ffs-stat"><div class="ffs-stat-n" style="color:#f5b942">4</div><div class="ffs-stat-l">anchor-based blocs</div></div>
+        <div class="ffs-stat"><div class="ffs-stat-n" style="color:#f5b942">3</div><div class="ffs-stat-l">Louvain clusters, 2017–2024</div></div>
       </div>
     </div>`; },
     async animate(){
+      // Colours are each country's 2024 bloc from the Policy Stance agent (/blocs-by-year/2024).
+      // The layout is a sketch; edges join same-bloc countries, plus three cross-bloc ties.
       const N=[
         ['USA',68,78,'#f26b38'],['GBR',112,48,'#f26b38'],['FRA',156,66,'#f26b38'],
         ['DEU',158,106,'#f26b38'],['AUS',86,130,'#f26b38'],['JPN',48,156,'#f26b38'],['CAN',30,88,'#f26b38'],
-        ['RUS',330,60,'#0f7b8c'],['BLR',374,92,'#0f7b8c'],['IRN',306,110,'#0f7b8c'],
-        ['CHN',380,188,'#e3a008'],['IND',310,198,'#e3a008'],['PAK',346,154,'#e3a008'],
-        ['ZAF',392,210,'#e3a008'],['SAU',284,158,'#e3a008'],['BRA',158,195,'#e3a008'],
+        ['RUS',330,60,'#0f7b8c'],['BLR',374,92,'#0f7b8c'],['IRN',318,128,'#e3a008'],
+        ['CHN',380,188,'#e3a008'],['IND',266,200,'#7fb7be'],['PAK',346,154,'#e3a008'],
+        ['ZAF',210,206,'#7fb7be'],['SAU',258,132,'#7fb7be'],['BRA',160,200,'#7fb7be'],
         ['IDN',234,170,'#7fb7be'],['NGA',194,145,'#7fb7be'],['EGY',220,105,'#7fb7be'],['ARG',118,180,'#7fb7be'],
       ];
       const E=[
         [0,1,'#f26b38'],[0,3,'#f26b38'],[0,6,'#f26b38'],[1,2,'#f26b38'],[2,3,'#f26b38'],[3,4,'#f26b38'],[1,5,'#f26b38'],[4,5,'#f26b38'],
-        [7,8,'#0f7b8c'],[7,9,'#0f7b8c'],
-        [10,11,'#e3a008'],[10,12,'#e3a008'],[10,13,'#e3a008'],[10,14,'#e3a008'],[11,12,'#e3a008'],[11,15,'#e3a008'],
-        [16,17,'#7fb7be'],[17,18,'#7fb7be'],[16,19,'#7fb7be'],
-        [7,10,'rgba(255,255,255,.18)'],[9,12,'rgba(255,255,255,.12)'],[11,7,'rgba(255,255,255,.12)'],
+        [7,8,'#0f7b8c'],
+        [10,12,'#e3a008'],[10,9,'#e3a008'],[9,12,'#e3a008'],
+        [11,16,'#7fb7be'],[16,17,'#7fb7be'],[17,18,'#7fb7be'],[16,19,'#7fb7be'],[13,17,'#7fb7be'],[14,18,'#7fb7be'],[15,19,'#7fb7be'],[11,13,'#7fb7be'],
+        [7,10,'rgba(255,255,255,.18)'],[11,12,'rgba(255,255,255,.18)'],[7,9,'rgba(255,255,255,.12)'],
       ];
       const eg=document.getElementById('ffs-edges'), ng=document.getElementById('ffs-nodes');
       if(!eg||!ng)return;
@@ -804,28 +808,29 @@ const FF_SCENES = [
         ch.insertAdjacentHTML('beforeend',ffChip(n,c));
       }
       const iss=document.getElementById('ffs4-issues'); if(!iss)return;
-      for(const[t,c] of [['Territory / Government','#f5b942'],['Human Rights','#f472b6'],['Resources / Economy','#34d399'],['Autonomy / Federalism','#60a5fa']]){
+      for(const[t,c] of [['Territory (UCDP)','#f5b942'],['Government (UCDP)','#f472b6'],['All UN GA votes','#34d399']]){
         await ffd(280);
         iss.insertAdjacentHTML('beforeend',`<span class="ffs-chip" style="border-color:${c}50;color:${c};background:${c}12">${t} ×</span>`);
       }
       await ffd(700);
       const ai=document.getElementById('ffs4-ai'); if(!ai)return;
       ai.innerHTML=`<div class="ffs-ai" style="border-color:rgba(245,185,66,.25)">
-        <div class="ffs-ai-hd"><span class="ffs-ai-badge">AI ANALYSIS · 5 COUNTRIES · 4 ISSUES</span></div>
+        <div class="ffs-ai-hd"><span class="ffs-ai-badge">PAIRWISE COMPARISON · 100 SAMPLED RESOLUTIONS EACH</span></div>
         <div style="display:grid;gap:7px;margin-bottom:10px" id="ffs4-rows"></div>
         <div class="ffs-badges">
-          <span class="ffs-bdg">IND–PAK 79% vote match</span>
-          <span class="ffs-bdg">CHN–RUS same bloc</span>
+          <span class="ffs-bdg">IND–PAK 79% same vote</span>
+          <span class="ffs-bdg r">RUS–CHN different blocs</span>
           <span class="ffs-bdg r">IND–PAK diverging −9.5pp</span>
           <span class="ffs-bdg r">USA–CHN opposing blocs</span>
         </div>
       </div>`;
       const rows=document.getElementById('ffs4-rows'); if(!rows)return;
+      // Figures from the Policy Stance agent's /compare-insight for each pair.
       for(const[pair,issue,text,col] of [
-        ['India × Pakistan','Territory / Gov','High conflict (63 events). Vote match 79% but diverging −9.5pp. Same China-Centered bloc.','#fb923c'],
-        ['USA × China','Resources / Economy','Opposing blocs. Low vote match (34%). Trade dependency creates compounding strategic tension.','#f87171'],
-        ['Russia × China','Autonomy / Fed','Strong alignment (91% vote match). Shared interest in multipolarity and sovereignty resolutions.','#4ade80'],
-        ['India × Russia','Human Rights','Non-Aligned movement legacy. Vote match 71%, stable. Diverging on conflict-related resolutions.','#60a5fa'],
+        ['India × Pakistan','Territory','63 shared UCDP conflict events, peak intensity 1999. Same vote on 79% of sampled resolutions, down from 88.4% in the early years (−9.5pp). The vote model places both in the China-Centered Bloc.','#fb923c'],
+        ['USA × China','UN votes','Opposing blocs (Western vs China-Centered). Same vote on only 17% of sampled resolutions; vote similarity −0.22.','#f87171'],
+        ['Russia × China','UN votes','Different blocs (Russia+Allies vs China-Centered). Same vote on 64% of sampled resolutions; vote similarity 0.35.','#fbbf24'],
+        ['India × Russia','UN votes','Same vote on 51% of sampled resolutions. India\'s vote-model bloc (China-Centered) differs from Russia\'s (Russia+Allies).','#60a5fa'],
       ]){
         await ffd(400);
         rows.insertAdjacentHTML('beforeend',`<div style="padding:9px 12px;border-radius:9px;border-left:3px solid ${col};background:rgba(255,255,255,.03);animation:rise .3s ease both">
@@ -843,11 +848,11 @@ const FF_SCENES = [
     render(){return `<div class="ffs">
       <div class="ffs-ey">TRADE INTELLIGENCE · BACI 1995–2024</div>
       <div class="ffs-h1">Global Trade Network</div>
-      <div class="ffs-desc">226 economies. 29 years of bilateral flow data at HS2 sector level. The network graph maps structural dependencies across the entire global system.</div>
+      <div class="ffs-desc">226 economies. 30 years of bilateral flow data (CEPII BACI HS92), grouped into 14 sectors with HS6 product detail. The network graph maps structural dependencies across the entire global system.</div>
       <div class="ffs-stats">
         <div class="ffs-stat"><div class="ffs-stat-n" style="color:#34d399">226</div><div class="ffs-stat-l">economies covered</div></div>
-        <div class="ffs-stat"><div class="ffs-stat-n" style="color:#34d399">29yr</div><div class="ffs-stat-l">BACI 1995–2024</div></div>
-        <div class="ffs-stat"><div class="ffs-stat-n" style="color:#34d399">HS2</div><div class="ffs-stat-l">sector breakdown</div></div>
+        <div class="ffs-stat"><div class="ffs-stat-n" style="color:#34d399">30yr</div><div class="ffs-stat-l">BACI 1995–2024</div></div>
+        <div class="ffs-stat"><div class="ffs-stat-n" style="color:#34d399">14</div><div class="ffs-stat-l">sectors, plus HS6 products</div></div>
       </div>
       <div class="ffs-slabel">ANALYSE COUNTRY</div>
       <div class="ffs-inp"><span id="ffs-tr-inp"></span><span class="ffs-cur" style="color:#34d399"></span></div>
@@ -858,9 +863,10 @@ const FF_SCENES = [
       await ffType('ffs-tr-inp','Germany',45);
       await ffd(500);
       const r=document.getElementById('ffs-tr-results'); if(!r)return;
-      r.innerHTML=`<div class="ffs-slabel" style="margin-top:4px">TOP CRITICAL TRADE PARTNERS</div><div class="ffs-deps" id="ffs-deps"></div>`;
+      r.innerHTML=`<div class="ffs-slabel" style="margin-top:4px">TOP TRADE PARTNERS · SHARE OF GERMANY'S TRADE, 2024</div><div class="ffs-deps" id="ffs-deps"></div>`;
       const deps=document.getElementById('ffs-deps'); if(!deps)return;
-      const data=[['🇨🇳','China',14.2,0.71],['🇺🇸','USA',9.8,0.49],['🇫🇷','France',8.1,0.41],['🇵🇱','Poland',6.4,0.32],['🇳🇱','Netherlands',5.9,0.30]];
+      // Two-way trade shares from the Trade agent's 2024 graph (BACI V202601).
+      const data=[['🇨🇳','China',8.9,0.89],['🇺🇸','USA',8.7,0.87],['🇳🇱','Netherlands',6.8,0.68],['🇫🇷','France',6.1,0.61],['🇵🇱','Poland',5.7,0.57]];
       for(const[f,n,p,w] of data){
         await ffd(380);
         deps.insertAdjacentHTML('beforeend',`<div class="ffs-dep">
@@ -877,39 +883,40 @@ const FF_SCENES = [
     render(){return `<div class="ffs">
       <div class="ffs-ey">TRADE INTELLIGENCE · SUPPLY FRAGILITY</div>
       <div class="ffs-h1">Germany — Sector Fragility</div>
-      <div class="ffs-desc">Supply fragility by sector: how concentrated is Germany's import sourcing? A fragility score near 1.0 means a single partner dominates that sector.</div>
-      <div class="ffs-slabel">IMPORT FRAGILITY BY SECTOR</div>
+      <div class="ffs-desc">Supply fragility by sector: how concentrated is Germany's import sourcing, and how much it relies on that sector? A score near 1.0 means a single partner dominates a sector the country depends on. Germany's highest, electronics at 0.17 (China supplies 23.5%), shows well-diversified sourcing.</div>
+      <div class="ffs-slabel">IMPORT FRAGILITY BY SECTOR, 2024</div>
       <div class="ffs-shap" id="ffs-sec"></div>
       <div style="margin-top:14px;padding:12px 14px;background:rgba(52,211,153,.05);border:1px solid rgba(52,211,153,.18);border-radius:10px">
         <div class="ffs-slabel">SHOCK SIMULATION</div>
-        <div style="font-size:12px;color:rgba(255,255,255,.45);margin-bottom:8px">Simulate a 30% supply disruption from China</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.45);margin-bottom:8px">Simulate a 30% cut in China's exports</div>
         <div id="ffs-shock-result" style="font-size:12px;color:rgba(255,255,255,.3)">Running cascade through 226-node network…</div>
       </div>
     </div>`; },
     async animate(){
-      const sectors=[['Energy',0.72,'#fb923c'],['Electronics',0.61,'#60a5fa'],['Agriculture',0.38,'#4ade80'],['Automotive',0.44,'#a78bfa'],['Chemicals',0.51,'#f472b6']];
+      // Germany's five most fragile sectors and a 30% China export shock, both from the Trade agent (2024).
+      const sectors=[['Electronics',0.17,'#60a5fa'],['Energy',0.10,'#fb923c'],['Vehicles',0.08,'#a78bfa'],['Agriculture',0.08,'#4ade80'],['Chemicals',0.06,'#f472b6']];
       const sec=document.getElementById('ffs-sec'); if(!sec)return;
       sec.innerHTML=sectors.map(([n,v,c],i)=>`<div class="ffs-sdim">
         <span class="ffs-sdname">${n}</span>
         <div class="ffs-sdbarw"><div class="ffs-sdbar" id="ffss${i}" style="background:${c}"></div></div>
-        <span class="ffs-sdval" style="color:${c}">${v}</span>
+        <span class="ffs-sdval" style="color:${c}">${v.toFixed(2)}</span>
       </div>`).join('');
       await ffd(100);
       sectors.forEach(([,,],i)=>{ const b=document.getElementById('ffss'+i); if(b) b.style.width=(sectors[i][1]*100)+'%'; });
       await ffd(1200);
       const sr=document.getElementById('ffs-shock-result'); if(!sr)return;
-      sr.innerHTML=`<div style="color:#4ade80;font-weight:700">Cascade complete — 14 economies affected at ≥5% exposure:</div>
+      sr.innerHTML=`<div style="color:#4ade80;font-weight:700">Cascade complete after 3 propagation steps — 214 of 225 economies take an impact of 5% or more. Hardest hit:</div>
         <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:7px">
-          ${['Poland','Czech Rep.','Netherlands','Austria','Italy','France','Belgium','Switzerland','Denmark','Sweden','Hungary','Romania','Slovakia','Ukraine'].map(n=>`<span style="padding:2px 8px;border-radius:5px;background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.25);font-size:11px;color:#f87171">${n}</span>`).join('')}
+          ${['North Korea 28.6%','Liberia 19.9%','Tajikistan 19.7%','Russia 19.5%','Mongolia 19.0%','Guinea 17.9%','Ghana 17.3%','Viet Nam 16.8%'].map(n=>`<span style="padding:2px 8px;border-radius:5px;background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.25);font-size:11px;color:#f87171">${n}</span>`).join('')}
         </div>`;
     }
   },
   // ─── Scene 7: Events live feed ───
-  { color:'#f472b6', label:'Event Summarization Agent · Live',
+  { color:'#f472b6', label:'Event Summarization Agent · GDELT Day',
     render(){return `<div class="ffs">
-      <div class="ffs-ey">EVENT SUMMARIZATION · GDELT LIVE + GGE BASELINE</div>
-      <div class="ffs-h1">Live GDELT Feed</div>
-      <div class="ffs-desc">Every event scored on the Goldstein scale (−10 conflict → +10 cooperation). spaCy NER extracts actor pairs. The 30-year GGE baseline detects when today is statistically out of character.</div>
+      <div class="ffs-ey">EVENT SUMMARIZATION · GDELT DAILY + GGE BASELINE</div>
+      <div class="ffs-h1">A GDELT Day</div>
+      <div class="ffs-desc">Every event scored on the Goldstein scale (−10 conflict → +10 cooperation). spaCy NER resolves actor names, and each top event is checked against its source article. On 22 Nov 2026, 464 events involved Russia, mean Goldstein −0.76.</div>
       <div class="ffs-slabel">ANALYSE COUNTRY / BILATERAL PAIR</div>
       <div class="ffs-inp"><span id="ffs-ev-inp"></span><span class="ffs-cur" style="color:#f472b6"></span></div>
       <div id="ffs-ev-feed"></div>
@@ -919,15 +926,16 @@ const FF_SCENES = [
       await ffType('ffs-ev-inp','Russia',45);
       await ffd(500);
       const feed=document.getElementById('ffs-ev-feed'); if(!feed)return;
-      feed.innerHTML=`<div class="ffs-slabel">TODAY'S EVENTS (GOLDSTEIN SCALE)</div><div class="ffs-evs" id="ffs-evlist"></div>`;
+      feed.innerHTML=`<div class="ffs-slabel">MOST ACTIVE COUNTERPARTS · GDELT 22 NOV 2026 (MEAN GOLDSTEIN)</div><div class="ffs-evs" id="ffs-evlist"></div>`;
       const evlist=document.getElementById('ffs-evlist'); if(!evlist)return;
+      // The Events agent's counterparts for Russia on 22 Nov 2026 (POST /analyze).
       const evs=[
-        ['n','RUS → UKR','−5.4','Demand halt of activities; impose restrictions'],
-        ['n','RUS → USA','−3.1','Express opposition; criticize or denounce'],
-        ['e','RUS → CHN','+0.8','Consult; discuss; negotiate'],
-        ['p','RUS → IND','+3.2','Provide military aid; weapons transfer'],
-        ['n','RUS → EU','−4.7','Issue ultimatum; threaten with sanctions'],
-        ['p','RUS → BLR','+6.1','Sign formal agreement; treaty'],
+        ['p','RUS – CHN','+2.4','52 events'],
+        ['n','RUS – FIN','−1.7','47 events'],
+        ['n','RUS – UKR','−4.2','40 events'],
+        ['e','RUS – USA','+0.1','22 events'],
+        ['n','RUS – LBY','−3.0','16 events'],
+        ['n','RUS – DNK','−2.2','9 events'],
       ];
       for(const[t,pair,gs,desc] of evs){
         await ffd(360);
@@ -941,18 +949,19 @@ const FF_SCENES = [
   // ─── Scene 8: Events Russia baseline deviation ───
   { color:'#f472b6', label:'Event Summarization Agent · Baseline',
     render(){return `<div class="ffs">
-      <div class="ffs-ey">EVENT SUMMARIZATION · BASELINE DEVIATION</div>
-      <div class="ffs-h1">Russia — Today vs 30-Year Baseline</div>
-      <div class="ffs-desc">The GGE historical baseline (1990–2024) gives a 30-year average Goldstein score for every bilateral pair. Today's GDELT score is compared against it to flag statistically unusual days.</div>
+      <div class="ffs-ey">EVENT SUMMARIZATION · BASELINE COMPARISON</div>
+      <div class="ffs-h1">Russia — The Day vs the 1990–2024 Baseline</div>
+      <div class="ffs-desc">The GGE dataset gives every country pair an annual alignment score for 1990–2024. The Events agent sets the day's mean Goldstein score beside the pair's baseline label, 10-year average and trend, and fusion flags the day when the two point in opposite directions.</div>
       <div class="ffs-evs" id="ffs-bev"></div>
       <div id="ffs-bline"></div>
     </div>`; },
     async animate(){
       const bev=document.getElementById('ffs-bev'); if(!bev)return;
+      // The Events agent's GGE baselines for Russia's three most active pairs, 22 Nov 2026 (/historical-context).
       const rows=[
-        ['n','RUS–UKR','Today: −5.4','Baseline: +0.6','−6.0 deviation'],
-        ['n','RUS–USA','Today: −3.1','Baseline: −1.4','−1.7 deviation'],
-        ['e','RUS–CHN','Today: +1.2','Baseline: +1.9','−0.7 deviation'],
+        ['n','RUS–UKR','Day: −4.2 (40 events)','Baseline: historically adversarial, 10-yr avg −0.373','in character'],
+        ['n','RUS–FIN','Day: −1.7 (47 events)','Baseline: moderately tense, 10-yr avg −0.186','in character'],
+        ['p','RUS–CHN','Day: +2.4 (52 events)','Baseline: strongly cooperative, 10-yr avg +0.655','in character'],
       ];
       for(const[t,pair,today,base,dev] of rows){
         await ffd(400);
@@ -960,9 +969,9 @@ const FF_SCENES = [
           <div class="ffs-evb">
             <div class="ffs-evpair" style="font-size:12px;font-weight:700;color:rgba(255,255,255,.75)">${pair}</div>
             <div style="display:flex;gap:12px;margin-top:4px">
-              <span style="font-size:12px;color:${t==='n'?'#f87171':'rgba(255,255,255,.5)'};font-weight:700">${today}</span>
+              <span style="font-size:12px;color:${t==='n'?'#f87171':'#4ade80'};font-weight:700">${today}</span>
               <span style="font-size:12px;color:rgba(255,255,255,.35)">${base}</span>
-              <span style="font-size:12px;color:${t==='n'?'#f87171':'rgba(255,255,255,.35)'};font-weight:700">${dev}</span>
+              <span style="font-size:12px;color:rgba(255,255,255,.5);font-weight:700">${dev}</span>
             </div>
           </div>
         </div>`);
@@ -970,12 +979,12 @@ const FF_SCENES = [
       await ffd(700);
       const bl=document.getElementById('ffs-bline'); if(!bl)return;
       bl.innerHTML=`<div class="ffs-baseline">
-        <div class="ffs-bl-l"><strong style="color:rgba(255,255,255,.8)">Russia–Ukraine bilateral</strong><br>Today's tone is 6.0 Goldstein points below the 30-year GGE average. This triggers an event-friction finding in the fusion engine when crossed with Ukraine's trade exposure to Russia.</div>
+        <div class="ffs-bl-l"><strong style="color:rgba(255,255,255,.8)">All three Russian pairs were in character that day</strong><br>Conflictual coverage with Ukraine matches a historically adversarial baseline, so nothing is flagged. A day is flagged only when it breaks with the baseline: the same day, India–Pakistan coverage was cooperative (+2.9) against a moderately tense history, and fusion reported it as a divergence (confidence 0.58).</div>
         <div>
-          <div class="ffs-bl-s">−5.4</div>
-          <div class="ffs-bl-ref">baseline +0.6</div>
+          <div class="ffs-bl-s" style="color:#4ade80">+2.9</div>
+          <div class="ffs-bl-ref">IND–PAK baseline −0.231</div>
         </div>
-        <div class="ffs-dev-flag">⚠ Statistically anomalous</div>
+        <div class="ffs-dev-flag">⚠ Out of character</div>
       </div>`;
     }
   },
@@ -1045,7 +1054,7 @@ function showFFEnd(){
   document.getElementById('ff-nbtn').onclick=closeFunFlow;
   const c=document.getElementById('ff-content'); c.className='ff-splash';
   c.innerHTML=`<h2>Four agents. One system.</h2>
-    <p>You just watched all four agents run on real-world data — Soft Power, Policy Stance, Trade Intelligence and Events — each with its own models, its own datasets, its own output.<br>Now ask them a live question together.</p>
+    <p>Every figure in this tour is a real output of the four agents — Soft Power, Policy Stance, Trade Intelligence and Events — each with its own models, its own datasets, its own output (annual data for 2024, events for the GDELT day of 22 Nov 2026).<br>Now ask them a live question together.</p>
     <div class="ff-slinks">
       <a class="ff-sl a" href="/features">Explore agents</a>
       <a class="ff-sl b" href="/engine">Ask the engine</a>
