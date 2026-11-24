@@ -1920,7 +1920,7 @@
 +    return sector_for_chapter(int(normalized[:2]))
 --- a/frontend/index.html
 +++ b/frontend/index.html
-@@ -1,1949 +1,1651 @@
+@@ -1,1949 +1,1911 @@
 -
  <!DOCTYPE html>
  <html lang="en">
@@ -2921,6 +2921,53 @@
 +.tooltip { position: fixed; z-index: 100; pointer-events: none; max-width: 360px; padding: 8px 10px; border-radius: 8px; background: var(--tooltip-bg); border: 1px solid var(--accent-line); color: #f8fafc; font-size: 12px; line-height: 1.45; white-space: pre-line; opacity: 0; transition: opacity .1s; box-shadow: var(--popup-shadow); }
 +footer { max-width: 1440px; margin: 0 auto; padding: 0 24px 32px; color: var(--soft); font-size: 12px; }
 +
++/* ---------- fluid layer: compact picker, year slider, live updates, motion ---------- */
++html { scroll-behavior: smooth; }
++.card, .analysis, .example, .chip, .btn { transition: border-color .2s ease, background .2s ease, transform .2s ease, box-shadow .2s ease, opacity .25s ease; }
++.analyses { grid-template-columns: 1fr 1fr; gap: 6px; }
++.analysis { grid-template-columns: 20px 1fr; gap: 8px; align-items: center; padding: 9px 10px; min-height: 48px; }
++.analysis:hover { transform: translateY(-1px); }
++.analysis b { font-size: 12.5px; line-height: 1.25; }
++.analysis .new { margin-left: 4px; padding: 0 5px; font-size: 9.5px; }
++.analysis-hint { margin: 8px 0 0; padding: 8px 10px; border-left: 2px solid var(--accent); border-radius: 0 8px 8px 0; background: var(--accent-soft); color: var(--body); font-size: 12px; line-height: 1.4; animation: rise .3s ease both; }
++.year-row { display: grid; grid-template-columns: 28px 1fr 28px; gap: 8px; align-items: center; }
++.step-btn { width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--line-strong); background: var(--input-bg); color: var(--text); cursor: pointer; font-size: 15px; line-height: 1; display: grid; place-items: center; }
++.step-btn:hover { border-color: var(--accent-line); color: var(--accent); }
++.year-value { margin-left: 6px; padding: 1px 8px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); font-size: 12px; }
++.field-inline { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
++.field-inline label { font-size: 12.5px; font-weight: 600; }
++.field-inline .segmented { width: auto; }
++.field-inline .segmented button { padding: 0 12px; }
++.run-bar { position: sticky; bottom: -18px; margin: 4px -18px -18px; padding: 12px 18px 16px; background: linear-gradient(180deg, transparent, var(--surface-solid) 28%); z-index: 5; }
++.live { display: flex; align-items: center; gap: 8px; margin-top: 10px; color: var(--muted); font-size: 12px; cursor: pointer; user-select: none; }
++.live input { appearance: none; width: 30px; height: 17px; border-radius: 999px; background: var(--line-strong); position: relative; cursor: pointer; transition: background .2s; margin: 0; flex: none; }
++.live input::after { content: ""; position: absolute; top: 2px; left: 2px; width: 13px; height: 13px; border-radius: 50%; background: #fff; transition: transform .2s; }
++.live input:checked { background: var(--accent-strong); }
++.live input:checked::after { transform: translateX(13px); }
++.head { min-height: 108px; }
++.progress { position: absolute; left: 0; right: 0; top: 0; height: 2px; overflow: hidden; opacity: 0; transition: opacity .2s; }
++.progress::after { content: ""; position: absolute; top: 0; bottom: 0; width: 35%; background: linear-gradient(90deg, transparent, var(--accent), transparent); animation: sweep 1.1s ease-in-out infinite; }
++.results.busy .progress { opacity: 1; }
++.results.busy > :not(.head):not(.next) { opacity: .42; filter: saturate(.6); pointer-events: none; }
++.next { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: -4px; animation: rise .35s ease both; }
++.next .lbl { color: var(--muted); font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; margin-right: 2px; }
++.next button { display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 12px; border-radius: 999px; border: 1px solid var(--line-strong); background: var(--surface); color: var(--text); font-size: 12.5px; font-weight: 600; cursor: pointer; }
++.next button:hover { border-color: var(--accent-line); background: var(--accent-soft); color: var(--accent-ink); transform: translateY(-1px); }
++.next button span { color: var(--accent); }
++.skel { border-radius: var(--radius); border: 1px solid var(--line); background: linear-gradient(90deg, var(--surface-2) 0%, var(--accent-soft) 50%, var(--surface-2) 100%); background-size: 200% 100%; animation: shimmer 1.2s linear infinite; }
++.skel.kpi-skel { height: 84px; }
++.skel.view-skel { height: 300px; }
++.rise { animation: rise .45s cubic-bezier(.2, .7, .2, 1) both; }
++.field-flash { animation: flash 1.2s ease; }
++@keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
++@keyframes sweep { from { left: -35%; } to { left: 100%; } }
++@keyframes shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
++@keyframes flash { 0%, 100% { box-shadow: none; } 30% { box-shadow: 0 0 0 3px var(--focus-ring); } }
++@media (prefers-reduced-motion: reduce) {
++  html { scroll-behavior: auto; }
++  *, *::before, *::after { animation: none !important; transition: none !important; }
++}
++
 +@media (max-width: 1100px) { .views { grid-template-columns: 1fr; } .kpis { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); } }
 +@media (max-width: 900px) {
 +  .shell { grid-template-columns: 1fr; padding: 14px; }
@@ -2963,6 +3010,7 @@
 +      <div class="step">
 +        <p class="step-title"><span class="n">1</span>What do you want to know?</p>
 +        <div class="analyses" id="analyses" role="radiogroup" aria-label="Analysis"></div>
++        <p class="analysis-hint" id="analysis-hint"></p>
 +      </div>
 +
 +      <div class="step">
@@ -2998,15 +3046,22 @@
 +          <span class="hint" id="product-hint">Narrow the analysis to one good, by name or HS code.</span>
 +        </div>
 +
-+        <div class="row2">
-+          <div class="field" id="year-field">
-+            <label for="year">Year</label>
-+            <select id="year"></select>
++        <div class="field" id="year-field">
++          <label for="year">Year <b class="year-value" id="year-value">2024</b></label>
++          <div class="year-row">
++            <button type="button" class="step-btn" id="year-prev" aria-label="Previous year">&lsaquo;</button>
++            <input id="year" type="range" min="1995" max="2024" step="1" value="2024">
++            <button type="button" class="step-btn" id="year-next" aria-label="Next year">&rsaquo;</button>
 +          </div>
-+          <div class="field" id="limit-field">
-+            <label for="limit">Show top</label>
-+            <input id="limit" type="number" min="1" max="50" value="10">
++        </div>
++        <div class="field-inline" id="limit-field">
++          <label>Show top</label>
++          <div class="segmented" id="limit-toggle">
++            <button type="button" data-limit="5" aria-pressed="false">5</button>
++            <button type="button" data-limit="10" aria-pressed="true">10</button>
++            <button type="button" data-limit="20" aria-pressed="false">20</button>
 +          </div>
++          <input id="limit" type="hidden" value="10">
 +        </div>
 +      </div>
 +
@@ -4346,7 +4401,10 @@
 +        </details>
 +      </div>
 +
-+      <button class="run" id="run" type="submit"><span id="run-label">Run analysis</span><span id="run-spin" class="spinner hidden"></span></button>
++      <div class="run-bar">
++        <button class="run" id="run" type="submit"><span id="run-label">Run analysis</span><span id="run-spin" class="spinner hidden"></span></button>
++        <label class="live"><input type="checkbox" id="live" checked> Update the results as I change the filters</label>
++      </div>
 +
 +      <details class="settings">
 +        <summary>Connection</summary>
@@ -4359,7 +4417,8 @@
 +  </aside>
 +
 +  <section class="results" aria-live="polite">
-+    <div class="card head">
++    <div class="card head" id="r-head">
++      <div class="progress" aria-hidden="true"></div>
 +      <div>
 +        <p class="kind" id="r-kind">Trade Intelligence</p>
 +        <h2 id="r-title">Choose a question on the left, or start from an example</h2>
@@ -4371,6 +4430,8 @@
 +        <button class="btn" id="link-btn" type="button" disabled>Copy link</button>
 +      </div>
 +    </div>
++
++    <div id="next" class="next hidden" aria-label="Next questions"></div>
 +
 +    <div id="welcome" class="card welcome">
 +      <h2>Start with a question</h2>
@@ -4556,15 +4617,21 @@
 +  for (const a of ANALYSES) {
 +    host.append(el("button", {
 +      type: "button", class: "analysis", role: "radio", "aria-checked": String(a.id === state.analysis), "data-id": a.id,
-+      onclick: () => { state.analysis = a.id; syncForm(); },
++      onclick: () => { if (state.analysis === a.id) return; state.analysis = a.id; syncForm(); autoRun({ fromPicker: true }); },
++      "data-tip": a.text,
 +    }, el("span", { class: "ic", "aria-hidden": "true", text: a.icon }),
-+      el("div", {}, el("b", {}, a.title, a.isNew ? el("span", { class: "new", text: "new" }) : null), el("span", { text: a.text }))));
++      el("div", {}, el("b", {}, a.title, a.isNew ? el("span", { class: "new", text: "new" }) : null))));
 +  }
 +}
 +
 +function syncForm() {
 +  const need = NEEDS[state.analysis];
 +  document.querySelectorAll(".analysis").forEach((b) => b.setAttribute("aria-checked", String(b.dataset.id === state.analysis)));
++  const hint = $("analysis-hint");
++  if (hint.textContent !== ANALYSIS[state.analysis].text) {
++    hint.textContent = ANALYSIS[state.analysis].text;
++    hint.style.animation = "none"; void hint.offsetWidth; hint.style.animation = "";
++  }
 +  $("partner-field").classList.toggle("hidden", !need.partner);
 +  $("country-label").textContent = need.partner ? "First country" : need.country === "required" ? "Country" : "Country (optional)";
 +  $("country-hint").textContent = need.country === "optional" ? "Leave blank to rank every country; name one for its profile." : "";
@@ -4600,10 +4667,30 @@
 +
 +function fillYears(years) {
 +  state.years = years.length ? years : Array.from({ length: 30 }, (_, i) => 1995 + i);
-+  const select = $("year"), current = Number(select.value) || null;
-+  select.innerHTML = "";
-+  for (const y of [...state.years].reverse()) select.append(el("option", { value: y, text: y }));
-+  select.value = current && state.years.includes(current) ? current : state.years[state.years.length - 1];
++  const slider = $("year"), first = state.years[0], last = state.years[state.years.length - 1];
++  const current = Number(slider.dataset.set ? slider.value : last);
++  slider.min = first;
++  slider.max = last;
++  slider.value = Math.min(last, Math.max(first, current));
++  updateYear();
++}
++function updateYear() {
++  const slider = $("year");
++  $("year-value").textContent = slider.value;
++  const span = (Number(slider.max) - Number(slider.min)) || 1;
++  slider.style.setProperty("--pos", `${((Number(slider.value) - Number(slider.min)) / span) * 100}%`);
++}
++function stepYear(delta) {
++  const slider = $("year"), next = Number(slider.value) + delta;
++  if (next < Number(slider.min) || next > Number(slider.max)) return;
++  slider.value = next;
++  slider.dataset.set = "1";
++  updateYear();
++  autoRun();
++}
++function setLimit(n) {
++  $("limit").value = n;
++  document.querySelectorAll("#limit-toggle button").forEach((b) => b.setAttribute("aria-pressed", String(Number(b.dataset.limit) === Number(n))));
 +}
 +
 +function setProduct(product) {
@@ -4664,6 +4751,7 @@
 +  if (!item) return;
 +  setProduct({ code: item.code, label: item.label, sector: item.sector, level: item.level });
 +  openSuggest(false);
++  autoRun();
 +}
 +function moveSuggestion(delta) {
 +  const options = [...$("product-suggest").querySelectorAll(".opt")];
@@ -4733,8 +4821,8 @@
 +  $("country").value = form.country || "";
 +  $("partner").value = form.partner || "";
 +  $("sector").value = form.sector && state.sectorById[form.sector] ? form.sector : (form.product?.sector || "all");
-+  if (form.year && state.years.includes(form.year)) $("year").value = form.year;
-+  if (form.limit) $("limit").value = form.limit;
++  if (form.year && state.years.includes(form.year)) { $("year").value = form.year; $("year").dataset.set = "1"; updateYear(); }
++  if (form.limit) setLimit(form.limit);
 +  if (form.severity) { $("severity").value = form.severity; updateSeverity(); }
 +  if (form.metric) setMetric(form.metric);
 +  if (form.periods) $("periods").value = form.periods;
@@ -4756,17 +4844,52 @@
 +  $("run").disabled = busy;
 +  $("run-spin").classList.toggle("hidden", !busy);
 +  $("run-label").textContent = busy ? "Running..." : "Run analysis";
++  document.querySelector(".results").classList.toggle("busy", busy);
++  // First run: placeholders where the results will appear, instead of an empty page.
++  if (busy && !state.result) {
++    $("welcome").classList.add("hidden");
++    $("kpis").innerHTML = "";
++    $("views").innerHTML = "";
++    for (let i = 0; i < 4; i++) $("kpis").append(el("div", { class: "skel kpi-skel" }));
++    $("kpis").style.setProperty("--cols", 4);
++    $("views").append(el("div", { class: "skel view-skel" }), el("div", { class: "skel view-skel" }));
++  }
 +}
++
++// Live updates: once something has run, changing a filter runs it again.
++let autoTimer = null;
++function autoRun({ fromPicker = false, delay = 350 } = {}) {
++  if (!$("live").checked || !state.result) return;
++  const body = readForm();
++  const problem = validate(body);
++  if (problem) {
++    // Say what is missing next to the field, not as an error.
++    if (fromPicker) {
++      const field = !body.country ? $("country") : $("partner");
++      field.focus({ preventScroll: true });
++      field.classList.remove("field-flash"); void field.offsetWidth; field.classList.add("field-flash");
++      setStatus(problem.replace(/\.$/, ""), "");
++    }
++    return;
++  }
++  clearTimeout(autoTimer);
++  autoTimer = setTimeout(run, delay);
++}
++
 +async function run() {
++  clearTimeout(autoTimer);
 +  const body = readForm();
 +  const problem = validate(body);
 +  if (problem) { showError(problem); setStatus("Check the form", "err"); return; }
++  const token = (state.runToken = (state.runToken || 0) + 1);
 +  setBusy(true);
 +  setStatus("Running analysis", "loading");
 +  $("error").classList.add("hidden");
 +  const started = performance.now();
 +  try {
 +    const data = await api("/query", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
++    // A newer request has started since; let it win.
++    if (token !== state.runToken) return;
 +    state.result = { request: body, response: data };
 +    history.replaceState(null, "", `${location.pathname}?${formToParams(body).toString()}`);
 +    render(body, data);
@@ -4776,12 +4899,48 @@
 +    state.netMode = state.shockScores.size ? "affected" : "full";
 +    syncNetToggle();
 +    if ($("network-card").open) loadNetwork();
++    revealResults();
 +  } catch (error) {
++    if (token !== state.runToken) return;
++    if (!state.result) { $("kpis").innerHTML = ""; $("views").innerHTML = ""; $("welcome").classList.remove("hidden"); }
 +    showError(error.message);
 +    setStatus("Analysis failed", "err");
 +  } finally {
-+    setBusy(false);
++    if (token === state.runToken) setBusy(false);
 +  }
++}
++
++// Results slide in one after another, and headline numbers count up.
++function revealResults() {
++  const blocks = [...$("kpis").children, ...$("views").children, $("findings-card"), $("table-card")];
++  blocks.forEach((node, i) => {
++    node.classList.remove("rise");
++    void node.offsetWidth;
++    node.style.animationDelay = `${Math.min(i, 10) * 45}ms`;
++    node.classList.add("rise");
++  });
++  document.querySelectorAll("#kpis .kpi .v").forEach(countUp);
++  const head = $("r-head").getBoundingClientRect();
++  if (head.top < 0 || head.top > window.innerHeight * 0.6) $("r-head").scrollIntoView({ behavior: "smooth", block: "start" });
++}
++function countUp(node) {
++  const text = node.textContent;
++  const match = /^([^0-9]{0,3}?)(\d[\d,]*(?:\.\d+)?)(.*)$/.exec(text);
++  if (!match || /[a-z]/i.test(match[1]) || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
++  const [, before, digits, after] = match;
++  const target = Number(digits.replace(/,/g, ""));
++  if (!Number.isFinite(target) || target === 0) return;
++  const decimals = (digits.split(".")[1] || "").length;
++  const grouped = digits.includes(",");
++  const started = performance.now(), duration = 650;
++  const frame = (now) => {
++    const t = Math.min(1, (now - started) / duration), eased = 1 - Math.pow(1 - t, 3);
++    const value = target * eased;
++    const shown = grouped ? Math.round(value).toLocaleString("en-US") : value.toFixed(decimals);
++    node.textContent = t < 1 ? `${before}${shown}${after}` : text;
++    if (t < 1) requestAnimationFrame(frame);
++  };
++  requestAnimationFrame(frame);
 +}
 +function showError(message) {
 +  $("error").textContent = message;
@@ -4989,6 +5148,96 @@
 +  const renderer = RENDER[body.query_type] || RENDER.generic;
 +  renderer(insights, meta, body);
 +  renderFindings(insights);
++  renderNext(body, data);
++}
++
++// Follow-up questions offered under each result, built from what it found.
++function nextSteps(body, data) {
++  const meta = data.metadata || {}, insights = data.insights || [];
++  const product = state.product ? { ...state.product } : null;
++  const scope = { sector: meta.sector || body.sector || "all", product, year: meta.year || body.year };
++  const out = [];
++  const add = (label, form) => out.push({ label, form: { ...scope, ...form } });
++  const country = meta.country, top = insights[0]?.entity_name;
++  switch (body.query_type) {
++    case "market": {
++      if (country) {
++        add(`Forecast ${country}'s exports`, { analysis: "forecast", country, periods: 5 });
++        add(`Who ${country} depends on`, { analysis: "leverage", country });
++        const supplier = insights.find((i) => i.evidence.role === "importer")?.evidence.partners?.[0]?.country;
++        if (supplier) add(`${country} and ${supplier}`, { analysis: "bilateral", country, partner: supplier });
++      } else if (top) {
++        const buyer = insights.find((i) => i.evidence.role === "importer")?.entity_name;
++        add(`Forecast ${top}'s exports`, { analysis: "forecast", country: top, periods: 5 });
++        add(`If ${top} stops exporting`, { analysis: "shock", country: top, severity: 1 });
++        if (buyer && buyer !== top) add(`${top} and ${buyer}`, { analysis: "bilateral", country: top, partner: buyer });
++      }
++      break;
++    }
++    case "bilateral": {
++      const partner = insights[0]?.evidence?.partner || meta.partner;
++      add(`Forecast ${country}'s exports`, { analysis: "forecast", country, periods: 5 });
++      add(`${country} in the world market`, { analysis: "market", country });
++      if (partner) add(`Swap: ${partner} and ${country}`, { analysis: "bilateral", country: partner, partner: country });
++      break;
++    }
++    case "forecast":
++      add(`${country} in the world market`, { analysis: "market", country });
++      add(`${country}'s structural risk`, { analysis: "risk", country });
++      add(`Who ${country} depends on`, { analysis: "leverage", country });
++      break;
++    case "shock": {
++      const hit = insights.find((i) => i.entity_name !== country)?.entity_name;
++      if (hit) add(`${country} and ${hit}`, { analysis: "bilateral", country, partner: hit });
++      add(`Who else supplies this`, { analysis: "market", country: "" });
++      add(`Forecast ${country}'s exports`, { analysis: "forecast", country, periods: 5 });
++      break;
++    }
++    case "leverage": {
++      if (country) {
++        const critical = insights[0]?.evidence?.most_critical_partner;
++        if (critical) add(`${country} and ${critical}`, { analysis: "bilateral", country, partner: critical });
++        add(`${country}'s supply fragility`, { analysis: "fragility", country, sector: "all", product: null });
++      } else if (top) {
++        const holder = insights[0].evidence.leverage_holder;
++        add(`${top} and ${holder}`, { analysis: "bilateral", country: top, partner: holder });
++        add(`Who ${top} depends on`, { analysis: "leverage", country: top });
++      }
++      break;
++    }
++    case "risk":
++      if (top) {
++        add(`Who ${top} depends on`, { analysis: "leverage", country: top });
++        add(`${top}'s supply fragility`, { analysis: "fragility", country: top, sector: "all", product: null });
++        add(`${top} in the world market`, { analysis: "market", country: top });
++      }
++      break;
++    case "blocs":
++      add("Who sells and who buys", { analysis: "market", country: "" });
++      if (country) add(`${country}'s structural risk`, { analysis: "risk", country });
++      break;
++    case "fragility": {
++      const worst = insights[0]?.evidence;
++      const who = country || insights[0]?.entity_name;
++      if (worst && who) {
++        add(`${who}'s ${(worst.sector_label || worst.sector).toLowerCase()} market position`, { analysis: "market", country: who, sector: worst.sector, product: null });
++        if (worst.top_supplier) add(`${who} and ${worst.top_supplier}, ${(worst.sector_label || worst.sector).toLowerCase()}`, { analysis: "bilateral", country: who, partner: worst.top_supplier, sector: worst.sector, product: null });
++      }
++      break;
++    }
++  }
++  return out.slice(0, 3);
++}
++function renderNext(body, data) {
++  const host = $("next");
++  host.innerHTML = "";
++  const steps = nextSteps(body, data);
++  host.classList.toggle("hidden", !steps.length);
++  if (!steps.length) return;
++  host.append(el("span", { class: "lbl", text: "Next" }));
++  for (const step of steps) {
++    host.append(el("button", { type: "button", onclick: () => { applyForm(step.form); run(); } }, step.label, el("span", { text: "→" })));
++  }
 +}
 +
 +const RENDER = {
@@ -5452,13 +5701,24 @@
 +  wireTips();
 +  $("form").addEventListener("submit", (event) => { event.preventDefault(); openSuggest(false); run(); });
 +  $("country").addEventListener("input", syncForm);
++  $("country").addEventListener("change", () => autoRun());
++  $("partner").addEventListener("change", () => autoRun());
 +  $("sector").addEventListener("change", () => {
 +    if (state.product && state.product.sector && $("sector").value !== state.product.sector && $("sector").value !== "all") setProduct(null);
 +    syncForm();
 +    if (!$("product-suggest").classList.contains("hidden")) searchProducts();
++    autoRun();
 +  });
++  $("year").addEventListener("input", () => { $("year").dataset.set = "1"; updateYear(); });
++  $("year").addEventListener("change", () => autoRun({ delay: 150 }));
++  $("year-prev").addEventListener("click", () => stepYear(-1));
++  $("year-next").addEventListener("click", () => stepYear(1));
++  document.querySelectorAll("#limit-toggle button").forEach((b) => b.addEventListener("click", () => { setLimit(b.dataset.limit); autoRun(); }));
 +  $("severity").addEventListener("input", updateSeverity);
-+  document.querySelectorAll("#metric-toggle button").forEach((b) => b.addEventListener("click", () => setMetric(b.dataset.metric)));
++  $("severity").addEventListener("change", () => autoRun({ delay: 150 }));
++  $("periods").addEventListener("change", () => autoRun());
++  $("forecast-model").addEventListener("change", () => autoRun());
++  document.querySelectorAll("#metric-toggle button").forEach((b) => b.addEventListener("click", () => { setMetric(b.dataset.metric); autoRun(); }));
 +  const search = $("product-search");
 +  search.addEventListener("focus", () => searchProducts());
 +  search.addEventListener("input", () => { clearTimeout(suggestTimer); suggestTimer = setTimeout(searchProducts, 180); });
@@ -5471,7 +5731,7 @@
 +      chooseSuggestion(suggestActive >= 0 ? suggestActive : 0);
 +    } else if (event.key === "Escape") openSuggest(false);
 +  });
-+  $("product-clear").addEventListener("click", () => setProduct(null));
++  $("product-clear").addEventListener("click", () => { setProduct(null); autoRun(); });
 +  $("csv-btn").addEventListener("click", downloadCsv);
 +  $("link-btn").addEventListener("click", async () => {
 +    try { await navigator.clipboard.writeText(location.href); setStatus("Link copied", "ok"); } catch (e) { setStatus("Copy the address bar to share", ""); }
