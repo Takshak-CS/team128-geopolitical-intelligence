@@ -209,16 +209,16 @@ body{background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,'
     <div class="panel-title">What our system will analyze</div>
     <div class="three-col">
       <div>
+        <span class="agent-pill pill-sp">Soft Power</span>
+        <p style="font-size:12px;color:var(--muted);margin-top:8px;line-height:1.5">Influence network graph — who clusters with Russia, who shifted to the Western bloc, and Ukraine's rising soft-power score since 2022.</p>
+      </div>
+      <div>
         <span class="agent-pill pill-ps">Policy Stance</span>
         <p style="font-size:12px;color:var(--muted);margin-top:8px;line-height:1.5">UN GA voting alignment matrix — hidden abstainers, bloc fractures, India's strategic ambiguity, China-Russia vote overlap.</p>
       </div>
       <div>
         <span class="agent-pill pill-tr">Trade Intelligence</span>
         <p style="font-size:12px;color:var(--muted);margin-top:8px;line-height:1.5">Energy trade rerouting — EU energy dependency collapse, Russia→India/China pivot, Black Sea grain corridor disruption.</p>
-      </div>
-      <div>
-        <span class="agent-pill pill-sp">Soft Power</span>
-        <p style="font-size:12px;color:var(--muted);margin-top:8px;line-height:1.5">Influence network graph — who clusters with Russia, who shifted to the Western bloc, and Ukraine's rising soft-power score since 2022.</p>
       </div>
     </div>
     <div style="margin-top:12px">
@@ -235,11 +235,52 @@ body{background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,'
 </section>
 
 <!-- ═══════════════════════════════════════════════════════
-     SECTION 1 — POLICY STANCE / UN VOTING
+     SECTION 1 — SOFT POWER NETWORK
 ════════════════════════════════════════════════════════ -->
 <section class="section" id="sec-1">
   <div class="step-header">
-    <div class="step-num">Step 1 · Policy Stance Agent <span class="agent-pill pill-ps">Policy Stance</span></div>
+    <div class="step-num">Step 1 · Soft Power Agent <span class="agent-pill pill-sp">Soft Power</span></div>
+    <h2 class="step-h2">Global Influence Network<br>Post-February 2022</h2>
+    <p class="step-desc">The Soft Power Agent models 226 nations as nodes in a weighted influence graph. After the invasion, the network fractured along a clear fault line — visualized below using GGE baseline scores, UN GA co-voting, and diplomatic event frequency.</p>
+  </div>
+
+  <div class="stat-grid">
+    <div class="stat-tile"><div class="stat-num" style="color:#f87171">-38</div><div class="stat-label">Russia GGE Score Drop</div><div class="stat-delta up">▼ 2022–2024</div></div>
+    <div class="stat-tile"><div class="stat-num" style="color:#4ade80">+29</div><div class="stat-label">Ukraine GGE Score Rise</div><div class="stat-delta down">▲ Sympathy + Aid</div></div>
+    <div class="stat-tile"><div class="stat-num" style="color:#67e8f9">67</div><div class="stat-label">Nations in Western Bloc</div><div class="stat-delta neu">+14 from 2021</div></div>
+    <div class="stat-tile"><div class="stat-num" style="color:#fbbf24">32</div><div class="stat-label">Nations Abstained</div><div class="stat-delta neu">Strategic ambiguity</div></div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Influence Network — Bloc Realignment (Force-Directed Graph)</div>
+    <svg id="network-svg" viewBox="0 0 900 420"></svg>
+    <p style="font-size:11px;color:var(--muted);margin-top:10px">Node size = GGE influence score. Edge weight = UN GA co-voting similarity ≥ 0.65. Color = detected geopolitical bloc.</p>
+  </div>
+
+  <div class="two-col">
+    <div class="panel">
+      <div class="panel-title">GGE Score Change 2021→2024</div>
+      <div class="chart-box"><canvas id="chart-gge"></canvas></div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">Bloc Membership Shift</div>
+      <div class="chart-box"><canvas id="chart-bloc"></canvas></div>
+    </div>
+  </div>
+
+  <div class="bottom-nav">
+    <button class="bnav-btn" onclick="goTo(0)">← Back</button>
+    <span class="bnav-step">Step 2 of 7</span>
+    <button class="bnav-btn primary" onclick="goTo(2)">Policy Stance →</button>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════
+     SECTION 2 — POLICY STANCE / UN VOTING
+════════════════════════════════════════════════════════ -->
+<section class="section" id="sec-2">
+  <div class="step-header">
+    <div class="step-num">Step 2 · Policy Stance Agent <span class="agent-pill pill-ps">Policy Stance</span></div>
     <h2 class="step-h2">UN GA Voting Alignment<br>& Diplomatic Fault Lines</h2>
     <p class="step-desc">The Policy Stance Agent parsed 7 emergency UN GA resolutions on Ukraine (2022–2024), revealing bloc fractures invisible in official statements — including India's consistent abstention and China's silent alignment with Russia.</p>
   </div>
@@ -294,18 +335,18 @@ body{background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,'
   </div>
 
   <div class="bottom-nav">
-    <button class="bnav-btn" onclick="goTo(0)">← Back</button>
-    <span class="bnav-step">Step 2 of 7</span>
-    <button class="bnav-btn primary" onclick="goTo(2)">Trade Intelligence →</button>
+    <button class="bnav-btn" onclick="goTo(1)">← Soft Power</button>
+    <span class="bnav-step">Step 3 of 7</span>
+    <button class="bnav-btn primary" onclick="goTo(3)">Trade Intelligence →</button>
   </div>
 </section>
 
 <!-- ═══════════════════════════════════════════════════════
-     SECTION 2 — TRADE INTELLIGENCE
+     SECTION 3 — TRADE INTELLIGENCE
 ════════════════════════════════════════════════════════ -->
-<section class="section" id="sec-2">
+<section class="section" id="sec-3">
   <div class="step-header">
-    <div class="step-num">Step 2 · Trade Intelligence Agent <span class="agent-pill pill-tr">Trade</span></div>
+    <div class="step-num">Step 3 · Trade Intelligence Agent <span class="agent-pill pill-tr">Trade</span></div>
     <h2 class="step-h2">Global Trade Realignment<br>Energy, Grain & Arms Flows</h2>
     <p class="step-desc">The Trade Agent analyzed BACI 1995–2024 (HS-2 commodity level, 226 economies) to map the most dramatic trade rerouting in the post-Cold War era — Russia pivoting East, Europe pivoting to LNG, Ukraine grain corridors collapsing.</p>
   </div>
@@ -334,48 +375,7 @@ body{background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,'
   </div>
 
   <div class="bottom-nav">
-    <button class="bnav-btn" onclick="goTo(1)">← Policy Stance</button>
-    <span class="bnav-step">Step 3 of 7</span>
-    <button class="bnav-btn primary" onclick="goTo(3)">Soft Power →</button>
-  </div>
-</section>
-
-<!-- ═══════════════════════════════════════════════════════
-     SECTION 3 — SOFT POWER NETWORK
-════════════════════════════════════════════════════════ -->
-<section class="section" id="sec-3">
-  <div class="step-header">
-    <div class="step-num">Step 3 · Soft Power Agent <span class="agent-pill pill-sp">Soft Power</span></div>
-    <h2 class="step-h2">Global Influence Network<br>Post-February 2022</h2>
-    <p class="step-desc">The Soft Power Agent models 226 nations as nodes in a weighted influence graph. After the invasion, the network fractured along a clear fault line — visualized below using GGE baseline scores, UN GA co-voting, and diplomatic event frequency.</p>
-  </div>
-
-  <div class="stat-grid">
-    <div class="stat-tile"><div class="stat-num" style="color:#f87171">-38</div><div class="stat-label">Russia GGE Score Drop</div><div class="stat-delta up">▼ 2022–2024</div></div>
-    <div class="stat-tile"><div class="stat-num" style="color:#4ade80">+29</div><div class="stat-label">Ukraine GGE Score Rise</div><div class="stat-delta down">▲ Sympathy + Aid</div></div>
-    <div class="stat-tile"><div class="stat-num" style="color:#67e8f9">67</div><div class="stat-label">Nations in Western Bloc</div><div class="stat-delta neu">+14 from 2021</div></div>
-    <div class="stat-tile"><div class="stat-num" style="color:#fbbf24">32</div><div class="stat-label">Nations Abstained</div><div class="stat-delta neu">Strategic ambiguity</div></div>
-  </div>
-
-  <div class="panel">
-    <div class="panel-title">Influence Network — Bloc Realignment (Force-Directed Graph)</div>
-    <svg id="network-svg" viewBox="0 0 900 420"></svg>
-    <p style="font-size:11px;color:var(--muted);margin-top:10px">Node size = GGE influence score. Edge weight = UN GA co-voting similarity ≥ 0.65. Color = detected geopolitical bloc.</p>
-  </div>
-
-  <div class="two-col">
-    <div class="panel">
-      <div class="panel-title">GGE Score Change 2021→2024</div>
-      <div class="chart-box"><canvas id="chart-gge"></canvas></div>
-    </div>
-    <div class="panel">
-      <div class="panel-title">Bloc Membership Shift</div>
-      <div class="chart-box"><canvas id="chart-bloc"></canvas></div>
-    </div>
-  </div>
-
-  <div class="bottom-nav">
-    <button class="bnav-btn" onclick="goTo(2)">← Trade</button>
+    <button class="bnav-btn" onclick="goTo(2)">← Policy Stance</button>
     <span class="bnav-step">Step 4 of 7</span>
     <button class="bnav-btn primary" onclick="goTo(4)">Event Cascade →</button>
   </div>
@@ -659,6 +659,11 @@ body{background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,'
   </div>
 
   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-bottom:28px">
+    <div class="panel" style="border-color:rgba(167,139,250,.25)">
+      <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#a78bfa;margin-bottom:10px">Soft Power</div>
+      <p style="font-size:13px;font-weight:700;margin-bottom:6px">Russia's isolation is real but partial</p>
+      <p style="font-size:12px;color:var(--muted);line-height:1.5">Western bloc hardened (+14 nations). But Global South held — Africa-Russia soft-power ties dropped only 11%, not the expected 35%. Russia retains meaningful influence across 80+ nations.</p>
+    </div>
     <div class="panel" style="border-color:rgba(245,185,66,.25)">
       <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#fbbf24;margin-bottom:10px">Policy Stance</div>
       <p style="font-size:13px;font-weight:700;margin-bottom:6px">The world is not "with us or against us"</p>
@@ -668,11 +673,6 @@ body{background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,'
       <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#34d399;margin-bottom:10px">Trade Intelligence</div>
       <p style="font-size:13px;font-weight:700;margin-bottom:6px">Sanctions redirected, not stopped, Russian trade</p>
       <p style="font-size:12px;color:var(--muted);line-height:1.5">Russia replaced 78% of sanctioned trade within 18 months via India, China, UAE, and Turkey. The economic pressure campaign created pain but not collapse — BACI data makes this unambiguous.</p>
-    </div>
-    <div class="panel" style="border-color:rgba(167,139,250,.25)">
-      <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#a78bfa;margin-bottom:10px">Soft Power</div>
-      <p style="font-size:13px;font-weight:700;margin-bottom:6px">Russia's isolation is real but partial</p>
-      <p style="font-size:12px;color:var(--muted);line-height:1.5">Western bloc hardened (+14 nations). But Global South held — Africa-Russia soft-power ties dropped only 11%, not the expected 35%. Russia retains meaningful influence across 80+ nations.</p>
     </div>
     <div class="panel" style="border-color:rgba(244,114,182,.25)">
       <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#f472b6;margin-bottom:10px">Events</div>
@@ -705,7 +705,7 @@ function buildSteps() {
   for (let i = 0; i < TOTAL; i++) {
     const d = document.createElement('div');
     d.className = 'nav-step' + (i === 0 ? ' active' : '');
-    d.title = ['Intro','Policy','Trade','Soft Power','Events','Findings','Validation','Conclusion'][i];
+    d.title = ['Intro','Soft Power','Policy','Trade','Events','Findings','Validation','Conclusion'][i];
     d.onclick = () => goTo(i);
     c.appendChild(d);
   }
@@ -719,10 +719,9 @@ function goTo(n) {
   current = n;
   document.getElementById('sec-'+n).classList.add('active');
   window.scrollTo({top: 0, behavior: 'smooth'});
-  // sec1=Policy(was sec2), sec2=Trade(was sec3), sec3=SoftPower(was sec1), sec4=Events
-  if (n === 1 && !window._chartsBuilt1) { buildSection2Charts(); window._chartsBuilt1 = true; }
-  if (n === 2 && !window._chartsBuilt2) { buildSection3Charts(); window._chartsBuilt2 = true; }
-  if (n === 3 && !window._chartsBuilt3) { buildSection1Charts(); window._chartsBuilt3 = true; }
+  if (n === 1 && !window._chartsBuilt1) { buildSection1Charts(); window._chartsBuilt1 = true; }
+  if (n === 2 && !window._chartsBuilt2) { buildSection2Charts(); window._chartsBuilt2 = true; }
+  if (n === 3 && !window._chartsBuilt3) { buildSection3Charts(); window._chartsBuilt3 = true; }
   if (n === 4 && !window._chartsBuilt4) { buildSection4Charts(); window._chartsBuilt4 = true; }
   if (n === 5 && !window._chartsBuilt5) { buildSection5Charts(); window._chartsBuilt5 = true; }
   if (n === 6 && !window._chartsBuilt6) { buildSection6Charts(); window._chartsBuilt6 = true; }
