@@ -214,3 +214,7 @@ if STATIC_DIR.exists():
     @app.get("/brochure", include_in_schema=False)
     async def brochure() -> FileResponse:
         return _page("brochure.html")
+
+    @app.get("/casestudy", include_in_schema=False)
+    async def casestudy() -> FileResponse:
+        return _page("casestudy.html")

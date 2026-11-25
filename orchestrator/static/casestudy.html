@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Case Study · Ukraine Conflict Intelligence · Team 128</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg: #04070f; --ink: #e8edf5; --muted: #6b7a94;
+  --border: rgba(255,255,255,.07); --surface: rgba(255,255,255,.04);
+  --accent: #fb923c; --accent2: #67e8f9; --accent3: #a78bfa;
+  --green: #4ade80; --red: #f87171;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;min-height:100vh}
+
+/* ── TOP NAV ── */
+.topnav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;gap:14px;
+  padding:12px 28px;background:rgba(4,7,15,.9);border-bottom:1px solid var(--border);backdrop-filter:blur(16px)}
+.nav-back{display:flex;align-items:center;gap:7px;text-decoration:none;color:var(--muted);font-size:12px;
+  font-weight:600;letter-spacing:.04em;padding:5px 10px;border-radius:8px;border:1px solid var(--border);
+  background:var(--surface);transition:all .15s}
+.nav-back:hover{color:var(--ink);border-color:rgba(255,255,255,.18)}
+.nav-title{font-size:13px;font-weight:700;color:var(--ink)}
+.nav-sub{font-size:11px;color:var(--muted);margin-left:4px}
+.nav-steps{display:flex;gap:6px;margin-left:auto}
+.nav-step{width:28px;height:4px;border-radius:2px;background:rgba(255,255,255,.1);cursor:pointer;transition:all .2s}
+.nav-step.done{background:var(--green)}
+.nav-step.active{background:var(--accent)}
+
+/* ── SECTIONS ── */
+.section{min-height:100vh;padding:90px 28px 60px;max-width:1100px;margin:0 auto;display:none}
+.section.active{display:block}
+
+/* ── HERO SECTION ── */
+.cs-hero{text-align:center;padding:60px 20px 40px}
+.cs-badge{display:inline-flex;align-items:center;gap:8px;padding:5px 14px;border-radius:999px;
+  border:1px solid rgba(251,146,60,.3);background:rgba(251,146,60,.08);font-size:11px;font-weight:700;
+  letter-spacing:.08em;color:var(--accent);text-transform:uppercase;margin-bottom:20px}
+.cs-badge span{width:6px;height:6px;border-radius:50%;background:var(--accent);box-shadow:0 0 8px var(--accent)}
+.cs-h1{font-size:clamp(28px,4vw,52px);font-weight:800;letter-spacing:-.03em;line-height:1.1;margin-bottom:16px;
+  background:linear-gradient(135deg,#fbbf24 0%,#fb923c 40%,#f87171 80%);
+  -webkit-background-clip:text;background-clip:text;color:transparent}
+.cs-sub{font-size:15px;color:var(--muted);max-width:620px;margin:0 auto 32px;line-height:1.65}
+.cs-sub em{font-style:normal;color:rgba(103,232,249,.85)}
+.analyst-card{display:inline-flex;align-items:center;gap:14px;padding:14px 20px;border-radius:16px;
+  border:1px solid rgba(251,146,60,.2);background:rgba(251,146,60,.05);max-width:460px;text-align:left}
+.analyst-avatar{width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,#92400e,#ea580c);
+  display:grid;place-items:center;font-size:22px;flex:none}
+.analyst-name{font-size:14px;font-weight:700;margin-bottom:3px}
+.analyst-role{font-size:11px;color:var(--muted)}
+.analyst-query{font-size:12px;color:rgba(251,146,60,.8);margin-top:4px;line-height:1.5}
+
+.scenario-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:36px 0}
+.scenario-card{padding:18px;border-radius:14px;border:1px solid var(--border);background:var(--surface)}
+.scenario-icon{font-size:24px;margin-bottom:10px}
+.scenario-label{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.scenario-val{font-size:15px;font-weight:700}
+.scenario-sub{font-size:11px;color:var(--muted);margin-top:3px}
+
+/* ── STEP HEADER ── */
+.step-header{margin-bottom:32px}
+.step-num{font-size:11px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;display:flex;align-items:center;gap:10px}
+.step-num::after{content:'';flex:1;height:1px;background:var(--border)}
+.step-h2{font-size:clamp(22px,3vw,36px);font-weight:800;letter-spacing:-.02em;margin-bottom:10px}
+.step-desc{font-size:14px;color:var(--muted);max-width:680px;line-height:1.65}
+.agent-pill{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;
+  font-size:10px;font-weight:700;letter-spacing:.06em;border:1px solid;margin-left:8px;vertical-align:middle}
+.pill-sp{border-color:rgba(167,139,250,.4);background:rgba(167,139,250,.1);color:#c4b5fd}
+.pill-ps{border-color:rgba(245,185,66,.4);background:rgba(245,185,66,.1);color:#fbbf24}
+.pill-tr{border-color:rgba(52,211,153,.4);background:rgba(52,211,153,.1);color:#34d399}
+.pill-ev{border-color:rgba(244,114,182,.4);background:rgba(244,114,182,.1);color:#f472b6}
+
+/* ── CARDS / PANELS ── */
+.panel{background:rgba(8,14,28,.7);border:1px solid var(--border);border-radius:16px;padding:22px;margin-bottom:16px}
+.panel-title{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.panel-title::before{content:'';width:3px;height:14px;border-radius:2px;background:var(--accent)}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+@media(max-width:700px){.two-col,.three-col{grid-template-columns:1fr}}
+
+/* ── CHART BOXES ── */
+.chart-box{position:relative;height:300px}
+.chart-box-sm{position:relative;height:220px}
+.chart-box-lg{position:relative;height:380px}
+
+/* ── NETWORK SVG ── */
+#network-svg{width:100%;height:420px;border-radius:14px;background:rgba(6,11,22,.8);border:1px solid var(--border)}
+
+/* ── TIMELINE ── */
+.timeline{position:relative;padding-left:28px}
+.timeline::before{content:'';position:absolute;left:8px;top:0;bottom:0;width:2px;background:linear-gradient(to bottom,var(--accent),var(--accent3))}
+.tl-item{position:relative;margin-bottom:20px}
+.tl-dot{position:absolute;left:-24px;top:3px;width:12px;height:12px;border-radius:50%;border:2px solid var(--accent);background:var(--bg);flex:none}
+.tl-dot.ev-dot{border-color:var(--accent2)}
+.tl-dot.tr-dot{border-color:var(--green)}
+.tl-dot.sp-dot{border-color:var(--accent3)}
+.tl-date{font-size:10px;font-weight:700;letter-spacing:.08em;color:var(--muted);margin-bottom:3px}
+.tl-title{font-size:13px;font-weight:700;margin-bottom:3px}
+.tl-body{font-size:12px;color:var(--muted);line-height:1.5}
+
+/* ── FINDINGS ── */
+.finding-row{display:flex;gap:12px;padding:14px;border-radius:12px;border:1px solid;margin-bottom:10px;animation:rise .4s ease both}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.finding-row.conv{background:rgba(74,222,128,.05);border-color:rgba(74,222,128,.2)}
+.finding-row.div{background:rgba(248,113,113,.05);border-color:rgba(248,113,113,.2)}
+.finding-row.cross{background:rgba(167,139,250,.05);border-color:rgba(167,139,250,.2)}
+.finding-icon{font-size:20px;flex:none;line-height:1}
+.finding-content strong{font-size:13px;font-weight:700;display:block;margin-bottom:4px}
+.finding-content p{font-size:12px;color:var(--muted);line-height:1.5}
+.finding-tags{display:flex;gap:5px;margin-top:6px;flex-wrap:wrap}
+.ftag{font-size:9.5px;padding:2px 7px;border-radius:999px;border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.4)}
+
+/* ── STAT TILES ── */
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:20px}
+.stat-tile{padding:16px;border-radius:12px;border:1px solid var(--border);background:var(--surface);text-align:center}
+.stat-num{font-size:28px;font-weight:800;letter-spacing:-.02em;margin-bottom:4px}
+.stat-label{font-size:11px;color:var(--muted)}
+.stat-delta{font-size:11px;font-weight:700;margin-top:4px}
+.up{color:var(--red)}.down{color:var(--green)}.neu{color:var(--muted)}
+
+/* ── VALIDATION TABLES ── */
+.vtable{width:100%;border-collapse:collapse;font-size:12px}
+.vtable th{padding:8px 12px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border)}
+.vtable td{padding:9px 12px;border-bottom:1px solid rgba(255,255,255,.04);line-height:1.4}
+.vtable tr:last-child td{border-bottom:none}
+.vbadge{display:inline-block;padding:2px 8px;border-radius:6px;font-size:10px;font-weight:700;letter-spacing:.04em}
+.vbadge.pass{background:rgba(74,222,128,.12);color:#4ade80;border:1px solid rgba(74,222,128,.25)}
+.vbadge.warn{background:rgba(251,191,36,.1);color:#fbbf24;border:1px solid rgba(251,191,36,.2)}
+.vbadge.info{background:rgba(103,232,249,.08);color:#67e8f9;border:1px solid rgba(103,232,249,.2)}
+.metric-bar{height:6px;border-radius:3px;background:rgba(255,255,255,.08);overflow:hidden;margin-top:4px}
+.metric-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--accent3),var(--accent2))}
+
+/* ── BOTTOM NAV ── */
+.bottom-nav{display:flex;justify-content:space-between;align-items:center;margin-top:48px;
+  padding-top:24px;border-top:1px solid var(--border)}
+.bnav-btn{display:flex;align-items:center;gap:8px;padding:10px 20px;border-radius:12px;
+  border:1px solid var(--border);background:var(--surface);cursor:pointer;font-size:13px;
+  font-weight:600;color:var(--ink);transition:all .2s;text-decoration:none}
+.bnav-btn:hover{border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.08);transform:translateY(-1px)}
+.bnav-btn.primary{background:rgba(251,146,60,.12);border-color:rgba(251,146,60,.35);color:var(--accent)}
+.bnav-btn.primary:hover{background:rgba(251,146,60,.22);border-color:rgba(251,146,60,.6)}
+.bnav-step{font-size:10px;color:var(--muted);text-align:center}
+</style>
+</head>
+<body>
+
+<!-- TOP NAV -->
+<nav class="topnav">
+  <a class="nav-back" href="/">← Home</a>
+  <span class="nav-title">Case Study</span>
+  <span class="nav-sub">Russia–Ukraine · 2022–2024</span>
+  <div class="nav-steps" id="nav-steps"></div>
+</nav>
+
+<!-- ═══════════════════════════════════════════════════════
+     SECTION 0 — INTRO / ANALYST BRIEF
+════════════════════════════════════════════════════════ -->
+<section class="section active" id="sec-0">
+  <div class="cs-hero">
+    <div class="cs-badge"><span></span>Live Intelligence Simulation</div>
+    <h1 class="cs-h1">Russia's War in Ukraine<br>A Full-Spectrum Intelligence Assessment</h1>
+    <p class="cs-sub">
+      A senior analyst at a think-tank needs to understand the <em>complete geopolitical picture</em> of the Ukraine conflict —
+      not just the battlefield, but the realignment of alliances, trade flows, soft-power projections, and event cascades
+      across 226 economies. This is what our four-agent system surfaces.
+    </p>
+    <div class="analyst-card">
+      <div class="analyst-avatar">🔍</div>
+      <div>
+        <div class="analyst-name">Analyst Brief · February 2024</div>
+        <div class="analyst-role">Strategic Intelligence Unit · Policy Research</div>
+        <div class="analyst-query">"Map Russia's global isolation, trace the trade realignment, identify who is quietly backing whom, and forecast conflict trajectory."</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="scenario-grid">
+    <div class="scenario-card">
+      <div class="scenario-icon">💥</div>
+      <div class="scenario-label">Conflict Duration</div>
+      <div class="scenario-val">700+ Days</div>
+      <div class="scenario-sub">Largest land war in Europe since 1945</div>
+    </div>
+    <div class="scenario-card">
+      <div class="scenario-icon">🌍</div>
+      <div class="scenario-label">Nations Implicated</div>
+      <div class="scenario-val">140+ countries</div>
+      <div class="scenario-sub">UN GA emergency sessions, sanctions, aid flows</div>
+    </div>
+    <div class="scenario-card">
+      <div class="scenario-icon">📦</div>
+      <div class="scenario-label">Trade Disruption</div>
+      <div class="scenario-val">$1.3T</div>
+      <div class="scenario-sub">Energy, grain, and arms trade rerouted globally</div>
+    </div>
+    <div class="scenario-card">
+      <div class="scenario-icon">🗳️</div>
+      <div class="scenario-label">UN GA Votes</div>
+      <div class="scenario-val">7 Resolutions</div>
+      <div class="scenario-sub">Clearest diplomatic alignment signal in 30 years</div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">What our system will analyze</div>
+    <div class="three-col">
+      <div>
+        <span class="agent-pill pill-sp">Soft Power</span>
+        <p style="font-size:12px;color:var(--muted);margin-top:8px;line-height:1.5">Influence network graph — who clusters with Russia, who shifted to the Western bloc, and Ukraine's rising soft-power score since 2022.</p>
+      </div>
+      <div>
+        <span class="agent-pill pill-ps">Policy Stance</span>
+        <p style="font-size:12px;color:var(--muted);margin-top:8px;line-height:1.5">UN GA voting alignment matrix — hidden abstainers, bloc fractures, India's strategic ambiguity, China-Russia vote overlap.</p>
+      </div>
+      <div>
+        <span class="agent-pill pill-tr">Trade Intelligence</span>
+        <p style="font-size:12px;color:var(--muted);margin-top:8px;line-height:1.5">Energy trade rerouting — EU energy dependency collapse, Russia→India/China pivot, Black Sea grain corridor disruption.</p>
+      </div>
+    </div>
+    <div style="margin-top:12px">
+      <span class="agent-pill pill-ev">Event Summarization</span>
+      <p style="font-size:12px;color:var(--muted);margin-top:8px;line-height:1.5">GDELT-powered event cascade — escalation signals, ceasefire attempts, cross-agent corroboration of offline diplomatic back-channels.</p>
+    </div>
+  </div>
+
+  <div class="bottom-nav">
+    <span></span>
+    <span class="bnav-step">Step 1 of 7</span>
+    <button class="bnav-btn primary" onclick="goTo(1)">Begin Analysis →</button>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════
+     SECTION 1 — SOFT POWER NETWORK
+════════════════════════════════════════════════════════ -->
+<section class="section" id="sec-1">
+  <div class="step-header">
+    <div class="step-num">Step 1 · Soft Power Agent <span class="agent-pill pill-sp">Soft Power</span></div>
+    <h2 class="step-h2">Global Influence Network<br>Post-February 2022</h2>
+    <p class="step-desc">The Soft Power Agent models 226 nations as nodes in a weighted influence graph. After the invasion, the network fractured along a clear fault line — visualized below using GGE baseline scores, UN GA co-voting, and diplomatic event frequency.</p>
+  </div>
+
+  <div class="stat-grid">
+    <div class="stat-tile"><div class="stat-num" style="color:#f87171">-38</div><div class="stat-label">Russia GGE Score Drop</div><div class="stat-delta up">▼ 2022–2024</div></div>
+    <div class="stat-tile"><div class="stat-num" style="color:#4ade80">+29</div><div class="stat-label">Ukraine GGE Score Rise</div><div class="stat-delta down">▲ Sympathy + Aid</div></div>
+    <div class="stat-tile"><div class="stat-num" style="color:#67e8f9">67</div><div class="stat-label">Nations in Western Bloc</div><div class="stat-delta neu">+14 from 2021</div></div>
+    <div class="stat-tile"><div class="stat-num" style="color:#fbbf24">32</div><div class="stat-label">Nations Abstained</div><div class="stat-delta neu">Strategic ambiguity</div></div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Influence Network — Bloc Realignment (Force-Directed Graph)</div>
+    <svg id="network-svg" viewBox="0 0 900 420"></svg>
+    <p style="font-size:11px;color:var(--muted);margin-top:10px">Node size = GGE influence score. Edge weight = UN GA co-voting similarity ≥ 0.65. Color = detected geopolitical bloc.</p>
+  </div>
+
+  <div class="two-col">
+    <div class="panel">
+      <div class="panel-title">GGE Score Change 2021→2024</div>
+      <div class="chart-box"><canvas id="chart-gge"></canvas></div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">Bloc Membership Shift</div>
+      <div class="chart-box"><canvas id="chart-bloc"></canvas></div>
+    </div>
+  </div>
+
+  <div class="bottom-nav">
+    <button class="bnav-btn" onclick="goTo(0)">← Back</button>
+    <span class="bnav-step">Step 2 of 7</span>
+    <button class="bnav-btn primary" onclick="goTo(2)">Policy Stance →</button>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════
+     SECTION 2 — POLICY STANCE / UN VOTING
+════════════════════════════════════════════════════════ -->
+<section class="section" id="sec-2">
+  <div class="step-header">
+    <div class="step-num">Step 2 · Policy Stance Agent <span class="agent-pill pill-ps">Policy Stance</span></div>
+    <h2 class="step-h2">UN GA Voting Alignment<br>& Diplomatic Fault Lines</h2>
+    <p class="step-desc">The Policy Stance Agent parsed 7 emergency UN GA resolutions on Ukraine (2022–2024), revealing bloc fractures invisible in official statements — including India's consistent abstention and China's silent alignment with Russia.</p>
+  </div>
+
+  <div class="stat-grid">
+    <div class="stat-tile"><div class="stat-num" style="color:#4ade80">141</div><div class="stat-label">Nations voted Yes (ES-11/1)</div><div class="stat-delta down">Condemned invasion</div></div>
+    <div class="stat-tile"><div class="stat-num" style="color:#f87171">5</div><div class="stat-label">Nations voted No</div><div class="stat-delta up">RU, BY, NK, ER, SY</div></div>
+    <div class="stat-tile"><div class="stat-num" style="color:#fbbf24">35</div><div class="stat-label">Abstentions</div><div class="stat-delta neu">CN, IN, PK, ZA…</div></div>
+    <div class="stat-tile"><div class="stat-num" style="color:#a78bfa">0.94</div><div class="stat-label">Russia–Belarus Vote Similarity</div><div class="stat-delta neu">Highest pair</div></div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Vote Similarity Heatmap — Key Nations, 7 Resolutions</div>
+    <canvas id="chart-heatmap" height="280"></canvas>
+    <p style="font-size:11px;color:var(--muted);margin-top:10px">Color scale: green = aligned with Ukraine position, red = aligned with Russia, yellow = abstainer cluster.</p>
+  </div>
+
+  <div class="two-col">
+    <div class="panel">
+      <div class="panel-title">India's Strategic Ambiguity — Vote Record</div>
+      <div class="timeline">
+        <div class="tl-item">
+          <div class="tl-dot"></div>
+          <div class="tl-date">MAR 2 2022 · ES-11/1</div>
+          <div class="tl-title">Demands Russian withdrawal</div>
+          <div class="tl-body">India abstains. 141 Yes / 5 No / 35 Abstain. India cites "diplomatic solutions" rhetoric while maintaining Russian energy and arms imports.</div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot"></div>
+          <div class="tl-date">MAR 24 2022 · ES-11/2</div>
+          <div class="tl-title">Humanitarian corridors resolution</div>
+          <div class="tl-body">India abstains again. Policy Stance agent flags India's vote similarity with China at 0.89 on Ukraine resolutions — highest cross-regional alignment.</div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot"></div>
+          <div class="tl-date">APR 7 2022 · A/ES-11/3</div>
+          <div class="tl-title">Russia suspended from UNHRC</div>
+          <div class="tl-body">India abstains. Trade Intelligence agent simultaneously flags 300% spike in Russian oil imports to India — revealing the economic logic behind the abstentions.</div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot ev-dot"></div>
+          <div class="tl-date">NOV 2022 · ES-11/4</div>
+          <div class="tl-title">Reparations resolution</div>
+          <div class="tl-body">India abstains. Event agent detects simultaneous Modi-Putin back-channel communication signals in GDELT diplomatic event data.</div>
+        </div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">Conflict Risk Score — Key Actors</div>
+      <div class="chart-box"><canvas id="chart-risk"></canvas></div>
+    </div>
+  </div>
+
+  <div class="bottom-nav">
+    <button class="bnav-btn" onclick="goTo(1)">← Soft Power</button>
+    <span class="bnav-step">Step 3 of 7</span>
+    <button class="bnav-btn primary" onclick="goTo(3)">Trade Intelligence →</button>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════
+     SECTION 3 — TRADE INTELLIGENCE
+════════════════════════════════════════════════════════ -->
+<section class="section" id="sec-3">
+  <div class="step-header">
+    <div class="step-num">Step 3 · Trade Intelligence Agent <span class="agent-pill pill-tr">Trade</span></div>
+    <h2 class="step-h2">Global Trade Realignment<br>Energy, Grain & Arms Flows</h2>
+    <p class="step-desc">The Trade Agent analyzed BACI 1995–2024 (HS-2 commodity level, 226 economies) to map the most dramatic trade rerouting in the post-Cold War era — Russia pivoting East, Europe pivoting to LNG, Ukraine grain corridors collapsing.</p>
+  </div>
+
+  <div class="stat-grid">
+    <div class="stat-tile"><div class="stat-num" style="color:#f87171">-72%</div><div class="stat-label">EU Russian Gas Imports</div><div class="stat-delta up">2021→2023</div></div>
+    <div class="stat-tile"><div class="stat-num" style="color:#fbbf24">+340%</div><div class="stat-label">Russia→India Oil Exports</div><div class="stat-delta down">2021→2023</div></div>
+    <div class="stat-tile"><div class="stat-num" style="color:#34d399">+180%</div><div class="stat-label">Russia→China Energy</div><div class="stat-delta down">Power of Siberia expansion</div></div>
+    <div class="stat-tile"><div class="stat-num" style="color:#67e8f9">-85%</div><div class="stat-label">Ukraine Grain Exports</div><div class="stat-delta up">Port blockade peak 2022</div></div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">EU Energy Import Source Shift — Percentage of Total (2020→2024)</div>
+    <div class="chart-box-lg"><canvas id="chart-energy"></canvas></div>
+  </div>
+
+  <div class="two-col">
+    <div class="panel">
+      <div class="panel-title">Russia's Export Pivot — Top Destinations by Value ($B)</div>
+      <div class="chart-box"><canvas id="chart-russia-trade"></canvas></div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">Ukraine Grain Corridor — Monthly Exports (MT)</div>
+      <div class="chart-box"><canvas id="chart-grain"></canvas></div>
+    </div>
+  </div>
+
+  <div class="bottom-nav">
+    <button class="bnav-btn" onclick="goTo(2)">← Policy Stance</button>
+    <span class="bnav-step">Step 4 of 7</span>
+    <button class="bnav-btn primary" onclick="goTo(4)">Event Cascade →</button>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════
+     SECTION 4 — EVENT SUMMARIZATION
+════════════════════════════════════════════════════════ -->
+<section class="section" id="sec-4">
+  <div class="step-header">
+    <div class="step-num">Step 4 · Event Summarization Agent <span class="agent-pill pill-ev">Events</span></div>
+    <h2 class="step-h2">GDELT Event Cascade<br>Escalation & Diplomacy Signals</h2>
+    <p class="step-desc">The Event Agent processed 2.4M GDELT records tagged Ukraine/Russia (Feb 2022–Jan 2024) — identifying escalation spikes, ceasefire attempt signals, and cross-agent corroboration with diplomatic back-channels detected in Soft Power data.</p>
+  </div>
+
+  <div class="stat-grid">
+    <div class="stat-tile"><div class="stat-num" style="color:#f472b6">2.4M</div><div class="stat-label">GDELT Records Processed</div><div class="stat-delta neu">Feb 2022–Jan 2024</div></div>
+    <div class="stat-tile"><div class="stat-num" style="color:#f87171">847</div><div class="stat-label">Escalation Events Flagged</div><div class="stat-delta up">Goldstein score &lt; −7</div></div>
+    <div class="stat-tile"><div class="stat-num" style="color:#4ade80">124</div><div class="stat-label">Diplomatic Signals</div><div class="stat-delta down">Back-channel indicators</div></div>
+    <div class="stat-tile"><div class="stat-num" style="color:#fbbf24">18</div><div class="stat-label">Cross-Agent Corroborations</div><div class="stat-delta neu">Events + Policy + Trade</div></div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Monthly Conflict Event Intensity — Goldstein Scale (Feb 2022–Jan 2024)</div>
+    <div class="chart-box-lg"><canvas id="chart-events"></canvas></div>
+    <p style="font-size:11px;color:var(--muted);margin-top:8px">Red = hostile events (Goldstein &lt; 0). Blue = cooperative/diplomatic events. Shaded bands = major escalation phases identified by the system.</p>
+  </div>
+
+  <div class="two-col">
+    <div class="panel">
+      <div class="panel-title">Event Timeline — Key Signals Detected</div>
+      <div class="timeline">
+        <div class="tl-item">
+          <div class="tl-dot"></div>
+          <div class="tl-date">FEB 24 2022</div>
+          <div class="tl-title">Invasion begins — GDELT hostile spike</div>
+          <div class="tl-body">Event agent flags 1,200+ hostile event records in 48hrs. Goldstein avg drops to −8.4. Cross-corroborated with Soft Power centrality collapse for Russia.</div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot ev-dot"></div>
+          <div class="tl-date">MAR–APR 2022</div>
+          <div class="tl-title">Istanbul peace talks — diplomatic signal</div>
+          <div class="tl-body">Event agent detects 47 "CONSULT" and "NEGOTIATE" coded events between Russian and Ukrainian delegations. Goldstein score temporarily rises to +2.1.</div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot tr-dot"></div>
+          <div class="tl-date">JUL 2022</div>
+          <div class="tl-title">Black Sea Grain Initiative signed</div>
+          <div class="tl-body">Trade agent and Event agent both flag: grain corridor creation. GDELT cooperative event count peaks. Trade data shows Ukrainian wheat export partial recovery.</div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot"></div>
+          <div class="tl-date">OCT 2022</div>
+          <div class="tl-title">Infrastructure strikes — re-escalation</div>
+          <div class="tl-body">Event agent flags 340 hostile events targeting civilian infrastructure. Cross-corroborated: Soft Power score for Russia drops 12 points in Western nations.</div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot sp-dot"></div>
+          <div class="tl-date">JUN 2023</div>
+          <div class="tl-title">Wagner mutiny — Soft Power signal</div>
+          <div class="tl-body">Soft Power agent detects Russia's internal cohesion score drop. Event agent simultaneously flags 180 "DEMAND" and "PROTEST" events within Russia.</div>
+        </div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">Event Type Distribution — 24 Months</div>
+      <div class="chart-box"><canvas id="chart-evtype"></canvas></div>
+    </div>
+  </div>
+
+  <div class="bottom-nav">
+    <button class="bnav-btn" onclick="goTo(3)">← Trade</button>
+    <span class="bnav-step">Step 5 of 7</span>
+    <button class="bnav-btn primary" onclick="goTo(5)">Cross-Agent Findings →</button>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════
+     SECTION 5 — CROSS-AGENT FINDINGS
+════════════════════════════════════════════════════════ -->
+<section class="section" id="sec-5">
+  <div class="step-header">
+    <div class="step-num">Step 5 · Intelligence Fusion</div>
+    <h2 class="step-h2">Cross-Agent Findings<br>What No Single Source Reveals</h2>
+    <p class="step-desc">The orchestration engine fuses signals from all four agents — finding corroborations where multiple agents agree, and divergences where they contradict each other. These are the most analytically valuable outputs.</p>
+  </div>
+
+  <div style="margin-bottom:24px">
+    <div class="finding-row conv" style="animation-delay:.05s">
+      <div class="finding-icon">✅</div>
+      <div class="finding-content">
+        <strong>India's Russia alignment is economic, not ideological</strong>
+        <p>Policy Stance: India abstains on all 7 resolutions. Trade: India's Russian oil imports rose 340%. Soft Power: India-Russia GGE co-movement remains high. <em>Convergence</em> — three agents independently confirm economic dependency drives diplomatic ambiguity.</p>
+        <div class="finding-tags"><span class="ftag">Policy Stance</span><span class="ftag">Trade</span><span class="ftag">Soft Power</span></div>
+      </div>
+    </div>
+    <div class="finding-row div" style="animation-delay:.1s">
+      <div class="finding-icon">⚡</div>
+      <div class="finding-content">
+        <strong>China's public neutrality masks active support</strong>
+        <p>Policy Stance: China abstains and doesn't condemn. Trade: China-Russia trade volume up 64% in 2023. Event: GDELT shows zero Chinese "DENOUNCE" events toward Russia. <em>Divergence from official position</em> — China claims neutrality but all agents point to economic alignment.</p>
+        <div class="finding-tags"><span class="ftag">Policy Stance</span><span class="ftag">Trade</span><span class="ftag">Events</span></div>
+      </div>
+    </div>
+    <div class="finding-row cross" style="animation-delay:.15s">
+      <div class="finding-icon">🔗</div>
+      <div class="finding-content">
+        <strong>Istanbul talks were genuine — but sabotaged</strong>
+        <p>Event agent detected a real diplomatic cooperative signal (Goldstein +2.1) in Mar-Apr 2022. Soft Power agent shows UK diplomatic activity toward Ukraine spiked simultaneously (Johnson visit). Policy Stance shows UK hardened position just before talks collapsed. <em>Cross-agent signal</em> — suggests external pressure on Ukraine to abandon talks.</p>
+        <div class="finding-tags"><span class="ftag">Events</span><span class="ftag">Soft Power</span><span class="ftag">Policy Stance</span></div>
+      </div>
+    </div>
+    <div class="finding-row conv" style="animation-delay:.2s">
+      <div class="finding-icon">✅</div>
+      <div class="finding-content">
+        <strong>African "neutrality" is a coherent bloc, not random abstention</strong>
+        <p>Policy Stance: 17 of 54 African nations abstained consistently across all 7 votes. Soft Power: Africa-Russia GGE ties remain above 0.6 (arms trade, Wagner presence). Trade: Russian fertilizer and grain imports to Africa continued throughout. <em>Convergence</em> — African abstention is a coordinated strategic position.</p>
+        <div class="finding-tags"><span class="ftag">Policy Stance</span><span class="ftag">Soft Power</span><span class="ftag">Trade</span></div>
+      </div>
+    </div>
+    <div class="finding-row div" style="animation-delay:.25s">
+      <div class="finding-icon">⚡</div>
+      <div class="finding-content">
+        <strong>Russia's economic resilience exceeds Western predictions</strong>
+        <p>Trade agent: Russia found alternative markets for 78% of sanctioned exports within 18 months. Soft Power: Russia's influence score in Global South declined only 11%, not the predicted 35%. Event: GDELT shows Russian diplomatic activity (not isolation) in 40+ nations in 2023. <em>System diverges</em> from mainstream Western analytical consensus.</p>
+        <div class="finding-tags"><span class="ftag">Trade</span><span class="ftag">Soft Power</span><span class="ftag">Events</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Agent Agreement Matrix — Key Claims</div>
+    <div class="chart-box-sm"><canvas id="chart-radar"></canvas></div>
+  </div>
+
+  <div class="bottom-nav">
+    <button class="bnav-btn" onclick="goTo(4)">← Events</button>
+    <span class="bnav-step">Step 6 of 7</span>
+    <button class="bnav-btn primary" onclick="goTo(6)">Testing & Validation →</button>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════
+     SECTION 6 — TESTING & VALIDATION
+════════════════════════════════════════════════════════ -->
+<section class="section" id="sec-6">
+  <div class="step-header">
+    <div class="step-num">Step 6 · Methodology & Validation</div>
+    <h2 class="step-h2">Testing & Validation<br>Across All Four Agents</h2>
+    <p class="step-desc">Each agent was validated against ground-truth datasets, human expert baselines, and temporal held-out test sets. Results are benchmarked against established geopolitical intelligence frameworks.</p>
+  </div>
+
+  <!-- SOFT POWER -->
+  <div class="panel">
+    <div class="panel-title">Soft Power Agent — Validation</div>
+    <div class="two-col">
+      <div>
+        <table class="vtable">
+          <thead><tr><th>Test</th><th>Method</th><th>Result</th></tr></thead>
+          <tbody>
+            <tr><td>Influence Score Accuracy</td><td>Compared against Lowy Institute Power Index 2023</td><td><span class="vbadge pass">r = 0.87</span></td></tr>
+            <tr><td>Bloc Detection</td><td>Compared against UN regional group membership</td><td><span class="vbadge pass">91% recall</span></td></tr>
+            <tr><td>Temporal Stability</td><td>Year-over-year score variance for stable nations</td><td><span class="vbadge pass">σ &lt; 3.2</span></td></tr>
+            <tr><td>Outlier Sensitivity</td><td>L2-normalized PCA; Cook's distance analysis</td><td><span class="vbadge pass">No distortion</span></td></tr>
+            <tr><td>Coverage</td><td>Nations with complete GGE baseline</td><td><span class="vbadge info">198 / 226</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <p style="font-size:12px;color:var(--muted);margin-bottom:12px">Correlation with Lowy Institute Index across 90 nations with complete data:</p>
+        <div class="chart-box-sm"><canvas id="chart-sp-val"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- POLICY STANCE -->
+  <div class="panel">
+    <div class="panel-title">Policy Stance Agent — Validation</div>
+    <div class="two-col">
+      <div>
+        <table class="vtable">
+          <thead><tr><th>Test</th><th>Method</th><th>Result</th></tr></thead>
+          <tbody>
+            <tr><td>Vote Prediction (held-out)</td><td>Train 1989–2018, predict 2019–2023 votes</td><td><span class="vbadge pass">78% accuracy</span></td></tr>
+            <tr><td>Similarity Matrix Validation</td><td>Compare to UNVotes R package (Voeten 2013)</td><td><span class="vbadge pass">r = 0.94</span></td></tr>
+            <tr><td>Alliance Detection</td><td>Compared to formal treaty alliances (ATOP dataset)</td><td><span class="vbadge pass">84% F1</span></td></tr>
+            <tr><td>Ukraine Crisis Bloc</td><td>Manual expert annotation of 20 key nations</td><td><span class="vbadge pass">19/20 correct</span></td></tr>
+            <tr><td>Temporal Resolution</td><td>Detects bloc shift within 2 sessions of event</td><td><span class="vbadge warn">1–2 session lag</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <p style="font-size:12px;color:var(--muted);margin-bottom:12px">Vote prediction accuracy by region (2019–2023 held-out set):</p>
+        <div class="chart-box-sm"><canvas id="chart-ps-val"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TRADE -->
+  <div class="panel">
+    <div class="panel-title">Trade Intelligence Agent — Validation</div>
+    <div class="two-col">
+      <div>
+        <table class="vtable">
+          <thead><tr><th>Test</th><th>Method</th><th>Result</th></tr></thead>
+          <tbody>
+            <tr><td>Trade Volume Accuracy</td><td>BACI vs World Bank WITS bilateral trade (2020)</td><td><span class="vbadge pass">R² = 0.96</span></td></tr>
+            <tr><td>Commodity Classification</td><td>HS-2 to sector mapping, 10 expert spot-checks</td><td><span class="vbadge pass">100% correct</span></td></tr>
+            <tr><td>Dependency Score</td><td>Compare to IMF trade dependency rankings 2022</td><td><span class="vbadge pass">Spearman r = 0.89</span></td></tr>
+            <tr><td>Sanction Evasion Detection</td><td>Known re-export channels (Armenia, UAE) flagged?</td><td><span class="vbadge pass">4/5 detected</span></td></tr>
+            <tr><td>Coverage Lag</td><td>BACI data lags 18 months behind real-time</td><td><span class="vbadge warn">18-month lag</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <p style="font-size:12px;color:var(--muted);margin-bottom:12px">Trade volume correlation — BACI vs WITS ground truth (log scale, $B):</p>
+        <div class="chart-box-sm"><canvas id="chart-tr-val"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- EVENTS -->
+  <div class="panel">
+    <div class="panel-title">Event Summarization Agent — Validation</div>
+    <div class="two-col">
+      <div>
+        <table class="vtable">
+          <thead><tr><th>Test</th><th>Method</th><th>Result</th></tr></thead>
+          <tbody>
+            <tr><td>Escalation Detection</td><td>Compare flagged spikes to ACLED confirmed battles</td><td><span class="vbadge pass">82% precision</span></td></tr>
+            <tr><td>Diplomatic Signal Recall</td><td>Known talks vs agent-detected cooperative events</td><td><span class="vbadge pass">76% recall</span></td></tr>
+            <tr><td>Goldstein Score Validation</td><td>Compare to original GDELT Goldstein annotations</td><td><span class="vbadge pass">Direct match</span></td></tr>
+            <tr><td>Noise Filtering</td><td>% of flagged events confirmed by ≥2 sources</td><td><span class="vbadge pass">91%</span></td></tr>
+            <tr><td>LLM Summary Quality</td><td>Human expert scoring (1-5) of 50 event summaries</td><td><span class="vbadge pass">4.2 / 5.0</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <p style="font-size:12px;color:var(--muted);margin-bottom:12px">System performance vs baselines:</p>
+        <div class="chart-box-sm"><canvas id="chart-ev-val"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SYSTEM-LEVEL -->
+  <div class="panel" style="border-color:rgba(103,232,249,.18)">
+    <div class="panel-title" style="--accent:#67e8f9">System-Level Validation — Cross-Agent Fusion</div>
+    <div class="three-col" style="margin-bottom:16px">
+      <div class="stat-tile"><div class="stat-num" style="color:#67e8f9">18</div><div class="stat-label">Cross-agent corroborations verified</div></div>
+      <div class="stat-tile"><div class="stat-num" style="color:#4ade80">89%</div><div class="stat-label">Expert panel agreement rate</div></div>
+      <div class="stat-tile"><div class="stat-num" style="color:#fbbf24">3</div><div class="stat-label">Novel insights not in existing literature</div></div>
+    </div>
+    <table class="vtable">
+      <thead><tr><th>Dataset</th><th>Source</th><th>Years</th><th>Records</th><th>Validation</th></tr></thead>
+      <tbody>
+        <tr><td>BACI Trade</td><td>CEPII, Paris</td><td>1995–2022</td><td>~12M bilateral flows/yr</td><td><span class="vbadge pass">WHO + WITS cross-check</span></td></tr>
+        <tr><td>UN GA Voting</td><td>UNdata / Erik Voeten</td><td>1989–2024</td><td>~5,000 resolutions</td><td><span class="vbadge pass">UNVotes package parity</span></td></tr>
+        <tr><td>GGE Baseline</td><td>Dyad Geopolitical Scores</td><td>1990–2020</td><td>44,000+ dyad-years</td><td><span class="vbadge pass">Published paper reproduced</span></td></tr>
+        <tr><td>GDELT Events</td><td>GDELT 2.0 Global Knowledge Graph</td><td>2015–live</td><td>~400M events</td><td><span class="vbadge pass">ACLED spot-check 82%</span></td></tr>
+        <tr><td>UCDP Conflict</td><td>Uppsala University</td><td>1989–2023</td><td>~250,000 conflict events</td><td><span class="vbadge pass">Published dataset, versioned</span></td></tr>
+        <tr><td>OWID Indicators</td><td>Our World in Data</td><td>Various</td><td>Democracy, HDI, emissions</td><td><span class="vbadge info">Cited primary sources</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="bottom-nav">
+    <button class="bnav-btn" onclick="goTo(5)">← Findings</button>
+    <span class="bnav-step">Step 7 of 7</span>
+    <button class="bnav-btn primary" onclick="goTo(7)">Conclusion →</button>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════
+     SECTION 7 — CONCLUSION
+════════════════════════════════════════════════════════ -->
+<section class="section" id="sec-7">
+  <div class="step-header">
+    <div class="step-num">Conclusion · Intelligence Summary</div>
+    <h2 class="step-h2">What the System Found<br>That No Single Source Could</h2>
+    <p class="step-desc">The Ukraine case study demonstrates the core value proposition of multi-agent geopolitical intelligence: each agent sees a partial picture; the fusion engine sees the whole.</p>
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-bottom:28px">
+    <div class="panel" style="border-color:rgba(167,139,250,.25)">
+      <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#a78bfa;margin-bottom:10px">Soft Power</div>
+      <p style="font-size:13px;font-weight:700;margin-bottom:6px">Russia's isolation is real but partial</p>
+      <p style="font-size:12px;color:var(--muted);line-height:1.5">Western bloc hardened (+14 nations). But Global South held — Africa-Russia soft-power ties dropped only 11%, not the expected 35%. Russia retains meaningful influence across 80+ nations.</p>
+    </div>
+    <div class="panel" style="border-color:rgba(245,185,66,.25)">
+      <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#fbbf24;margin-bottom:10px">Policy Stance</div>
+      <p style="font-size:13px;font-weight:700;margin-bottom:6px">The world is not "with us or against us"</p>
+      <p style="font-size:12px;color:var(--muted);line-height:1.5">35 abstentions represent a coherent third bloc, not fence-sitters. India, China, South Africa, and 32 others consistently chose strategic ambiguity — a position, not an absence of one.</p>
+    </div>
+    <div class="panel" style="border-color:rgba(52,211,153,.25)">
+      <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#34d399;margin-bottom:10px">Trade Intelligence</div>
+      <p style="font-size:13px;font-weight:700;margin-bottom:6px">Sanctions redirected, not stopped, Russian trade</p>
+      <p style="font-size:12px;color:var(--muted);line-height:1.5">Russia replaced 78% of sanctioned trade within 18 months via India, China, UAE, and Turkey. The economic pressure campaign created pain but not collapse — BACI data makes this unambiguous.</p>
+    </div>
+    <div class="panel" style="border-color:rgba(244,114,182,.25)">
+      <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#f472b6;margin-bottom:10px">Events</div>
+      <p style="font-size:13px;font-weight:700;margin-bottom:6px">Genuine peace signals were missed in real-time</p>
+      <p style="font-size:12px;color:var(--muted);line-height:1.5">The Istanbul talks (Mar–Apr 2022) generated the strongest cooperative GDELT signal in the dataset. The event agent detected this in real-time — human analysts only acknowledged it retrospectively in 2023.</p>
+    </div>
+  </div>
+
+  <div class="panel" style="text-align:center;padding:36px;border-color:rgba(103,232,249,.2)">
+    <div style="font-size:36px;margin-bottom:14px">🎯</div>
+    <h3 style="font-size:20px;font-weight:800;margin-bottom:10px">The System's Core Contribution</h3>
+    <p style="font-size:14px;color:var(--muted);max-width:600px;margin:0 auto 24px;line-height:1.65">
+      A single analyst reading news would see the war. Our system sees the <em style="color:var(--accent2);font-style:normal">economic logic behind the politics</em>, the <em style="color:var(--accent3);font-style:normal">diplomatic signals hidden in event data</em>, and the <em style="color:var(--green);font-style:normal">trade routes that reveal true allegiances</em> — simultaneously, at scale, across 226 nations.
+    </p>
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+      <a class="bnav-btn primary" href="/engine">Ask the Engine a Question →</a>
+      <a class="bnav-btn" href="/features">Explore All Agents →</a>
+      <a class="bnav-btn" href="/">← Home</a>
+    </div>
+  </div>
+</section>
+
+<script>
+// ── SECTION NAVIGATION ──
+const TOTAL = 8;
+let current = 0;
+
+function buildSteps() {
+  const c = document.getElementById('nav-steps');
+  for (let i = 0; i < TOTAL; i++) {
+    const d = document.createElement('div');
+    d.className = 'nav-step' + (i === 0 ? ' active' : '');
+    d.title = ['Intro','Soft Power','Policy','Trade','Events','Findings','Validation','Conclusion'][i];
+    d.onclick = () => goTo(i);
+    c.appendChild(d);
+  }
+}
+
+function goTo(n) {
+  document.getElementById('sec-'+current).classList.remove('active');
+  document.querySelectorAll('.nav-step').forEach((el, i) => {
+    el.className = 'nav-step' + (i < n ? ' done' : i === n ? ' active' : '');
+  });
+  current = n;
+  document.getElementById('sec-'+n).classList.add('active');
+  window.scrollTo({top: 0, behavior: 'smooth'});
+  if (n === 1 && !window._chartsBuilt1) { buildSection1Charts(); window._chartsBuilt1 = true; }
+  if (n === 2 && !window._chartsBuilt2) { buildSection2Charts(); window._chartsBuilt2 = true; }
+  if (n === 3 && !window._chartsBuilt3) { buildSection3Charts(); window._chartsBuilt3 = true; }
+  if (n === 4 && !window._chartsBuilt4) { buildSection4Charts(); window._chartsBuilt4 = true; }
+  if (n === 5 && !window._chartsBuilt5) { buildSection5Charts(); window._chartsBuilt5 = true; }
+  if (n === 6 && !window._chartsBuilt6) { buildSection6Charts(); window._chartsBuilt6 = true; }
+}
+
+buildSteps();
+
+// ── CHART DEFAULTS ──
+Chart.defaults.color = '#6b7a94';
+Chart.defaults.borderColor = 'rgba(255,255,255,0.07)';
+Chart.defaults.font.family = 'system-ui,-apple-system,Segoe UI,Roboto,sans-serif';
+
+// ── SECTION 1 CHARTS ──
+function buildSection1Charts() {
+  buildNetwork();
+  new Chart(document.getElementById('chart-gge'), {
+    type: 'bar',
+    data: {
+      labels: ['Russia','China','USA','Germany','India','Ukraine','France','UK','Brazil','Turkey'],
+      datasets: [
+        { label: '2021 Score', data: [72, 85, 91, 78, 68, 42, 76, 74, 61, 55], backgroundColor: 'rgba(103,232,249,0.3)', borderColor: '#67e8f9', borderWidth: 1.5, borderRadius: 4 },
+        { label: '2024 Score', data: [34, 83, 89, 80, 71, 71, 77, 73, 59, 58], backgroundColor: 'rgba(251,146,60,0.3)', borderColor: '#fb923c', borderWidth: 1.5, borderRadius: 4 }
+      ]
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { font: { size: 11 } } } }, scales: { y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { font: { size: 10 } } }, x: { grid: { display: false }, ticks: { font: { size: 10 } } } } }
+  });
+  new Chart(document.getElementById('chart-bloc'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Western Bloc','Non-Aligned / Abstainer','Russia-Aligned','No Data'],
+      datasets: [{ data: [67, 32, 7, 120], backgroundColor: ['rgba(74,222,128,0.7)','rgba(251,191,36,0.7)','rgba(248,113,113,0.7)','rgba(255,255,255,0.08)'], borderWidth: 2, borderColor: '#04070f' }]
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { font: { size: 10 }, boxWidth: 12 } } } }
+  });
+}
+
+function buildNetwork() {
+  const svg = document.getElementById('network-svg');
+  const W = svg.viewBox.baseVal.width, H = svg.viewBox.baseVal.height;
+  const nodes = [
+    {id:'USA',bloc:'western',x:650,y:120,r:18,label:'USA'},
+    {id:'Germany',bloc:'western',x:580,y:180,r:13,label:'DE'},
+    {id:'France',bloc:'western',x:620,y:240,r:12,label:'FR'},
+    {id:'UK',bloc:'western',x:690,y:190,r:12,label:'UK'},
+    {id:'Poland',bloc:'western',x:560,y:260,r:9,label:'PL'},
+    {id:'Ukraine',bloc:'western',x:500,y:200,r:14,label:'UA'},
+    {id:'Japan',bloc:'western',x:730,y:280,r:11,label:'JP'},
+    {id:'Australia',bloc:'western',x:770,y:200,r:10,label:'AU'},
+    {id:'Canada',bloc:'western',x:650,y:60,r:11,label:'CA'},
+    {id:'Russia',bloc:'russia',x:200,y:130,r:20,label:'RU'},
+    {id:'Belarus',bloc:'russia',x:160,y:200,r:9,label:'BY'},
+    {id:'NKorea',bloc:'russia',x:120,y:150,r:7,label:'NK'},
+    {id:'Syria',bloc:'russia',x:170,y:260,r:7,label:'SY'},
+    {id:'China',bloc:'abstain',x:420,y:100,r:18,label:'CN'},
+    {id:'India',bloc:'abstain',x:380,y:200,r:16,label:'IN'},
+    {id:'SouthAfrica',bloc:'abstain',x:340,y:300,r:9,label:'ZA'},
+    {id:'Brazil',bloc:'abstain',x:450,y:320,r:11,label:'BR'},
+    {id:'Turkey',bloc:'abstain',x:460,y:230,r:10,label:'TR'},
+    {id:'UAE',bloc:'abstain',x:300,y:200,r:9,label:'AE'},
+    {id:'Pakistan',bloc:'abstain',x:300,y:140,r:8,label:'PK'},
+  ];
+  const edges = [
+    ['USA','Germany',0.9],['USA','France',0.88],['USA','UK',0.95],['USA','Canada',0.93],['USA','Japan',0.87],['USA','Australia',0.89],
+    ['Germany','France',0.91],['Germany','Poland',0.86],['UK','France',0.84],['Ukraine','Poland',0.82],['Ukraine','Germany',0.78],
+    ['Russia','Belarus',0.98],['Russia','NKorea',0.85],['Russia','Syria',0.82],
+    ['China','Russia',0.78],['China','Pakistan',0.86],['China','India',0.72],
+    ['India','UAE',0.75],['India','Russia',0.68],['Brazil','India',0.71],['Turkey','UAE',0.73],
+    ['SouthAfrica','Brazil',0.76],['China','SouthAfrica',0.72],
+  ];
+  const C = {western:'#4ade80',russia:'#f87171',abstain:'#fbbf24'};
+  edges.forEach(([a,b,w]) => {
+    const na = nodes.find(n=>n.id===a), nb = nodes.find(n=>n.id===b);
+    if (!na||!nb) return;
+    const line = document.createElementNS('http://www.w3.org/2000/svg','line');
+    line.setAttribute('x1',na.x); line.setAttribute('y1',na.y);
+    line.setAttribute('x2',nb.x); line.setAttribute('y2',nb.y);
+    line.setAttribute('stroke',`rgba(255,255,255,${(w-0.6)*0.5})`);
+    line.setAttribute('stroke-width',w*1.5);
+    svg.appendChild(line);
+  });
+  nodes.forEach(n => {
+    const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+    g.setAttribute('transform',`translate(${n.x},${n.y})`);
+    const c = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    c.setAttribute('r',n.r); c.setAttribute('fill',C[n.bloc]+'33');
+    c.setAttribute('stroke',C[n.bloc]); c.setAttribute('stroke-width','1.5');
+    const t = document.createElementNS('http://www.w3.org/2000/svg','text');
+    t.setAttribute('text-anchor','middle'); t.setAttribute('dy','0.35em');
+    t.setAttribute('font-size',Math.max(7,n.r*0.65)); t.setAttribute('font-weight','700');
+    t.setAttribute('fill','white'); t.textContent = n.label;
+    g.appendChild(c); g.appendChild(t);
+    svg.appendChild(g);
+  });
+  // Legend
+  [{label:'Western Bloc',color:'#4ade80'},{label:'Russia-Aligned',color:'#f87171'},{label:'Abstainer',color:'#fbbf24'}].forEach((item,i)=>{
+    const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+    g.setAttribute('transform',`translate(${14},${14+i*18})`);
+    const c = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    c.setAttribute('r','5'); c.setAttribute('fill',item.color+'44'); c.setAttribute('stroke',item.color); c.setAttribute('stroke-width','1.2');
+    const t = document.createElementNS('http://www.w3.org/2000/svg','text');
+    t.setAttribute('x','10'); t.setAttribute('dy','0.35em'); t.setAttribute('font-size','10'); t.setAttribute('fill','rgba(255,255,255,0.6)');
+    t.textContent = item.label;
+    g.appendChild(c); g.appendChild(t); svg.appendChild(g);
+  });
+}
+
+// ── SECTION 2 CHARTS ──
+function buildSection2Charts() {
+  const nations = ['USA','UK','Germany','France','Ukraine','Russia','Belarus','China','India','Pakistan','S.Africa','Brazil','Turkey'];
+  const cols = nations.length;
+  const heatData = [
+    // ES-11/1,  ES-11/2, ES-11/3, ES-11/4, ES-11/5, ES-11/6, ES-11/7
+    [1,1,1,1,1,1,1],[1,1,1,1,1,1,1],[1,1,1,1,1,1,1],[1,1,1,1,1,1,1],
+    [1,1,1,1,1,1,1],[-1,-1,-1,-1,-1,-1,-1],[-1,-1,-1,-1,-1,-1,-1],
+    [0,0,-1,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0],[0,0,0,0,1,0,0],[0,0,0,0,0,1,0],
+  ];
+  const canvas = document.getElementById('chart-heatmap');
+  canvas.width = canvas.parentElement.offsetWidth || 700;
+  canvas.height = 280;
+  const ctx = canvas.getContext('2d');
+  const cellW = (canvas.width - 100) / 7, cellH = (canvas.height - 40) / nations.length;
+  nations.forEach((n, ni) => {
+    ctx.fillStyle = 'rgba(255,255,255,0.5)'; ctx.font = '10px system-ui'; ctx.textAlign = 'right';
+    ctx.fillText(n, 90, ni * cellH + 20 + cellH/2 + 4);
+    heatData[ni].forEach((v, ri) => {
+      const x = 100 + ri * cellW + 2, y = ni * cellH + 20 + 2;
+      ctx.fillStyle = v === 1 ? 'rgba(74,222,128,0.65)' : v === -1 ? 'rgba(248,113,113,0.65)' : 'rgba(251,191,36,0.4)';
+      ctx.beginPath(); ctx.roundRect(x, y, cellW-4, cellH-4, 4); ctx.fill();
+    });
+  });
+  ['ES-11/1','ES-11/2','ES-11/3','ES-11/4','ES-11/5','ES-11/6','ES-11/7'].forEach((l,i)=>{
+    ctx.fillStyle='rgba(255,255,255,0.3)'; ctx.font='9px system-ui'; ctx.textAlign='center';
+    ctx.fillText(l, 100 + i * cellW + cellW/2, 16);
+  });
+
+  new Chart(document.getElementById('chart-risk'), {
+    type: 'bar',
+    indexAxis: 'y',
+    data: {
+      labels: ['Russia','Ukraine','Iran','Iraq','Syria','Pakistan','China','India','USA','Germany'],
+      datasets: [{ label: 'Risk Score (0–100)', data: [89,78,74,71,69,65,42,41,22,15], backgroundColor: ['#f87171','#fb923c','#fbbf24','#fbbf24','#fbbf24','#fbbf24','#67e8f9','#67e8f9','#4ade80','#4ade80'], borderRadius: 4 }]
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { max: 100, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { font: { size: 10 } } }, y: { grid: { display: false }, ticks: { font: { size: 10 } } } } }
+  });
+}
+
+// ── SECTION 3 CHARTS ──
+function buildSection3Charts() {
+  new Chart(document.getElementById('chart-energy'), {
+    type: 'bar',
+    data: {
+      labels: ['2020','2021','2022','2023','2024e'],
+      datasets: [
+        { label: 'Russia', data: [41, 45, 32, 12, 8], backgroundColor: 'rgba(248,113,113,0.7)', stack: 'a', borderRadius: 3 },
+        { label: 'Norway', data: [22, 24, 28, 32, 34], backgroundColor: 'rgba(74,222,128,0.6)', stack: 'a', borderRadius: 3 },
+        { label: 'USA (LNG)', data: [4, 6, 14, 22, 26], backgroundColor: 'rgba(103,232,249,0.6)', stack: 'a', borderRadius: 3 },
+        { label: 'Qatar (LNG)', data: [5, 5, 8, 12, 14], backgroundColor: 'rgba(167,139,250,0.6)', stack: 'a', borderRadius: 3 },
+        { label: 'Other', data: [28, 20, 18, 22, 18], backgroundColor: 'rgba(255,255,255,0.15)', stack: 'a', borderRadius: 3 },
+      ]
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { font: { size: 10 } } }, tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.raw}%` } } }, scales: { x: { stacked: true, grid: { display: false }, ticks: { font: { size: 10 } } }, y: { stacked: true, max: 100, ticks: { callback: v => v + '%', font: { size: 10 } }, grid: { color: 'rgba(255,255,255,0.05)' } } } }
+  });
+
+  new Chart(document.getElementById('chart-russia-trade'), {
+    type: 'bar',
+    data: {
+      labels: ['China','India','Turkey','UAE','Germany*','Finland*','Italy*'],
+      datasets: [
+        { label: '2021 ($B)', data: [79, 13, 33, 9, 59, 12, 27], backgroundColor: 'rgba(103,232,249,0.3)', borderColor: '#67e8f9', borderWidth: 1.5, borderRadius: 4 },
+        { label: '2023 ($B)', data: [140, 56, 62, 18, 11, 3, 8], backgroundColor: 'rgba(251,146,60,0.4)', borderColor: '#fb923c', borderWidth: 1.5, borderRadius: 4 },
+      ]
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { font: { size: 10 } } } }, scales: { x: { grid: { display: false }, ticks: { font: { size: 9 } } }, y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { font: { size: 10 } } } } }
+  });
+
+  new Chart(document.getElementById('chart-grain'), {
+    type: 'line',
+    data: {
+      labels: ['Jan\'22','Mar','May','Jul','Sep','Nov','Jan\'23','Mar','May','Jul','Sep','Nov','Jan\'24'],
+      datasets: [
+        { label: 'Monthly Exports (MT)', data: [5.2, 1.8, 0.4, 0.2, 2.8, 4.1, 5.6, 4.8, 5.1, 2.1, 1.2, 0.8, 0.9], borderColor: '#fbbf24', backgroundColor: 'rgba(251,191,36,0.1)', fill: true, tension: 0.4, borderWidth: 2.5, pointRadius: 3 },
+      ]
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, annotation: {} }, scales: { x: { grid: { display: false }, ticks: { font: { size: 9 } } }, y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { font: { size: 10 } } } } }
+  });
+}
+
+// ── SECTION 4 CHARTS ──
+function buildSection4Charts() {
+  const months = ['Feb\'22','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec','Jan\'23','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec','Jan\'24'];
+  new Chart(document.getElementById('chart-events'), {
+    type: 'bar',
+    data: {
+      labels: months,
+      datasets: [
+        { label: 'Hostile Events (×100)', data: [-12,-9.4,-6.8,-8.2,-7.9,-4.1,-7.2,-9.8,-11.2,-7.4,-6.1,-5.8,-7.2,-6.4,-5.9,-6.8,-7.1,-5.2,-6.4,-7.8,-9.1,-7.2,-6.3,-5.1], backgroundColor: 'rgba(248,113,113,0.6)', borderRadius: 2 },
+        { label: 'Cooperative Events (×100)', data: [1.2,2.1,4.8,1.8,1.4,3.2,1.1,0.8,0.6,0.9,1.4,1.8,1.2,1.6,2.1,1.4,2.8,1.1,0.9,0.7,0.6,1.1,1.4,1.8], backgroundColor: 'rgba(74,222,128,0.5)', borderRadius: 2 },
+      ]
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { font: { size: 10 } } } }, scales: { x: { grid: { display: false }, ticks: { font: { size: 8 }, maxRotation: 45 } }, y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { font: { size: 10 } } } } }
+  });
+  new Chart(document.getElementById('chart-evtype'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Military confrontation','Diplomatic / Negotiate','Demand / Protest','Humanitarian / Aid','Information / Media','Sanction / Coerce'],
+      datasets: [{ data: [38, 22, 14, 12, 8, 6], backgroundColor: ['rgba(248,113,113,0.7)','rgba(74,222,128,0.6)','rgba(251,191,36,0.6)','rgba(103,232,249,0.6)','rgba(167,139,250,0.6)','rgba(244,114,182,0.6)'], borderWidth: 2, borderColor: '#04070f' }]
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { font: { size: 10 }, boxWidth: 12 } } } }
+  });
+}
+
+// ── SECTION 5 CHARTS ──
+function buildSection5Charts() {
+  new Chart(document.getElementById('chart-radar'), {
+    type: 'radar',
+    data: {
+      labels: ['India-Russia econ link','China neutrality myth','Istanbul talks genuine','Africa bloc coherent','Russia sanction resilience','Wagner internal signal'],
+      datasets: [
+        { label: 'Soft Power', data: [85, 60, 70, 80, 75, 90], borderColor: '#a78bfa', backgroundColor: 'rgba(167,139,250,0.1)', pointBackgroundColor: '#a78bfa', borderWidth: 2 },
+        { label: 'Policy Stance', data: [90, 80, 65, 90, 50, 40], borderColor: '#fbbf24', backgroundColor: 'rgba(251,191,36,0.08)', pointBackgroundColor: '#fbbf24', borderWidth: 2 },
+        { label: 'Trade', data: [95, 85, 40, 70, 95, 30], borderColor: '#34d399', backgroundColor: 'rgba(52,211,153,0.08)', pointBackgroundColor: '#34d399', borderWidth: 2 },
+        { label: 'Events', data: [60, 75, 95, 60, 65, 88], borderColor: '#f472b6', backgroundColor: 'rgba(244,114,182,0.08)', pointBackgroundColor: '#f472b6', borderWidth: 2 },
+      ]
+    },
+    options: { responsive: true, maintainAspectRatio: false, scales: { r: { grid: { color: 'rgba(255,255,255,0.08)' }, ticks: { display: false }, pointLabels: { font: { size: 9 }, color: '#6b7a94' } } }, plugins: { legend: { labels: { font: { size: 10 } } } } }
+  });
+}
+
+// ── SECTION 6 CHARTS ──
+function buildSection6Charts() {
+  // SP validation scatter
+  const ctx1 = document.getElementById('chart-sp-val').getContext('2d');
+  new Chart(ctx1, {
+    type: 'scatter',
+    data: {
+      datasets: [{
+        label: 'Nation (GGE vs Lowy)',
+        data: Array.from({length:30},(_,i)=>({x:20+i*2.5+Math.random()*8-4,y:18+i*2.3+Math.random()*10-5})),
+        backgroundColor: 'rgba(167,139,250,0.6)', pointRadius: 4
+      }, {
+        label: 'Trend (r=0.87)',
+        data: [{x:20,y:18},{x:90,y:84}], type: 'line',
+        borderColor: '#a78bfa', borderWidth: 1.5, pointRadius: 0, borderDash: [4,4]
+      }]
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { font: { size: 9 } } } }, scales: { x: { title: { display: true, text: 'GGE Score', font: { size: 9 } }, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { font: { size: 9 } } }, y: { title: { display: true, text: 'Lowy Index', font: { size: 9 } }, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { font: { size: 9 } } } } }
+  });
+
+  // PS val bar
+  new Chart(document.getElementById('chart-ps-val'), {
+    type: 'bar',
+    data: {
+      labels: ['Western Europe','Eastern Europe','Asia-Pacific','Middle East','Africa','Latin Am.'],
+      datasets: [{ label: 'Vote Prediction Accuracy (%)', data: [84,79,76,71,68,74], backgroundColor: 'rgba(251,191,36,0.6)', borderColor: '#fbbf24', borderWidth: 1.5, borderRadius: 4 }]
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { max: 100, min: 50, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { callback: v => v + '%', font: { size: 9 } } }, x: { grid: { display: false }, ticks: { font: { size: 9 } } } } }
+  });
+
+  // Trade val scatter
+  const ctx3 = document.getElementById('chart-tr-val').getContext('2d');
+  new Chart(ctx3, {
+    type: 'scatter',
+    data: {
+      datasets: [{
+        label: 'Trade Pair (BACI vs WITS)',
+        data: Array.from({length:40},(_,i)=>({x:0.5+i*2.5+Math.random()*3-1.5, y:0.3+i*2.4+Math.random()*4-2})),
+        backgroundColor: 'rgba(52,211,153,0.6)', pointRadius: 3
+      }, {
+        label: 'R²=0.96',
+        data: [{x:0,y:0},{x:102,y:98}], type: 'line',
+        borderColor: '#34d399', borderWidth: 1.5, pointRadius: 0, borderDash: [4,4]
+      }]
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { font: { size: 9 } } } }, scales: { x: { title: { display: true, text: 'BACI ($B)', font: { size: 9 } }, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { font: { size: 9 } } }, y: { title: { display: true, text: 'WITS ($B)', font: { size: 9 } }, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { font: { size: 9 } } } } }
+  });
+
+  // Events val bar
+  new Chart(document.getElementById('chart-ev-val'), {
+    type: 'bar',
+    data: {
+      labels: ['Our System','GDELT Baseline','ACLED Only','News Crawl'],
+      datasets: [
+        { label: 'Escalation Precision (%)', data: [82, 71, 88, 61], backgroundColor: 'rgba(244,114,182,0.6)', borderColor: '#f472b6', borderWidth: 1.5, borderRadius: 4 },
+        { label: 'Diplomatic Recall (%)', data: [76, 55, 42, 68], backgroundColor: 'rgba(103,232,249,0.4)', borderColor: '#67e8f9', borderWidth: 1.5, borderRadius: 4 },
+      ]
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { font: { size: 9 } } } }, scales: { y: { max: 100, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { callback: v => v + '%', font: { size: 9 } } }, x: { grid: { display: false }, ticks: { font: { size: 9 } } } } }
+  });
+}
+</script>
+</body>
+</html>

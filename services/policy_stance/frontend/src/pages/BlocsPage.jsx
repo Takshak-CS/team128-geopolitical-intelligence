@@ -6,10 +6,10 @@ import ChordDiagram from '../components/ChordDiagram';
 import Panel from '../components/Panel';
 
 const BLOC_COLORS = {
-  'Western Bloc': '#f26b38',
-  'Russia+Allies': '#0f7b8c',
+  'Western Bloc': '#ff8c42',
+  'Russia+Allies': '#62d2a2',
   'China-Centered Bloc': '#e3a008',
-  'Non-Aligned': '#7fb7be',
+  'Non-Aligned': '#8aa5bf',
 };
 const ALL_BLOCS = Object.keys(BLOC_COLORS);
 
