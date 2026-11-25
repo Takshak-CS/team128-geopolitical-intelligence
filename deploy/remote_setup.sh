@@ -138,7 +138,14 @@ EVENTS_DASHBOARD_URL=${SCHEME}events.${HOST}
 TRADE_DASHBOARD_URL=${SCHEME}trade.${HOST}/?api=${SCHEME}trade.${HOST}
 EOF
 else
-  echo "no module dashboards: $HOST is an IP address, which has no subdomains"
+  # IP address: use direct ports instead of subdomains (HOST is the bare IP here)
+  cat >> "$APP/.env" <<EOF
+SOFT_POWER_DASHBOARD_URL=http://${HOST}:8101
+POLICY_STANCE_DASHBOARD_URL=http://${HOST}:8102
+EVENTS_DASHBOARD_URL=http://${HOST}:8104
+TRADE_DASHBOARD_URL=http://${HOST}:8080/?api=http://${HOST}:8103
+EOF
+  echo "IP deployment: dashboard URLs set to direct ports on ${HOST}"
 fi
 
 echo "== 6/6 Build and start (the first build takes 10-20 minutes)"

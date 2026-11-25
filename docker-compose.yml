@@ -42,10 +42,10 @@ services:
       TRADE_URL: http://trade_intelligence:8000
       EVENTS_URL: http://event_summarization:8000
       ORCHESTRATOR_CORS_ORIGINS: http://localhost:8000
-      SOFT_POWER_DASHBOARD_URL: http://softpower.geointel.mooo.com
-      POLICY_STANCE_DASHBOARD_URL: http://policystance.geointel.mooo.com
-      TRADE_DASHBOARD_URL: http://trade.geointel.mooo.com/?api=http://trade.geointel.mooo.com
-      EVENTS_DASHBOARD_URL: http://events.geointel.mooo.com
+      SOFT_POWER_DASHBOARD_URL: http://65.1.109.59:8101
+      POLICY_STANCE_DASHBOARD_URL: http://65.1.109.59:8102
+      TRADE_DASHBOARD_URL: http://65.1.109.59:8080/?api=http://65.1.109.59:8103
+      EVENTS_DASHBOARD_URL: http://65.1.109.59:8104
     ports: ["8000:8000"]
     depends_on: [soft_power, policy_stance, trade_intelligence, event_summarization]
 
