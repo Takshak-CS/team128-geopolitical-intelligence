@@ -7,9 +7,9 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
 :root {
-  --bg: #04070f; --ink: #e8edf5; --muted: #6b7a94;
-  --border: rgba(255,255,255,.07); --surface: rgba(255,255,255,.04);
-  --accent: #fb923c; --accent2: #67e8f9; --accent3: #a78bfa;
+  --bg: #04070f; --ink: #f4f7ff; --muted: #a0aec0;
+  --border: rgba(255,255,255,.12); --surface: rgba(255,255,255,.06);
+  --accent: #fb923c; --accent2: #67e8f9; --accent3: #c4b5fd;
   --green: #4ade80; --red: #f87171;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -43,7 +43,7 @@ body{background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,'
 .cs-h1{font-size:clamp(28px,4vw,52px);font-weight:800;letter-spacing:-.03em;line-height:1.1;margin-bottom:16px;
   background:linear-gradient(135deg,#fbbf24 0%,#fb923c 40%,#f87171 80%);
   -webkit-background-clip:text;background-clip:text;color:transparent}
-.cs-sub{font-size:15px;color:var(--muted);max-width:620px;margin:0 auto 32px;line-height:1.65}
+.cs-sub{font-size:15px;color:#c8d4e8;max-width:620px;margin:0 auto 32px;line-height:1.65}
 .cs-sub em{font-style:normal;color:rgba(103,232,249,.85)}
 .analyst-card{display:inline-flex;align-items:center;gap:14px;padding:14px 20px;border-radius:16px;
   border:1px solid rgba(251,146,60,.2);background:rgba(251,146,60,.05);max-width:460px;text-align:left}
@@ -65,7 +65,7 @@ body{background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,'
 .step-num{font-size:11px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;display:flex;align-items:center;gap:10px}
 .step-num::after{content:'';flex:1;height:1px;background:var(--border)}
 .step-h2{font-size:clamp(22px,3vw,36px);font-weight:800;letter-spacing:-.02em;margin-bottom:10px}
-.step-desc{font-size:14px;color:var(--muted);max-width:680px;line-height:1.65}
+.step-desc{font-size:14px;color:#c8d4e8;max-width:680px;line-height:1.65}
 .agent-pill{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;
   font-size:10px;font-weight:700;letter-spacing:.06em;border:1px solid;margin-left:8px;vertical-align:middle}
 .pill-sp{border-color:rgba(167,139,250,.4);background:rgba(167,139,250,.1);color:#c4b5fd}
@@ -99,7 +99,7 @@ body{background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,'
 .tl-dot.sp-dot{border-color:var(--accent3)}
 .tl-date{font-size:10px;font-weight:700;letter-spacing:.08em;color:var(--muted);margin-bottom:3px}
 .tl-title{font-size:13px;font-weight:700;margin-bottom:3px}
-.tl-body{font-size:12px;color:var(--muted);line-height:1.5}
+.tl-body{font-size:12px;color:#b0bdd4;line-height:1.5}
 
 /* ── FINDINGS ── */
 .finding-row{display:flex;gap:12px;padding:14px;border-radius:12px;border:1px solid;margin-bottom:10px;animation:rise .4s ease both}
@@ -109,7 +109,7 @@ body{background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,'
 .finding-row.cross{background:rgba(167,139,250,.05);border-color:rgba(167,139,250,.2)}
 .finding-icon{font-size:20px;flex:none;line-height:1}
 .finding-content strong{font-size:13px;font-weight:700;display:block;margin-bottom:4px}
-.finding-content p{font-size:12px;color:var(--muted);line-height:1.5}
+.finding-content p{font-size:12px;color:#b8c8e0;line-height:1.5}
 .finding-tags{display:flex;gap:5px;margin-top:6px;flex-wrap:wrap}
 .ftag{font-size:9.5px;padding:2px 7px;border-radius:999px;border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.4)}
 
@@ -117,8 +117,8 @@ body{background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,'
 .stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:20px}
 .stat-tile{padding:16px;border-radius:12px;border:1px solid var(--border);background:var(--surface);text-align:center}
 .stat-num{font-size:28px;font-weight:800;letter-spacing:-.02em;margin-bottom:4px}
-.stat-label{font-size:11px;color:var(--muted)}
-.stat-delta{font-size:11px;font-weight:700;margin-top:4px}
+.stat-label{font-size:11px;color:#9eb3cc}
+.stat-delta{font-size:11px;font-weight:700;margin-top:4px;opacity:.95}
 .up{color:var(--red)}.down{color:var(--green)}.neu{color:var(--muted)}
 
 /* ── VALIDATION TABLES ── */
