@@ -223,7 +223,7 @@ input[type="range"] { width: 100%; accent-color: var(--accent-strong); }
 .range-meta { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); }
 .range-meta b { color: var(--accent); }
 .segmented { display: inline-flex; padding: 3px; border-radius: 9px; background: var(--input-bg); border: 1px solid var(--line); gap: 2px; width: 100%; }
-.segmented button { flex: 1; border: 0; background: transparent; height: 28px; border-radius: 7px; font-size: 12.5px; font-weight: 600; color: var(--muted); cursor: pointer; }
+.segmented button { flex: 1; border: 0; background: transparent; height: 28px; padding: 0 10px; border-radius: 7px; font-size: 12.5px; font-weight: 600; color: var(--muted); cursor: pointer; white-space: nowrap; }
 .segmented button[aria-pressed="true"] { background: var(--accent-soft); color: var(--accent-ink); box-shadow: 0 0 0 1px var(--accent-line) inset; }
 .segmented button:disabled { opacity: .4; cursor: not-allowed; }
 details.more { border-top: 1px dashed var(--line-strong); padding-top: 10px; margin-top: 4px; }
@@ -1686,6 +1686,11 @@ function netParams() {
   if (!need.noSector) params.set("sector", $("sector").value);
   if (need.product && state.product) params.set("product", state.product.code);
   if ($("year").value) params.set("year", $("year").value);
+  // The affected view asks for the flows around the hit countries: a small
+  // exporter's flows never rank among the network's strongest 140.
+  if (state.netMode === "affected" && state.shockScores.size) {
+    for (const name of [...state.shockScores.keys()].slice(0, 40)) params.append("focus", name);
+  }
   return params.toString();
 }
 async function loadNetwork() {
@@ -1697,7 +1702,9 @@ async function loadNetwork() {
     state.graph = data;
     state.graphScope = scope;
     const what = data.product ? `HS ${data.product}` : sectorName(data.sector);
-    $("net-scope").textContent = `${what} · ${data.year} · ${data.edges.length} strongest flows`;
+    $("net-scope").textContent = data.focus?.length
+      ? `${what} · ${data.year} · ${data.edges.length} strongest flows touching the ${data.focus.length} affected economies`
+      : `${what} · ${data.year} · ${data.edges.length} strongest flows`;
     drawNetwork();
   } catch (error) {
     state.graph = null;
@@ -1883,8 +1890,9 @@ function wire() {
   });
   $("api-url").addEventListener("change", async () => { state.graph = null; state.graphScope = null; await connect(); });
   $("network-card").addEventListener("toggle", () => { if ($("network-card").open) loadNetwork(); });
-  $("net-full").addEventListener("click", () => { state.netMode = "full"; syncNetToggle(); drawNetwork(); });
-  $("net-affected").addEventListener("click", () => { state.netMode = "affected"; syncNetToggle(); drawNetwork(); });
+  // The two views load different flows, so switching fetches (cached per view).
+  $("net-full").addEventListener("click", () => { state.netMode = "full"; syncNetToggle(); loadNetwork(); });
+  $("net-affected").addEventListener("click", () => { state.netMode = "affected"; syncNetToggle(); loadNetwork(); });
   let resizeTimer = null;
   window.addEventListener("resize", () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(() => { if ($("network-card").open) drawNetwork(); }, 150); });
 }

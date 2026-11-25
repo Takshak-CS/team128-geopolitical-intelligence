@@ -32,14 +32,28 @@ def build_trade_graph(data: pd.DataFrame, sector: str = "all") -> nx.DiGraph:
 
 
 
-def build_graph_payload(graph: nx.DiGraph, max_edges: int = 150) -> dict:
-    """Convert a trade graph into a lightweight JSON payload for visualization."""
+def build_graph_payload(graph: nx.DiGraph, max_edges: int = 150, focus=None) -> dict:
+    """Convert a trade graph into a lightweight JSON payload for visualization.
+
+    Without ``focus`` the payload is the strongest flows in the whole network.
+    With it, only flows that touch a focus country compete for the edge budget,
+    and every focus country is included even when it has no flow to show. A
+    shock on a small exporter needs this: its flows never rank among the
+    world's strongest, so a whole-network snapshot would not contain them.
+    """
     if graph.number_of_nodes() == 0:
         return {"nodes": [], "edges": []}
 
+    focus_nodes = {node for node in (focus or []) if node in graph}
+    candidate_edges = graph.edges(data=True)
+    if focus_nodes:
+        candidate_edges = [
+            edge for edge in candidate_edges if edge[0] in focus_nodes or edge[1] in focus_nodes
+        ]
+
     capped_edges = max(1, int(max_edges))
     sorted_edges = sorted(
-        graph.edges(data=True),
+        candidate_edges,
         key=lambda edge: float(edge[2].get("weight", 0.0)),
         reverse=True,
     )[:capped_edges]
@@ -52,7 +66,7 @@ def build_graph_payload(graph: nx.DiGraph, max_edges: int = 150) -> dict:
         for node in graph.nodes
     }
 
-    visible_nodes = set()
+    visible_nodes = set(focus_nodes)
     edges = []
     for source, target, edge_data in sorted_edges:
         weight = float(edge_data.get("weight", 0.0))

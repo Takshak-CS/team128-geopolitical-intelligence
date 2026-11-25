@@ -1201,7 +1201,7 @@
  
  ``/capabilities`` exists for the orchestration layer. An orchestrator deciding
  whether to route a question here should not have to read this file to find out
-@@ -22,20 +25,32 @@
+@@ -22,20 +25,33 @@
  from pydantic import BaseModel, ConfigDict, Field, model_validator
  
  from agent import trade_agent
@@ -1215,6 +1215,7 @@
 +    latest_year,
 +    load_trade_data,
 +    product_data_ready,
++    resolve_baci_country,
 +)
  from core.graph_builder import build_graph_payload, build_trade_graph
  from core.metadata import metadata_available
@@ -1243,7 +1244,7 @@
  
  # The frontend is served separately, so the API needs CORS - but a wildcard lets
  # any page the user has open reach a locally running instance. Default to the
-@@ -78,6 +93,17 @@
+@@ -78,6 +94,17 @@
      severity: Optional[float] = Field(default=None, ge=0.0, le=1.0)
      limit: int = Field(default=5, ge=1, le=50)
      sector: SectorName = "all"
@@ -1261,7 +1262,7 @@
      metric: Optional[Literal["imports", "exports"]] = None
      forecast_model: Optional[Literal["auto", "linear", "arima", "hybrid"]] = None
      periods: Optional[int] = Field(default=None, ge=1, le=10)
-@@ -104,6 +130,23 @@
+@@ -104,6 +131,23 @@
              if self.periods is None:
                  self.periods = 3
  
@@ -1285,7 +1286,7 @@
          return self
  
      def to_agent_query(self) -> dict:
-@@ -119,6 +162,11 @@
+@@ -119,6 +163,11 @@
              payload["metric"] = self.metric or "exports"
              payload["forecast_model"] = self.forecast_model or "auto"
              payload["periods"] = self.periods or 3
@@ -1297,7 +1298,7 @@
          else:
              payload.pop("metric", None)
              payload.pop("forecast_model", None)
-@@ -134,7 +182,8 @@
+@@ -134,7 +183,8 @@
      description=(
          "Graph-based trade intelligence over the CEPII BACI dataset. "
          "Answers risk, shock propagation, forecasting, dependence leverage, "
@@ -1307,15 +1308,24 @@
      ),
      version=API_VERSION,
  )
-@@ -163,22 +212,96 @@
+@@ -163,22 +213,112 @@
  def get_trade_graph(
      year: Optional[int] = Query(default=None, ge=1900, le=2100),
      sector: SectorName = "all",
 +    product: Optional[str] = Query(default=None, max_length=12),
      max_edges: int = Query(default=140, ge=20, le=400),
++    focus: Optional[list[str]] = Query(
++        default=None,
++        description="Countries to centre on (repeat the parameter). Only flows touching them are kept.",
++    ),
  ) -> dict:
 -    """Return a visualization-friendly graph snapshot for a selected year and sector."""
-+    """Return a visualization-friendly graph snapshot for a year and a sector or product."""
++    """Return a visualization-friendly graph snapshot for a year and a sector or product.
++
++    ``focus`` keeps the strongest flows that touch the named countries, which is
++    what a shock view needs when the shocked country is too small to appear
++    among the network's strongest flows.
++    """
      try:
          source_path = trade_agent.DEFAULT_DATA_PATH
 -        selected_year = latest_year(source_path) if year is None else int(year)
@@ -1329,10 +1339,18 @@
 +            selected_year = latest_year(source_path) if year is None else int(year)
 +        trade_data = load_trade_data(source_path, year=selected_year, sector=sector, product=code)
          graph = build_trade_graph(trade_data, sector=sector)
-         payload = build_graph_payload(graph, max_edges=max_edges)
+-        payload = build_graph_payload(graph, max_edges=max_edges)
++        focus_names: list[str] = []
++        for name in (focus or [])[:60]:
++            try:
++                focus_names.append(resolve_baci_country(source_path, name)[1])
++            except ValueError:
++                continue
++        payload = build_graph_payload(graph, max_edges=max_edges, focus=focus_names)
          payload["year"] = selected_year
          payload["sector"] = sector
 +        payload["product"] = code
++        payload["focus"] = [name for name in focus_names if name in graph]
          return payload
      except (FileNotFoundError, ValueError) as exc:
          raise HTTPException(status_code=400, detail=str(exc)) from exc
@@ -1407,7 +1425,7 @@
  
  
  @app.get("/health")
-@@ -270,9 +393,28 @@
+@@ -270,9 +410,28 @@
                  "country": "optional; supplying it returns that country's sector profile",
                  "score_meaning": "fragility score, higher is more brittle",
              },
@@ -1611,6 +1629,49 @@
  
      if cache_ready():
          cache_dir = cache_directory()
+--- a/core/graph_builder.py
++++ b/core/graph_builder.py
+@@ -32,14 +32,28 @@
+ 
+ 
+ 
+-def build_graph_payload(graph: nx.DiGraph, max_edges: int = 150) -> dict:
+-    """Convert a trade graph into a lightweight JSON payload for visualization."""
++def build_graph_payload(graph: nx.DiGraph, max_edges: int = 150, focus=None) -> dict:
++    """Convert a trade graph into a lightweight JSON payload for visualization.
++
++    Without ``focus`` the payload is the strongest flows in the whole network.
++    With it, only flows that touch a focus country compete for the edge budget,
++    and every focus country is included even when it has no flow to show. A
++    shock on a small exporter needs this: its flows never rank among the
++    world's strongest, so a whole-network snapshot would not contain them.
++    """
+     if graph.number_of_nodes() == 0:
+         return {"nodes": [], "edges": []}
+ 
++    focus_nodes = {node for node in (focus or []) if node in graph}
++    candidate_edges = graph.edges(data=True)
++    if focus_nodes:
++        candidate_edges = [
++            edge for edge in candidate_edges if edge[0] in focus_nodes or edge[1] in focus_nodes
++        ]
++
+     capped_edges = max(1, int(max_edges))
+     sorted_edges = sorted(
+-        graph.edges(data=True),
++        candidate_edges,
+         key=lambda edge: float(edge[2].get("weight", 0.0)),
+         reverse=True,
+     )[:capped_edges]
+@@ -52,7 +66,7 @@
+         for node in graph.nodes
+     }
+ 
+-    visible_nodes = set()
++    visible_nodes = set(focus_nodes)
+     edges = []
+     for source, target, edge_data in sorted_edges:
+         weight = float(edge_data.get("weight", 0.0))
 --- a/core/metadata.py
 +++ b/core/metadata.py
 @@ -141,7 +141,14 @@
@@ -1938,7 +1999,7 @@
 +    return sector_for_chapter(int(normalized[:2]))
 --- a/frontend/index.html
 +++ b/frontend/index.html
-@@ -1,1949 +1,1911 @@
+@@ -1,1949 +1,1919 @@
 -
  <!DOCTYPE html>
  <html lang="en">
@@ -2805,7 +2866,7 @@
 +.range-meta { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); }
 +.range-meta b { color: var(--accent); }
 +.segmented { display: inline-flex; padding: 3px; border-radius: 9px; background: var(--input-bg); border: 1px solid var(--line); gap: 2px; width: 100%; }
-+.segmented button { flex: 1; border: 0; background: transparent; height: 28px; border-radius: 7px; font-size: 12.5px; font-weight: 600; color: var(--muted); cursor: pointer; }
++.segmented button { flex: 1; border: 0; background: transparent; height: 28px; padding: 0 10px; border-radius: 7px; font-size: 12.5px; font-weight: 600; color: var(--muted); cursor: pointer; white-space: nowrap; }
 +.segmented button[aria-pressed="true"] { background: var(--accent-soft); color: var(--accent-ink); box-shadow: 0 0 0 1px var(--accent-line) inset; }
 +.segmented button:disabled { opacity: .4; cursor: not-allowed; }
 +details.more { border-top: 1px dashed var(--line-strong); padding-top: 10px; margin-top: 4px; }
@@ -5559,6 +5620,11 @@
 +  if (!need.noSector) params.set("sector", $("sector").value);
 +  if (need.product && state.product) params.set("product", state.product.code);
 +  if ($("year").value) params.set("year", $("year").value);
++  // The affected view asks for the flows around the hit countries: a small
++  // exporter's flows never rank among the network's strongest 140.
++  if (state.netMode === "affected" && state.shockScores.size) {
++    for (const name of [...state.shockScores.keys()].slice(0, 40)) params.append("focus", name);
++  }
 +  return params.toString();
 +}
 +async function loadNetwork() {
@@ -5570,7 +5636,9 @@
 +    state.graph = data;
 +    state.graphScope = scope;
 +    const what = data.product ? `HS ${data.product}` : sectorName(data.sector);
-+    $("net-scope").textContent = `${what} · ${data.year} · ${data.edges.length} strongest flows`;
++    $("net-scope").textContent = data.focus?.length
++      ? `${what} · ${data.year} · ${data.edges.length} strongest flows touching the ${data.focus.length} affected economies`
++      : `${what} · ${data.year} · ${data.edges.length} strongest flows`;
 +    drawNetwork();
 +  } catch (error) {
 +    state.graph = null;
@@ -5756,8 +5824,9 @@
 +  });
 +  $("api-url").addEventListener("change", async () => { state.graph = null; state.graphScope = null; await connect(); });
 +  $("network-card").addEventListener("toggle", () => { if ($("network-card").open) loadNetwork(); });
-+  $("net-full").addEventListener("click", () => { state.netMode = "full"; syncNetToggle(); drawNetwork(); });
-+  $("net-affected").addEventListener("click", () => { state.netMode = "affected"; syncNetToggle(); drawNetwork(); });
++  // The two views load different flows, so switching fetches (cached per view).
++  $("net-full").addEventListener("click", () => { state.netMode = "full"; syncNetToggle(); loadNetwork(); });
++  $("net-affected").addEventListener("click", () => { state.netMode = "affected"; syncNetToggle(); loadNetwork(); });
 +  let resizeTimer = null;
 +  window.addEventListener("resize", () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(() => { if ($("network-card").open) drawNetwork(); }, 150); });
 +}
@@ -6333,7 +6402,7 @@
  
 --- a/tests/test_analytics.py
 +++ b/tests/test_analytics.py
-@@ -698,3 +698,26 @@
+@@ -698,3 +698,45 @@
      second = baci_cache.load_year(cache_dir, year, "all")
      assert float(second["trade_value"].sum()) == pytest.approx(original_total)
      assert second.attrs.get("sector") == "all"
@@ -6360,6 +6429,25 @@
 +    assert enriched.loc["Aland", "disrupted_trade_usd"] == pytest.approx(0.5 * 1_000.0 * 1_000.0)
 +    assert enriched.loc["Aland", "gdp_exposure"] == pytest.approx(500_000.0 / 10_000_000.0)
 +    assert enriched.loc["Borduria", "gdp_exposure"] == pytest.approx(0.25 * 4_000_000.0 / 2_000_000.0)
++
++
++def test_graph_payload_can_focus_on_small_countries():
++    """A shock view needs the flows around the hit countries, not the world's largest."""
++    from core.graph_builder import build_graph_payload
++
++    graph = nx.DiGraph()
++    graph.add_edge("Big", "Large", weight=1_000.0)
++    graph.add_edge("Large", "Big", weight=900.0)
++    graph.add_edge("Tiny", "Big", weight=2.0)
++    graph.add_edge("Small", "Tiny", weight=1.0)
++    graph.add_node("Alone")
++
++    whole = build_graph_payload(graph, max_edges=2)
++    assert {(e["source"], e["target"]) for e in whole["edges"]} == {("Big", "Large"), ("Large", "Big")}
++
++    focused = build_graph_payload(graph, max_edges=2, focus=["Tiny", "Alone", "Nowhere"])
++    assert {(e["source"], e["target"]) for e in focused["edges"]} == {("Tiny", "Big"), ("Small", "Tiny")}
++    assert {"Tiny", "Alone"} <= {n["id"] for n in focused["nodes"]}
 --- a/tests/test_api.py
 +++ b/tests/test_api.py
 @@ -55,6 +55,8 @@
