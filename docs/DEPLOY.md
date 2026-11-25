@@ -78,6 +78,41 @@ powershell -ExecutionPolicy Bypass -File .\scripts\deploy.ps1 -Server ubuntu@<pu
 `-SkipData` skips re-uploading the datasets. Only images whose code changed are
 rebuilt.
 
+### Faster: let the server fetch the code from GitHub
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\deploy.ps1 -Server ubuntu@<public-ip> -Key C:\path\to\key.pem -SkipData -Public -FromGitHub
+```
+
+The normal update uploads the whole working tree (about 80 MB) from your laptop,
+which takes 10-20 minutes on a slow or mobile connection. With `-FromGitHub` the
+laptop sends a 1 KB script; the server downloads the latest commit of `main` from
+GitHub itself (seconds on AWS's network) and builds it in the background, so the
+whole update takes about 5 minutes and a dropped connection does not stop it.
+
+- It deploys **what is on GitHub**, not your working tree: push first. It refuses
+  to run while you have local commits that are not pushed, and it lists
+  uncommitted files it is leaving out. `-Ref <branch>` deploys another branch.
+- The repository must stay public, because the server downloads it without a login.
+- Data still comes from your laptop: leave out `-SkipData` only when the datasets
+  changed (see below).
+- The build log is `~/team128-upload/setup.log` on the server; the commit that is
+  live is in `~/team128-upload/deployed_commit`.
+
+**If your network blocks SSH** (port 22 times out while websites load), open a
+terminal in the browser instead: EC2 → Instances → select the instance → Connect →
+EC2 Instance Connect → Connect, then run
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Takshak-CS/team128-geopolitical-intelligence/main/deploy/remote_from_github.sh -o ~/remote_from_github.sh && bash ~/remote_from_github.sh Takshak-CS/team128-geopolitical-intelligence main 65.1.109.59.sslip.io public && tail -f ~/team128-upload/setup.log
+```
+
+It is finished at the line `SETUP_EXIT=0` (Ctrl+C stops watching; the build carries on).
+
+Do not `git pull` or `docker compose restart` on the server to update it: the
+server has no git checkout, and the pages are built into the images, so only a
+deploy (either kind above) picks up a change.
+
 The trade sector tables are committed, so they travel with the code even with
 `-SkipData`. The trade product store (`services/trade_intelligence/cache/products/`,
 about 345 MB) is not: after building or refreshing it, deploy once **without**
