@@ -301,3 +301,15 @@ def test_graph_can_show_one_product():
     payload = client.get("/graph?product=170111&max_edges=40").json()
     assert payload["product"] == "170111" and payload["sector"] == "agriculture"
     assert 0 < len(payload["edges"]) <= 40
+
+
+@requires_cache
+def test_graph_focus_shows_a_small_exporters_flows():
+    """Angola's 2010 pharmaceutical flows are far below the 140 strongest in the world."""
+    whole = client.get("/graph?sector=pharmaceuticals&year=2010&max_edges=140").json()
+    assert "Angola" not in {n["id"] for n in whole["nodes"]}
+
+    focused = client.get("/graph?sector=pharmaceuticals&year=2010&max_edges=140&focus=Angola&focus=Nigeria&focus=nowhere").json()
+    assert focused["focus"] == ["Angola", "Nigeria"]
+    assert focused["edges"]
+    assert all({e["source"], e["target"]} & {"Angola", "Nigeria"} for e in focused["edges"])

@@ -33,6 +33,7 @@ from core.data_loader import (
     latest_year,
     load_trade_data,
     product_data_ready,
+    resolve_baci_country,
 )
 from core.graph_builder import build_graph_payload, build_trade_graph
 from core.metadata import metadata_available
@@ -214,8 +215,17 @@ def get_trade_graph(
     sector: SectorName = "all",
     product: Optional[str] = Query(default=None, max_length=12),
     max_edges: int = Query(default=140, ge=20, le=400),
+    focus: Optional[list[str]] = Query(
+        default=None,
+        description="Countries to centre on (repeat the parameter). Only flows touching them are kept.",
+    ),
 ) -> dict:
-    """Return a visualization-friendly graph snapshot for a year and a sector or product."""
+    """Return a visualization-friendly graph snapshot for a year and a sector or product.
+
+    ``focus`` keeps the strongest flows that touch the named countries, which is
+    what a shock view needs when the shocked country is too small to appear
+    among the network's strongest flows.
+    """
     try:
         source_path = trade_agent.DEFAULT_DATA_PATH
         code = normalize_product(product)
@@ -227,10 +237,17 @@ def get_trade_graph(
             selected_year = latest_year(source_path) if year is None else int(year)
         trade_data = load_trade_data(source_path, year=selected_year, sector=sector, product=code)
         graph = build_trade_graph(trade_data, sector=sector)
-        payload = build_graph_payload(graph, max_edges=max_edges)
+        focus_names: list[str] = []
+        for name in (focus or [])[:60]:
+            try:
+                focus_names.append(resolve_baci_country(source_path, name)[1])
+            except ValueError:
+                continue
+        payload = build_graph_payload(graph, max_edges=max_edges, focus=focus_names)
         payload["year"] = selected_year
         payload["sector"] = sector
         payload["product"] = code
+        payload["focus"] = [name for name in focus_names if name in graph]
         return payload
     except (FileNotFoundError, ValueError) as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc

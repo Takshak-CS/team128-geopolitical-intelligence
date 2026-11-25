@@ -721,3 +721,22 @@ def test_gdp_exposure_survives_an_impact_frame_that_already_has_trade_columns():
     assert enriched.loc["Aland", "disrupted_trade_usd"] == pytest.approx(0.5 * 1_000.0 * 1_000.0)
     assert enriched.loc["Aland", "gdp_exposure"] == pytest.approx(500_000.0 / 10_000_000.0)
     assert enriched.loc["Borduria", "gdp_exposure"] == pytest.approx(0.25 * 4_000_000.0 / 2_000_000.0)
+
+
+def test_graph_payload_can_focus_on_small_countries():
+    """A shock view needs the flows around the hit countries, not the world's largest."""
+    from core.graph_builder import build_graph_payload
+
+    graph = nx.DiGraph()
+    graph.add_edge("Big", "Large", weight=1_000.0)
+    graph.add_edge("Large", "Big", weight=900.0)
+    graph.add_edge("Tiny", "Big", weight=2.0)
+    graph.add_edge("Small", "Tiny", weight=1.0)
+    graph.add_node("Alone")
+
+    whole = build_graph_payload(graph, max_edges=2)
+    assert {(e["source"], e["target"]) for e in whole["edges"]} == {("Big", "Large"), ("Large", "Big")}
+
+    focused = build_graph_payload(graph, max_edges=2, focus=["Tiny", "Alone", "Nowhere"])
+    assert {(e["source"], e["target"]) for e in focused["edges"]} == {("Tiny", "Big"), ("Small", "Tiny")}
+    assert {"Tiny", "Alone"} <= {n["id"] for n in focused["nodes"]}
