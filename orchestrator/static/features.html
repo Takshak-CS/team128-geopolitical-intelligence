@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Agents · Team 128 · Geopolitical Intelligence</title>
 <script src="/static/review.js" data-page="features" defer></script>
+<script src="/static/analytics.js" data-page="features" defer></script>
 <style>
   :root { --bg: #060a12; --ink: #eef2f8; --muted: #93a0b5; --line: #1d2738; --panel: rgba(15,22,34,.72); }
   * { box-sizing: border-box; }
@@ -78,7 +79,7 @@ function card(module, info) {
   const url = info?.dashboard_url;
   const node = document.createElement(url ? "a" : "div");
   node.className = `card ${module.cls}${url ? "" : " off"}`;
-  if (url) { node.href = url; node.setAttribute("aria-label", `Open the ${module.name} dashboard`); }
+  if (url) { node.href = url; node.setAttribute("aria-label", `Open the ${module.name} dashboard`); node.setAttribute("data-track", `dashboard:${module.name}`); }
   const ok = info?.status === "ok";
   node.innerHTML = `
     <div class="glyph" aria-hidden="true">${module.glyph}</div>

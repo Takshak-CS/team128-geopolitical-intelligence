@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>GEOINT Engine · Team 128</title>
 <script src="/static/review.js" data-page="engine" defer></script>
+<script src="/static/analytics.js" data-page="engine" defer></script>
 <style>
   :root {
     --bg: #070b12; --bg2: #0b111b; --panel: #0f1622; --panel2: #131c2b; --line: #1f2a3c; --line2: #2a3850;
@@ -1524,7 +1525,10 @@ $("examples").replaceChildren(el("span", { class: "lbl", text: "Missions" }), ..
 $("askForm").addEventListener("submit", (event) => {
   event.preventDefault();
   const question = $("question").value.trim();
-  if (question.length >= 2) ask(question);
+  if (question.length >= 2) {
+    if (window.geoTrack) window.geoTrack("query_submit", question.slice(0, 80));
+    ask(question);
+  }
 });
 $("skipBtn").addEventListener("click", () => { RUN.fast = true; $("skipBtn").classList.add("hidden"); });
 renderFleet();

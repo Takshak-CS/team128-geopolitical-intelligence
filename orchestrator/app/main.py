@@ -9,6 +9,9 @@
     POST /reviews        a visitor's rating, review and suggestions (stored; see reviews.py)
     GET  /reviews/summary  how many reviews and their average rating
     GET  /reviews/public   reviews longer than 100 words: rating, text, name, date (no emails)
+    POST /analytics/event   log a UI event (page view, click, query, country click)
+    GET  /analytics/summary aggregate counts — public
+    GET  /analytics/all     all raw events, founder-pin-protected
     GET  /               home: the two ways in
     GET  /features       the four module dashboards
     GET  /engine         the GEOINT Engine run console
@@ -29,7 +32,7 @@ from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-from . import intent, reviews
+from . import analytics, intent, reviews
 from .config import CORS_ORIGINS
 from .pipeline import ADAPTERS, Orchestrator
 
@@ -83,6 +86,14 @@ class AskRequest(BaseModel):
         if not re.fullmatch(r"20\d{6}", compact):
             raise ValueError("date must be YYYY-MM-DD or YYYYMMDD")
         return compact
+
+
+class AnalyticsEventRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    page: str = Field(min_length=1, max_length=64)
+    event: str = Field(min_length=1, max_length=64)
+    label: str = Field(default="", max_length=128)
 
 
 class ReviewRequest(BaseModel):
@@ -171,6 +182,26 @@ async def review_all(pin: str = "") -> dict:
     for r in all_data:
         r.pop("email", None)
     return {"reviews": all_data}
+
+
+@app.post("/analytics/event")
+async def post_analytics_event(body: AnalyticsEventRequest, request: Request) -> dict:
+    visitor = (request.headers.get("x-forwarded-for") or (request.client.host if request.client else "")).split(",")[0].strip()
+    row_id = analytics.record(body.page, body.event, body.label, visitor)
+    return {"recorded": True, "id": row_id}
+
+
+@app.get("/analytics/summary")
+async def analytics_summary() -> dict:
+    return analytics.summary()
+
+
+@app.get("/analytics/all")
+async def analytics_all(pin: str = "") -> dict:
+    valid = {"@128", "takshak", "shreyas", "santhosh", "anushree"}
+    if pin not in valid:
+        raise HTTPException(status_code=403, detail="Invalid pin.")
+    return {"events": analytics.all_events()}
 
 
 @app.get("/agents")
