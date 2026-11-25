@@ -1611,6 +1611,24 @@
  
      if cache_ready():
          cache_dir = cache_directory()
+--- a/core/metadata.py
++++ b/core/metadata.py
+@@ -141,7 +141,14 @@
+         columns={"country_name": "country"}
+     )
+     trade_columns = ["country", "total_imports", "trade_total"]
+-    available = [column for column in trade_columns if column in features.columns]
++    # The shock path hands in an impact frame that already carries these
++    # columns. Merging them a second time made pandas rename both copies
++    # (total_imports_x / _y), so total_imports was never found and every GDP
++    # figure came back empty. Only bring in what the frame does not have.
++    available = [
++        column for column in trade_columns
++        if column in features.columns and (column == "country" or column not in impact.columns)
++    ]
+ 
+     enriched = (
+         impact.merge(features.loc[:, available], on="country", how="left")
 --- a/core/sector_mapper.py
 +++ b/core/sector_mapper.py
 @@ -1,13 +1,156 @@
@@ -6313,6 +6331,35 @@
      )
  
  
+--- a/tests/test_analytics.py
++++ b/tests/test_analytics.py
+@@ -698,3 +698,26 @@
+     second = baci_cache.load_year(cache_dir, year, "all")
+     assert float(second["trade_value"].sum()) == pytest.approx(original_total)
+     assert second.attrs.get("sector") == "all"
++
++
++def test_gdp_exposure_survives_an_impact_frame_that_already_has_trade_columns():
++    """The shock path merges country features before asking for GDP exposure.
++
++    A second merge of the same columns used to rename them (total_imports_x /
++    _y), which left every GDP figure empty without any error.
++    """
++    from core.metadata import attach_economic_exposure
++
++    features = pd.DataFrame(
++        {"country": ["Aland", "Borduria"], "total_imports": [1_000.0, 4_000.0], "trade_total": [3_000.0, 9_000.0]}
++    )
++    impact = pd.DataFrame({"country": ["Aland", "Borduria"], "impact_score": [0.5, 0.25]}).merge(features, on="country")
++    metadata = pd.DataFrame({"country_iso3": ["ALA", "BOR"], "year": [2024, 2024], "gdp_usd": [10_000_000.0, 2_000_000.0]})
++    codes = pd.DataFrame({"country_name": ["Aland", "Borduria"], "country_iso3": ["ALA", "BOR"]})
++
++    enriched = attach_economic_exposure(impact, features, metadata, codes, year=2024).set_index("country")
++
++    assert "total_imports_x" not in enriched.columns
++    assert enriched.loc["Aland", "disrupted_trade_usd"] == pytest.approx(0.5 * 1_000.0 * 1_000.0)
++    assert enriched.loc["Aland", "gdp_exposure"] == pytest.approx(500_000.0 / 10_000_000.0)
++    assert enriched.loc["Borduria", "gdp_exposure"] == pytest.approx(0.25 * 4_000_000.0 / 2_000_000.0)
 --- a/tests/test_api.py
 +++ b/tests/test_api.py
 @@ -55,6 +55,8 @@

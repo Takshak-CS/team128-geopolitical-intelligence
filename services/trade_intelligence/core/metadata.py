@@ -141,7 +141,14 @@ def attach_economic_exposure(
         columns={"country_name": "country"}
     )
     trade_columns = ["country", "total_imports", "trade_total"]
-    available = [column for column in trade_columns if column in features.columns]
+    # The shock path hands in an impact frame that already carries these
+    # columns. Merging them a second time made pandas rename both copies
+    # (total_imports_x / _y), so total_imports was never found and every GDP
+    # figure came back empty. Only bring in what the frame does not have.
+    available = [
+        column for column in trade_columns
+        if column in features.columns and (column == "country" or column not in impact.columns)
+    ]
 
     enriched = (
         impact.merge(features.loc[:, available], on="country", how="left")

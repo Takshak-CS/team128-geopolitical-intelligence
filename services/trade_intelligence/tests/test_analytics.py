@@ -698,3 +698,26 @@ def test_cached_frames_are_isolated_from_callers():
     second = baci_cache.load_year(cache_dir, year, "all")
     assert float(second["trade_value"].sum()) == pytest.approx(original_total)
     assert second.attrs.get("sector") == "all"
+
+
+def test_gdp_exposure_survives_an_impact_frame_that_already_has_trade_columns():
+    """The shock path merges country features before asking for GDP exposure.
+
+    A second merge of the same columns used to rename them (total_imports_x /
+    _y), which left every GDP figure empty without any error.
+    """
+    from core.metadata import attach_economic_exposure
+
+    features = pd.DataFrame(
+        {"country": ["Aland", "Borduria"], "total_imports": [1_000.0, 4_000.0], "trade_total": [3_000.0, 9_000.0]}
+    )
+    impact = pd.DataFrame({"country": ["Aland", "Borduria"], "impact_score": [0.5, 0.25]}).merge(features, on="country")
+    metadata = pd.DataFrame({"country_iso3": ["ALA", "BOR"], "year": [2024, 2024], "gdp_usd": [10_000_000.0, 2_000_000.0]})
+    codes = pd.DataFrame({"country_name": ["Aland", "Borduria"], "country_iso3": ["ALA", "BOR"]})
+
+    enriched = attach_economic_exposure(impact, features, metadata, codes, year=2024).set_index("country")
+
+    assert "total_imports_x" not in enriched.columns
+    assert enriched.loc["Aland", "disrupted_trade_usd"] == pytest.approx(0.5 * 1_000.0 * 1_000.0)
+    assert enriched.loc["Aland", "gdp_exposure"] == pytest.approx(500_000.0 / 10_000_000.0)
+    assert enriched.loc["Borduria", "gdp_exposure"] == pytest.approx(0.25 * 4_000_000.0 / 2_000_000.0)
